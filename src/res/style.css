@@ -1,0 +1,172 @@
+body {
+  font-size: 18px;
+}
+
+.sidebar-editor {
+  padding-top: 0 !important;
+}
+
+view-mode .pusher {
+  min-height: 85vh !important;
+}
+view-mode .ui.sidebar {
+  position: fixed !important;
+  z-index: 999 !important;
+}
+
+view-settings {
+  display: block;
+}
+
+.heroes-list .images {
+  max-height: 75vh;
+  overflow-y: scroll;
+}
+.modal .heroes-list {
+  max-height: 35vh;
+  overflow-y: scroll;
+}
+
+.heroes-list img {
+  width: 5vmax;
+  height: auto;
+  transition: all 200ms ease;
+}
+.heroes-list .image {
+  transition: all 200ms ease;
+}
+.heroes-list .image:hover {
+  box-shadow: 0 0 5px 2px #00a;
+}
+.heroes-list .image:active {
+  box-shadow: 0 0 7px 4px #00f;
+}
+
+.column.heroes-list {
+  padding-top: 0 !important;
+}
+
+.heroes-list .segment:first-of-type {
+  padding-top: 0;
+}
+
+cats > .column > .segment {
+  padding-top: 2.5em !important;
+  padding-bottom: 1em !important;
+}
+
+.heroes-container {
+  height: 100%;
+}
+
+.ui.image .ui.corner.label {
+  font-size: .8rem;
+}
+.ui.image .ui.corner.label:after {
+  border-right-width: 2.4vmax;
+  border-bottom-width: 2.4vmax;
+}
+
+edit-mode cats .small-portraits .ui.image .ui.corner.label {
+  font-size: .7rem;
+  line-height: 0.8;
+}
+edit-mode cats .small-portraits .ui.image .ui.corner.label:after {
+  border-right-width: 1.8vmax;
+  border-bottom-width: 1.8vmax;
+}
+
+.heroes-container.small-portraits {
+  min-height: 30px;
+}
+.heroes-container.limited-cat {
+  max-height: 35vh;
+  overflow-y: scroll;
+}
+cats > .column > .segment > a.big.label {
+  min-height: 45px;
+}
+
+.add-button {
+  opacity: 0.5;
+  transition: all 250ms ease;
+}
+.add-button:hover {
+  opacity: 1;
+}
+
+cats .heroes-container img, .cat-modal .heroes-container img , .heroes-modal .heroes-container img {
+  width: 4.5vmax;
+  height: auto;
+}
+
+cats .heroes-container.small-portraits img {
+  width: 3.2vmax;
+}
+
+cats-view .cats .ui.column {
+  padding-top: 2em !important;
+}
+cats-view .heroes-container img {
+  width: 5.5vmax;
+  height: auto;
+}
+
+cats-view .heroes-container.small-portraits .image {
+  margin: 0 .15rem .25rem !important;
+}
+cats-view .heroes-container.small-portraits img {
+  width: 4.0vmax;
+}
+
+.animate-show-hide.ng-hide {
+  opacity: 0;
+}
+
+.animate-show-hide.ng-hide-add,
+.animate-show-hide.ng-hide-remove {
+  transition: all linear 0.5s;
+}
+
+.check-element {
+  border: 1px solid black;
+  opacity: 1;
+  padding: 10px;
+}
+
+.column.sixteen_wide {
+  width: 100%!important;
+}
+.column.eight_wide {
+  width: 50%!important;
+}
+.column.third_wide {
+  width: 33.3%!important;
+}
+.column.two_third_wide {
+  width: 66.6%!important;
+}
+.column.four_wide {
+  width: 25%!important;
+}
+.column.twelve_wide {
+  width: 75%!important;
+}
+
+.cats {
+  box-shadow: none !important;
+  -webkit-box-shadow: none !important;
+}
+.ui.vertical.segment:first-child {
+  border-left: 1px solid rgba(34,36,38,.15);
+}
+.ui.vertical.segment {
+  border-right: 1px solid rgba(34,36,38,.15);
+}
+.ui.vertical.segment:last-child {
+  border-bottom: 1px solid rgba(34,36,38,.15);
+}
+
+.angular-dnd-draggable-helper {
+  z-index: 1000;
+}

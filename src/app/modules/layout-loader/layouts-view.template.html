@@ -1,0 +1,21 @@
+<h2 class="ui header">{{'LAYOUTS' | translate}}</h2>
+<div class="ui relaxed divided list layouts-list">
+  <a class="item"
+      ng-repeat="layout in $ctrl.LayoutService.layouts track by $index"
+    >
+    <i class="{{layout.tag}} middle aligned icon"></i>
+    <div class="middle aligned content" ng-click="$ctrl.apply($index)">
+      <div class="header">{{layout.name}}</div>
+      <div class="description" ng-if="layout.active == true">
+        {{'ACTIVE' | translate}}
+      </div>
+    </div>
+  </a>
+</div>
+<a class="ui primary button field"
+    ng-click="$ctrl.exportThis($ctrl.LayoutService.loadedLayout, $event)"
+    download="export_{{$ctrl.LayoutService.loadedLayout.name}}.json">{{'EXPORT_CURRENT' | translate}}</a>
+<a class="ui primary button field" ng-click="$ctrl.export($event)" download="export.json">{{'EXPORT_FILE' | translate}}</a>
+<a class="ui primary button field" sm-modal-show="'.layout-import-modal'" >{{'IMPORT_FILE' | translate}}</a>
+<a class="ui primary button field" ng-click="$ctrl.exportLink()">{{'EXPORT_LINK' | translate}}</a>
+<layout-import-modal></layout-import-modal>

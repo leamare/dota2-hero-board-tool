@@ -1,0 +1,17 @@
+<div class="ui fluid input">
+  <input type="text"
+        ng-model="$ctrl.searchBox"
+        placeholder="{{'HERO_SEARCHBAR' | translate}}" />
+</div>
+<div class="ui vertical segment images center aligned">
+  <div class="ui rounded image" ng-repeat="hero in $ctrl.heroes | filter:$ctrl.searchBox " >
+    <img
+      ng-src="{{$ctrl.HeroListService.portraitLinkById(hero.id);}}"
+      ng-alt="{{hero.name}}"
+      dnd-draggable
+      dnd-draggable-opts="{layer:'heroes', helper : 'clone'}"
+      dnd-containment = "'.content'"
+      dnd-model="hero.id"
+    />
+  </div>
+</div>

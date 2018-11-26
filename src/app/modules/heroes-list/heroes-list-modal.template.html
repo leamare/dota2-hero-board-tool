@@ -1,0 +1,41 @@
+<sm-modal class="large  heroes-modal" on-show="$ctrl.onModalShow()">
+  <div class="header">
+    {{'ADD_HEROES' | translate}}
+  </div>
+
+  <div class="content">
+    <div class="ui fluid input">
+      <input type="text"
+            ng-model="$ctrl.searchBox"
+            placeholder="{{'HERO_SEARCHBAR' | translate}}" />
+    </div>
+
+    <div class="ui vertical segment images center aligned heroes-list">
+      <div class="ui rounded image hero-modal" ng-repeat="hero in $ctrl.heroes | filter:$ctrl.searchBox">
+        <img  ng-src="{{$ctrl.HeroListService.portraitLinkById(hero.id);}}"
+              ng-alt="{{hero.id}}"
+              ng-click="$ctrl.addElement(hero.id)" />
+      </div>
+    </div>
+
+    <div class="ui segment" ng-class="$ctrl.tempCat.mark">
+      <a class="ui top attached big label">{{$ctrl.CatsService.getLabel($ctrl.tempCat.name)}}</a>
+      <div class="ui divider"></div>
+      <div class="ui images heroes-container limited-cat"
+            dnd-sortable-list="$ctrl.tempCat.heroes"
+            dnd-container
+            dnd-droppable
+        >
+        <div class="ui rounded image" ng-repeat="hero in $ctrl.tempCat.heroes" ng-hide="deleted" dnd-sortable>
+          <a class="ui right corner mini black label" ng-click="deleted=true; $ctrl.delAnimation($ctrl.tempCat.id, hero.id)">
+            <i class="delete icon" dnd-lasso-area="false" dnd-draggable="false"></i>
+          </a>
+          <img ng-src="{{$ctrl.HeroListService.portraitLinkById(hero.value)}}" ng-model="hero" />
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="actions">
+    <div class="ui blue ok button">{{'DONE' | translate}}</div>
+  </div>
+</sm-modal>

@@ -1,0 +1,51 @@
+<div class="ui segment form">
+  <h2 class="ui header">{{'CURRENT_LAYOUT' | translate}}</h2>
+  <div class="ui labeled fluid input field">
+    <div class="ui label">{{'NAME' | translate}}</div>
+    <input type="text" ng-model="$ctrl.LayoutService.loadedLayout.name" />
+  </div>
+  <div class="ui labeled fluid input field">
+    <div class="ui label">{{'ICON' | translate}}</div>
+    <input type="text" ng-model="$ctrl.LayoutService.loadedLayout.tag" />
+  </div>
+  <button class="ui primary button field" ng-click="$ctrl.save()">{{'SAVE' | translate}}</button>
+  <button class="ui primary button field" ng-click="$ctrl.saveAsNew()">{{'SAVE_NEW' | translate}}</button>
+  <button class="ui primary button field" ng-click="$ctrl.clearBoard()">{{'CLEAR_BOARD' | translate}}</button>
+  <button class="ui primary button field" ng-click="$ctrl.apply()">{{'RESET_CHANGES' | translate}}</button>
+  <div class="field">
+    <a class="ui primary button"
+        ng-click="$ctrl.exportThis($ctrl.LayoutService.loadedLayout, $event)"
+        download="export_{{$ctrl.LayoutService.loadedLayout.name}}.json">{{'EXPORT_CURRENT' | translate}}</a>
+  </div>
+  <a class="ui primary button field" ng-click="$ctrl.exportLink()">{{'EXPORT_LINK' | translate}}</a>
+</div>
+
+<div class="ui segment form">
+  <h2 class="ui header">{{'LAYOUTS' | translate}}</h2>
+  <div class="ui relaxed divided list layouts-list"
+        dnd-container
+        dnd-sortable-list="$ctrl.LayoutService.layouts">
+    <a class="item"
+        ng-repeat="layout in $ctrl.LayoutService.layouts track by $index"
+        dnd-sortable
+        dnd-containment="'.layouts-list'"
+        dnd-on-sortend="$ctrl.LayoutService.saveLayouts()"
+      >
+      <div class="right floated content" dnd-lasso-area="false" dnd-draggable="false" >
+        <i class="middle aligned trash icon" ng-click="$ctrl.remove($index)"></i>
+      </div>
+      <i class="bars middle aligned icon"></i>
+      <i class="{{layout.tag}} middle aligned icon"  dnd-lasso-area="false" dnd-draggable="false"></i>
+      <div class="middle aligned content" ng-click="$ctrl.apply($index)"  dnd-lasso-area="false" dnd-draggable="false">
+        <div class="header">{{layout.name}}</div>
+        <div class="description" ng-if="layout.active == true">
+          {{'ACTIVE' | translate}}
+        </div>
+      </div>
+    </a>
+  </div>
+  <button class="ui primary button field" ng-click="$ctrl.LayoutService.newLayout()">{{'NEW_LAYOUT' | translate}}</button>
+  <a class="ui primary button field" ng-click="$ctrl.export($event)" download="export.json">{{'EXPORT_FILE' | translate}}</a>
+  <a class="ui primary button field" sm-modal-show="'.layout-import-modal'" >{{'IMPORT_FILE' | translate}}</a>
+</div>
+<layout-import-modal></layout-import-modal>

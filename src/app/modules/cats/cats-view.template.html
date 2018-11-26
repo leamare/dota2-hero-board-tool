@@ -1,0 +1,23 @@
+<div class="stackable celled divided grid cats ui"
+      ng-class="{'center aligned':$ctrl.centeredView}">
+  <div class="ui column vertical segment {{cat.mark}}" ng-repeat="cat in $ctrl.cats.cats"
+      ng-class="$ctrl.wideCat(cat.id)"
+    >
+    <div class="ui top attached label"
+        ng-class="{'big':$ctrl.columns !== 'six','large': $ctrl.columns === 'six' }"
+    >
+      {{$ctrl.cats.getLabel(cat.id);}}
+    </div>
+    <div class="ui images heroes-container"
+          ng-class="{'small-portraits': !$ctrl.biggerCat(cat.id)}"
+          >
+      <div class="ui rounded image"
+            ng-repeat="hero in cat.heroes"
+            ng-hide="deleted"
+          >
+        <img ng-src="{{$ctrl.herolist.portraitLinkById(hero.value)}}" ng-model="hero" />
+      </div>
+    </div>
+  </div>
+</div>
+<div class="ui loader"></div>

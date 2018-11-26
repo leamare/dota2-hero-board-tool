@@ -1,0 +1,88 @@
+<sm-modal class="cat-modal" on-show="$ctrl.onModalShow()">
+  <div class="header">
+    {{'CAT_SETTINGS' | translate}}
+  </div>
+  <div class="content">
+    <div class="ui form">
+      <div class="field">
+        <sm-checkbox
+          class="toggle bigger-cat"
+          model="$ctrl.tempCat.bigger"
+          label="Bigger cat"
+        ></sm-checkbox>
+      </div>
+      <div>
+        <sm-dropdown
+          class="selection"
+          model="$ctrl.tempCat.wide"
+          items="$ctrl.wideness"
+          label="item.label | translate"
+          value="item.value"
+          default-text="'< Category Wideness >'"
+        ></sm-dropdown>
+        <div class="ui left pointing label" >{{'CAT_WIDE' | translate}}</div>
+      </div>
+
+      <div class="ui divider"></div>
+
+      <div class="">
+        <sm-dropdown
+          class="selection"
+          model="$ctrl.tempCat.nameType"
+          items="$ctrl.nameTypes"
+          label="item.label | translate"
+          value="item.value"
+          default-text="'< Name Type >'"
+
+        ></sm-dropdown>
+        <div class="ui left pointing label" >{{'CAT_NAME_TYPE' | translate}}</div>
+      </div>
+
+      <div class="" ng-if="$ctrl.tempCat.nameType == 0">
+        <div class="ui input">
+          <input type="text"
+                ng-model="$ctrl.tempCat.name"
+                value="{{$ctrl.tempCat.name}}" />
+        </div>
+        <div class="ui left pointing label">{{'CAT_NAME' | translate}}</div>
+      </div>
+      <div class="" ng-if="$ctrl.tempCat.nameType == 1">
+        <sm-dropdown
+          class="selection"
+          model="$ctrl.tempCat.name"
+          items="$ctrl.PRESET_NAMES"
+          label="item.label | translate"
+          value="item.value"
+          default-text="'CAT_NAME_PRESET_NONE' | translate"
+        ></sm-dropdown>
+        <div class="ui left pointing label">{{'CAT_NAME_PRESET' | translate}}</div>
+      </div>
+
+      <div class="ui divider"></div>
+
+      <div class="">
+        <sm-dropdown
+          class="selection color-mark"
+          model="$ctrl.tempCat.mark"
+          items="$ctrl.colors"
+          label="item.label | translate"
+          value="item.value"
+          default-text="'CAT_COLOR_NONE' | translate"
+        ></sm-dropdown>
+        <div class="ui left pointing label">{{'CAT_COLOR' | translate}}</div>
+      </div>
+    </div>
+    <div class="ui segment" ng-class="$ctrl.tempCat.mark">
+      <a class="ui top attached big label">{{$ctrl.CatsService.getLabel($ctrl.tempCat.id);}}</a>
+      <div class="ui divider"></div>
+      <div class="ui images heroes-container limited-cat" dnd-sortable-list="$ctrl.tempCat.heroes">
+        <div class="ui rounded image" ng-repeat="hero in $ctrl.tempCat.heroes" ng-hide="deleted" dnd-sortable>
+          <img ng-src="{{$ctrl.HeroListService.portraitLinkById(hero.value)}}" ng-model="hero" />
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="actions">
+    <div class="ui blue ok button">{{'DONE' | translate}}</div>
+  </div>
+</sm-modal>

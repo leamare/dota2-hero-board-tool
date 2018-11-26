@@ -1,0 +1,27 @@
+<div class="ui compact segments right push wide sidebar inverted ">
+  <view-settings class="ui segment settings form"></view-settings>
+  <layouts-view class="ui segment form"></layouts-view>
+</div>
+<div class="ui stackable grid pusher">
+  <div class="one wide column">
+  </div>
+  <div class="fourteen wide column">
+    <div class="ui centered large dividing header">{{$ctrl.LayoutService.loadedLayout.name}}</div>
+    <cats-view></cats-view>
+  </div>
+  <div class="one wide column">
+    <div class="ui compact secondary vertical labeled icon menu">
+      <a class="item" ng-click="$ctrl.showSidebar()">
+        <i class="cogs icon"></i>
+        {{'SETTINGS' | translate}}
+      </a>
+    </div>
+  </div>
+</div>
+<script>
+  $('view-mode .ui.sidebar')
+  .sidebar({
+    context: $('view-mode'),
+    dimPage: false
+  });
+</script>

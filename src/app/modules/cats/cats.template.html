@@ -1,0 +1,60 @@
+<div class="stackable divided grid cats ui" dnd-container ng-class="{'center aligned':$ctrl.centeredView}">
+  <div class="ui column vertical segment {{cat.mark}}" ng-repeat="cat in $ctrl.cats.cats"
+      ng-class="$ctrl.wideCat(cat.id)"
+    >
+    <div class="ui top attached label"
+          ng-class="{'big':$ctrl.columns !== 'six','large': $ctrl.columns === 'six' }"
+          dnd-droppable
+          dnd-droppable-opts="{layer:'heroes'}"
+          dnd-model="cat.id"
+          dnd-on-drop="$ctrl.cats.addElement(cat.id, $dragmodel)"
+    >
+      {{$ctrl.cats.getLabel(cat.id);}}
+      <a class="detail">
+        <a class="" ng-click="$ctrl.showCatSettingsModal(cat.id)" sm-modal-show="'.cat-modal'" dnd-draggable="false">
+          <i class="cog icon"></i>
+        </a>
+        <a class="" ng-click="$ctrl.cats.swap(cat.id, (+cat.id)-1)" dnd-draggable="false" ng-if="cat.id > 0">
+          <i class="caret up icon"></i>
+        </a>
+        <a class="" ng-click="$ctrl.cats.swap(cat.id, (+cat.id)+1)" dnd-draggable="false" ng-if="cat.id < $ctrl.cats.cats.length-1">
+          <i class="caret down icon"></i>
+        </a>
+        <a class="" ng-click="$ctrl.cats.remove(cat.id)" dnd-draggable="false">
+          <i class="delete icon"></i>
+        </a>
+      </a>
+    </div>
+    <div class="ui images heroes-container"
+          ng-class="{'small-portraits': !$ctrl.biggerCat(cat.id)}"
+          dnd-container
+          dnd-sortable-list="cat.heroes"
+          dnd-droppable
+          dnd-droppable-opts="{layer:'heroes'}"
+          dnd-model="cat.id"
+          dnd-on-drop="$ctrl.cats.addElement(cat.id, $dragmodel)"
+        >
+      <div class="ui rounded image"
+            ng-repeat="hero in cat.heroes"
+            ng-hide="deleted"
+            dnd-sortable
+            dnd-on-sortend="$ctrl.cats.updateHeroIds(cat.id)"
+          >
+        <a class="ui right corner mini black label" ng-click="deleted=true; $ctrl.delAnimation(cat.id, hero.id)" >
+          <i class="delete icon" dnd-lasso-area="false" dnd-draggable="false"></i>
+        </a>
+        <img ng-src="{{$ctrl.herolist.portraitLinkById(hero.value)}}" ng-model="hero" />
+      </div>
+
+      <div class="ui rounded image add-button" ng-click="$ctrl.showAddHeroModal(cat.id)">
+        <img ng-src="{{$ctrl.globalPrefix + 'res/add.png'}}" ng-model="hero" sm-modal-show="'.heroes-modal'" />
+      </div>
+    </div>
+  </div>
+
+  <div class="ui column sixteen wide disabled vertical segment center aligned" ng-click="$ctrl.cats.create();">
+    <i class="add icon big"></i>
+  </div>
+</div>
+<heroes-list-modal></heroes-list-modal>
+<cat-settings-modal></cat-settings-modal>

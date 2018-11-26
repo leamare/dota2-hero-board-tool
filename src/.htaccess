@@ -1,0 +1,17 @@
+<Files .htaccess>
+  Order allow,deny
+  Deny from all
+</Files>
+
+RewriteBase /
+<IfModule mod_rewrite.c>
+  Options +FollowSymLinks
+  RewriteEngine On
+  RewriteBase /
+
+  RewriteCond %{REQUEST_URI}::$1 ^(.*?/)(.*)::\2$
+  RewriteRule ^(.*)$ - [E=BASE:%1]
+  
+  RewriteRule ^(\w+)$ %{ENV:BASE}/
+</IfModule>
+

@@ -1,0 +1,24 @@
+<div class="field">
+  <h4>{{'COLUMNS' | translate}}</h4>
+  <div class="ui fluid compact buttons">
+    <button class="ui button" ng-repeat="cv in $ctrl.columnsValues"
+            ng-class="{'active':cv.value == $ctrl.rscope.columns}"
+            ng-click="$ctrl.setColumns(cv.value)">
+      {{cv.name}}
+    </button>
+  </div>
+</div>
+<div class="field">
+  <sm-checkbox
+    class="toggle forced-big"
+    model="$ctrl.rscope.forcedBig"
+    label="{{'SET_BIGCAT' | translate}}"
+  ></sm-checkbox>
+</div>
+<div class="field">
+  <sm-checkbox
+    class="toggle centered-view"
+    model="$ctrl.rscope.centeredView"
+    label="{{'SET_CENTER' | translate}}"
+  ></sm-checkbox>
+</div>

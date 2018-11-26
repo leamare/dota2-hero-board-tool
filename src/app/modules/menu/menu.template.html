@@ -1,0 +1,24 @@
+<a class="header item">{{$ctrl.MenuService.title | translate}}</a>
+<a class="item" ng-href="{{item.link}}" ng-repeat="item in $ctrl.MenuService.menu" ng-class="{'active': $ctrl.MenuService.activeLink == item.link}">
+  <i class="{{item.icon}} icon" ng-if="item.icon !== undefined"></i>
+  {{item.title | translate}}
+  <div class="ui mini label red" ng-if="item.label !== undefined">{{item.label | translate}}</div>
+</a>
+<div class="right menu">
+  <div class="ui simple dropdown icon item">
+    <i class="globe icon"></i>
+    <i class="dropdown icon"></i>
+    <div class="menu">
+      <div class="item"
+        ng-repeat="locale in $ctrl.locales"
+        ng-click="$ctrl.changeLanguage(locale)"
+        ng-class="{'active': $ctrl.lang == locale}"
+      >{{'LOCALE_'+locale | translate}}</div>
+    </div>
+  </div>
+  <a class="item" ng-href="{{item.link}}" ng-repeat="item in $ctrl.MenuService.rightMenu" ng-class="{'icon': item.title == ''}">
+    <i class="{{item.icon}} icon" ng-if="item.icon !== undefined"></i>
+    {{item.title | translate}}
+    <div class="ui mini label red" ng-if="item.label !== undefined" ng-class="{'empty circular': item.label == ''}">{{item.label | translate}}</div>
+  </a>
+</div>
