@@ -33,7 +33,7 @@ module.exports = {
       './node_modules/jquery/dist/jquery.min.js',
       './node_modules/semantic-ui-css/semantic.min.js',
       './node_modules/angular/angular.min.js',
-      './node_modules/angular-route/angular-route.js',
+      './node_modules/angular-route/angular-route.min.js',
       './node_modules/angular-dnd-module/dist/angular-dnd.min.js',
       './node_modules/semantic-ui-angular-jquery/angular-semantic-ui.min.js',
       './node_modules/angular-translate/dist/angular-translate.min.js',

@@ -16,3 +16,21 @@ It's using browser's local storage, supports file and link export/import feature
 - gulp
 - angularjs
 - browser-sync
+
+## Gulp commands
+
+- `build` - build the app
+- `watch` - launch development server and watch mode
+- `prod` - build the app for production (using minification)
+
+Supporting commands:
+
+- `clean`
+- `copy`
+- `default`
+- `images`
+- `revision`
+- `scripts`
+- `styles`
+- `template`
+- `vendor`
