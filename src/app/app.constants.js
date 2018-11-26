@@ -1,5 +1,5 @@
 const globalPrefix = window.location.pathname.substring(0, window.location.pathname.lastIndexOf("/")+1);
-const currentVer = [1,0,0];
+const currentVer = [1,0,1];
 
 String.prototype.hashCode = function() {
     var hash = 0;
