@@ -13,6 +13,7 @@ component('importLink', {
   function importLinkController(LayoutService, $routeParams, $window) {
     let layout = $routeParams.l || '';
     console.log($routeParams.l);
+    console.log($routeParams.l.length);
     layout = Base64Decode(layout);
     let loadId = 0;
 

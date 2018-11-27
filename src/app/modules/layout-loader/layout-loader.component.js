@@ -76,7 +76,11 @@ function layoutsManager(LayoutService, $rootScope, $translate, $routeParams, $lo
     let target = LayoutService.wrapCurrentLayout();
     target.active = undefined;
     target = Base64Encode( LayoutService.getExportString(target) );
-    prompt('Export Link', `${window.location.protocol}//${window.location.hostname}${window.location.port ? ':'+window.location.port : ''}${globalPrefix}import?l=${target}`)
+    let export_link = `${window.location.protocol}//${window.location.hostname}` +
+                    (window.location.port ? ':'+window.location.port : '') + globalPrefix +'import?l='+target;
+    console.log(export_link)
+    console.log(export_link.length);
+    $('#sharelink').text(export_link)
   };
 
   this.apply(this.applied, true);

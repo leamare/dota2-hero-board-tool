@@ -17,5 +17,6 @@
     download="export_{{$ctrl.LayoutService.loadedLayout.name}}.json">{{'EXPORT_CURRENT' | translate}}</a>
 <a class="ui primary button field" ng-click="$ctrl.export($event)" download="export.json">{{'EXPORT_FILE' | translate}}</a>
 <a class="ui primary button field" sm-modal-show="'.layout-import-modal'" >{{'IMPORT_FILE' | translate}}</a>
-<a class="ui primary button field" ng-click="$ctrl.exportLink()">{{'EXPORT_LINK' | translate}}</a>
+<a class="ui primary button field" ng-click="$ctrl.exportLink()" sm-modal-show="'.layout-export-link-modal'">{{'EXPORT_LINK' | translate}}</a>
 <layout-import-modal></layout-import-modal>
+<layout-export-link-modal></layout-export-link-modal>

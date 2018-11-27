@@ -21,7 +21,7 @@ component('viewMode', {
     menu.activeLink = 'view';
     this.LayoutService = LayoutService;
 
-    if (!LayoutService.layouts[0].categories || !LayoutService.layouts[0].categories.length) {
+    if (LayoutService.layouts.length < 2 && (!LayoutService.layouts[0].categories || !LayoutService.layouts[0].categories.length)) {
       $location.path( "/edit" );
     }
 
