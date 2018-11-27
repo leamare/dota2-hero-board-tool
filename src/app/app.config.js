@@ -34,7 +34,7 @@ config(['$locationProvider', '$routeProvider', '$translateProvider', '$sceProvid
          when('/edit-:layout', {
            template: '<edit-mode></edit-mode>'
          }).
-         when('/import-:layout', {
+         when('/import', {
            template: '<import-link></import-link>'
          }).
          when('/about', {

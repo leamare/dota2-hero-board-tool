@@ -75,8 +75,8 @@ function layoutsManager(LayoutService, $rootScope, $translate, $routeParams, $lo
   this.exportLink = () => {
     let target = LayoutService.wrapCurrentLayout();
     target.active = undefined;
-    target = LayoutService.getExportString(target);
-    prompt('Export Link', `${window.location.protocol}//${window.location.hostname}${window.location.port ? ':'+window.location.port : ''}${globalPrefix}import-${target}`)
+    target = Base64Encode( LayoutService.getExportString(target) );
+    prompt('Export Link', `${window.location.protocol}//${window.location.hostname}${window.location.port ? ':'+window.location.port : ''}${globalPrefix}import?l=${target}`)
   };
 
   this.apply(this.applied, true);

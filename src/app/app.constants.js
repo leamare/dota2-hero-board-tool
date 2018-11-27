@@ -1,6 +1,22 @@
 const globalPrefix = window.location.pathname.substring(0, window.location.pathname.lastIndexOf("/")+1);
 const currentVer = [1,0,1];
 
+
+/* Copied from:
+ * https://developer.mozilla.org/ru/docs/Web/API/WindowBase64/Base64_encoding_and_decoding#The_Unicode_Problem
+ * God Bless Mozilla
+ **/
+
+ function Base64Encode(str, encoding = 'utf-8') {
+     var bytes = new (TextEncoder || TextEncoderLite)(encoding).encode(str);
+     return base64js.fromByteArray(bytes);
+ }
+
+ function Base64Decode(str, encoding = 'utf-8') {
+     var bytes = base64js.toByteArray(str);
+     return new (TextDecoder || TextDecoderLite)(encoding).decode(bytes);
+ }
+
 String.prototype.hashCode = function() {
     var hash = 0;
     if (this.length == 0) {

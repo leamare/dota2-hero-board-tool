@@ -37,6 +37,7 @@ module.exports = {
       './node_modules/angular-dnd-module/dist/angular-dnd.min.js',
       './node_modules/semantic-ui-angular-jquery/angular-semantic-ui.min.js',
       './node_modules/angular-translate/dist/angular-translate.min.js',
+      './node_modules/base64-js/base64js.min.js'
     ],
     dest: build + 'js/',
     name: 'vendor.js'

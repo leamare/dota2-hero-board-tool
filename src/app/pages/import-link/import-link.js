@@ -11,14 +11,17 @@ component('importLink', {
   template: '',
   controller: ['LayoutService', '$routeParams', '$window',
   function importLinkController(LayoutService, $routeParams, $window) {
-    const layout = $routeParams.layout || '';
+    let layout = $routeParams.l || '';
+    console.log($routeParams.l);
+    layout = Base64Decode(layout);
     let loadId = 0;
 
     try {
-      var parsedLayout = JSON.parse(layout);
+      let parsedLayout = JSON.parse(layout);
       parsedLayout[0].active = false;
-      var search = LayoutService.hashSearchId(parsedLayout[0]);
-      if (search !== false) {
+      let search = LayoutService.hashSearchId(parsedLayout[0]);
+      console.log(search);
+      if (search !== false && search !== undefined) {
         loadId = search;
       } else {
         loadId = LayoutService.loadLayouts(layout);
@@ -26,9 +29,7 @@ component('importLink', {
       }
     } finally {
       console.log(loadId);
-      console.log(parsedLayout[0]);
-      console.log(LayoutService.layouts[2]);
-      $window.location.href = '/view-' + loadId;
+      $window.location.href = globalPrefix + 'view-' + loadId;
     }
   }
   ]
