@@ -170,3 +170,6 @@ cats-view .heroes-container.small-portraits img {
 .angular-dnd-draggable-helper {
   z-index: 1000;
 }
+body, html {
+    height: auto;
+}
