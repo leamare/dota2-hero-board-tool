@@ -1,10 +1,12 @@
 'use strict';
 
-angular.module('heroesList').service('HeroListService', ['$http', 
+angular.module('heroesList').service('HeroListService', ['$http',
   function($http) {
     this.heroes = [];
 
-    this.update = () => $http.get('https://api.steampowered.com/IEconDOTA2_570/GetHeroes/v1?key=766BB2E9B3343EF6D94851890EDADD1C&language=en').then((response) => {
+    this.update = () => //$http.get('https://api.steampowered.com/IEconDOTA2_570/GetHeroes/v1?key=766BB2E9B3343EF6D94851890EDADD1C&language=en').then((response) => {
+      // CORS for  Valve API doesn't work for some reason, going to use dump for now
+      $http.get(globalPrefix + 'data/heroes.json').then((response) => {
       this.heroes = response.data.result.heroes;
       this.heroes.map((hero) => {
         hero.name = hero.name.replace('npc_dota_hero_', '');
@@ -23,19 +25,19 @@ angular.module('heroesList').service('HeroListService', ['$http',
         });
       });
     });
-    
+
     this.get = () => {
       if (this.heroes.length) return Promise.resolve(() => this.heroes);
       return this.update();
     }
-    
+
     this.heroNameById = (id) => {
       for (let hero of this.heroes) {
         if (hero.id == id) return hero.name;
       }
       return '';
     };
-    
+
     this.portraitLinkById = (id) => {
       for (let hero of this.heroes) {
         if (hero.id == id)
@@ -44,7 +46,7 @@ angular.module('heroesList').service('HeroListService', ['$http',
       }
       return '';
     };
-    
+
     this.update();
   }
 ]);
