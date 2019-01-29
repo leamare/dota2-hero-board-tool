@@ -5,6 +5,19 @@ var src   = './src/',
 
 var modRewrite  = require('connect-modrewrite');
 
+var getEnvPostfix = () => global.production ? "min." : "";
+
+var vendorList = [
+  `./node_modules/jquery/dist/jquery.min.js`,
+  `./node_modules/semantic-ui-css/semantic.min.js`,
+  `./node_modules/angular/angular.min.js`,
+  `./node_modules/angular-route/angular-route.min.js`,
+  `./node_modules/angular-dnd-module/dist/angular-dnd.min.js`,
+  `./node_modules/semantic-ui-angular-jquery/angular-semantic-ui.min.js`,
+  `./node_modules/angular-translate/dist/angular-translate.min.js`,
+  `./node_modules/base64-js/base64js.min.js`
+];
+
 module.exports = {
   clean: {
     src: [build+'**/*', '!'+build+'app/**']
@@ -19,8 +32,6 @@ module.exports = {
     ],
     dest: build + 'css/',
     name: 'bundle.min.css',
-    // cssnano compress
-    // See: http://cssnano.co/optimisations/
     cssnano: {
       zindex: false
     }
@@ -28,17 +39,12 @@ module.exports = {
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+  createVendorList: () => vendorList.map((currVal, index, array) => {
+    return currVal.replace('min.', getEnvPostfix());
+  }),
+
   vendor: {
-    src: [
-      './node_modules/jquery/dist/jquery.min.js',
-      './node_modules/semantic-ui-css/semantic.min.js',
-      './node_modules/angular/angular.min.js',
-      './node_modules/angular-route/angular-route.min.js',
-      './node_modules/angular-dnd-module/dist/angular-dnd.min.js',
-      './node_modules/semantic-ui-angular-jquery/angular-semantic-ui.min.js',
-      './node_modules/angular-translate/dist/angular-translate.min.js',
-      './node_modules/base64-js/base64js.min.js'
-    ],
+    src: [],
     dest: build + 'js/',
     name: 'vendor.js'
   },
