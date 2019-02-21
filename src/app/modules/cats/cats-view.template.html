@@ -1,10 +1,10 @@
 <div class="stackable celled divided grid cats ui"
       ng-class="{'center aligned':$ctrl.centeredView}">
-  <div class="ui column vertical segment {{cat.mark}}" ng-repeat="cat in $ctrl.cats.cats"
+  <div class="ui column vertical segment darker {{cat.mark}}" ng-repeat="cat in $ctrl.cats.cats"
       ng-class="$ctrl.wideCat(cat.id)"
     >
-    <div class="ui top attached label"
-        ng-class="{'big':$ctrl.columns !== 'six','large': $ctrl.columns === 'six' }"
+    <div class="ui label {{cat.mark}}"
+        ng-class="{'big':$ctrl.columns !== 'six','large': $ctrl.columns === 'six', 'ribbon':!$ctrl.centeredView }"
     >
       {{$ctrl.cats.getLabel(cat.id);}}
     </div>

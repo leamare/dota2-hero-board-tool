@@ -104,8 +104,11 @@ cats .heroes-container.small-portraits img {
   width: 3.2vmax;
 }
 
-cats-view .cats .ui.column {
-  padding-top: 2em !important;
+cats-view .ui.segment {
+  background-color:
+}
+cats-view .ui.label, cats-view .ui.label.ribbon {
+  margin-bottom: 0.75em;
 }
 cats-view .heroes-container img {
   width: 5.5vmax;
@@ -172,4 +175,55 @@ cats-view .heroes-container.small-portraits img {
 }
 body, html {
     height: auto;
+}
+
+
+.cats .ui.segment.darker.red {
+  background-color: #b21e1e!important;
+}
+.cats .ui.segment.darker.orange {
+  background-color: #cf590c!important;
+}
+.cats .ui.segment.darker.yellow {
+  background-color: #cd9903!important;
+}
+.cats .ui.segment.darker.olive {
+  background-color: #98ac0b!important;
+}
+.cats .ui.segment.darker.green {
+  background-color: #198f35!important;
+}
+.cats .ui.segment.darker.teal {
+  background-color: #00827c!important;
+}
+.cats .ui.segment.darker.blue {
+  background-color: #1a69a4!important;
+}
+.cats .ui.segment.darker.violet {
+  background-color: #502aa1!important;
+}
+.cats .ui.segment.darker.purple {
+  background-color: #82299f!important;
+}
+.cats .ui.segment.darker.pink {
+  background-color: #c71f7e!important;
+}
+.cats .ui.segment.darker.brown {
+  background-color: #805031!important;
+}
+.cats .ui.segment.darker.grey {
+  background-color: #606060!important;
+}
+.cats .ui.segment.darker.black {
+  background-color: #2a2a2a!important;
+}
+
+.ui.olive.ribbon.label {
+    border-color: #98ac0b!important;
+}
+.ui.grey.ribbon.label {
+    border-color: #606060!important;
+}
+.ui.black.ribbon.label {
+    border-color: #2a2a2a!important;
 }
