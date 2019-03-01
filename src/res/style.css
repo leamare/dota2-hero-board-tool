@@ -214,16 +214,16 @@ body, html {
 .cats .ui.segment.darker.grey {
   background-color: #606060!important;
 }
-.cats .ui.segment.darker.black {
-  background-color: #2a2a2a!important;
-}
 
 .ui.olive.ribbon.label {
-    border-color: #98ac0b!important;
+  border-color: #98ac0b!important;
 }
 .ui.grey.ribbon.label {
-    border-color: #606060!important;
+  border-color: #606060!important;
 }
 .ui.black.ribbon.label {
-    border-color: #2a2a2a!important;
+  border-color: #000!important;
+}
+.ui.black.label {
+  background-color: #323232!important;
 }

@@ -13,6 +13,8 @@
   "COLUMNS": "Columns",
   "SET_BIGCAT": "First category is always big",
   "SET_CENTER": "Center aligned",
+  "SET_DARKENED_BG": "Darkened backgrounds",
+  "SET_COLORFUL_LABELS": "Colorful labels",
 
   "OK": "OK",
   "DONE": "Done",

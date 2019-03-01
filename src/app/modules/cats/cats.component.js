@@ -12,6 +12,12 @@ function CatsController(CatsService, HeroListService, $rootScope, $translate) {
   if (this.centeredView === undefined)
     this.centeredView = localStorage.settingsCenteredView == 'true';
 
+  if (this.darkenedBg === undefined)
+    this.darkenedBg = localStorage.settingsDarkenedBg == 'true';
+
+  if (this.colorfulLabels === undefined)
+    this.colorfulLabels = localStorage.settingsColorfulLabels == 'true';
+
   this.columns = $rootScope.columns;
   $rootScope.$watch('columns', (newValue, oldValue) => {
     $('.cats').removeClass(this.columns).removeClass('column');
@@ -39,6 +45,14 @@ function CatsController(CatsService, HeroListService, $rootScope, $translate) {
 
   this.rscope.$watch('centeredView', (newValue, oldValue) => {
     this.centeredView = newValue;
+  });
+
+  this.rscope.$watch('darkenedBg', (newValue, oldValue) => {
+    this.darkenedBg = newValue;
+  });
+
+  this.rscope.$watch('colorfulLabels', (newValue, oldValue) => {
+    this.colorfulLabels = newValue;
   });
 
   this.wideCat = (id) => {

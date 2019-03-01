@@ -25,7 +25,6 @@ component('viewSettings', {
       this.setColumns( localStorage.settingsColumns );
 
     this.rscope.forcedBig = localStorage.settingsForcedBig == 'true';
-
     $rootScope.$watch('forcedBig', (newValue, oldValue) => {
       $('.settings .toggle.forced-big').checkbox('set ' + (newValue ? '' : 'un') + 'checked');
       localStorage.settingsForcedBig = newValue;
@@ -34,10 +33,21 @@ component('viewSettings', {
     });
 
     this.rscope.centeredView = localStorage.settingsCenteredView == 'true';
-
     $rootScope.$watch('centeredView', (newValue, oldValue) => {
       $('.settings .toggle.centered-view').checkbox('set ' + (newValue ? '' : 'un') + 'checked');
       localStorage.settingsCenteredView = newValue;
+    });
+
+    this.rscope.darkenedBg = localStorage.settingsDarkenedBg == 'true';
+    $rootScope.$watch('darkenedBg', (newValue, oldValue) => {
+      $('.settings .toggle.darkened-bg').checkbox('set ' + (newValue ? '' : 'un') + 'checked');
+      localStorage.settingsDarkenedBg = newValue;
+    });
+
+    this.rscope.colorfulLabels = localStorage.settingsColorfulLabels == 'true';
+    $rootScope.$watch('colorfulLabels', (newValue, oldValue) => {
+      $('.settings .toggle.colorful-labels').checkbox('set ' + (newValue ? '' : 'un') + 'checked');
+      localStorage.settingsColorfulLabels = newValue;
     });
   }
   ]
