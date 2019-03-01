@@ -1,8 +1,9 @@
 <div class="stackable divided grid cats ui" dnd-container ng-class="{'center aligned':$ctrl.centeredView}">
-  <div class="ui column vertical segment {{cat.mark}}" ng-repeat="cat in $ctrl.cats.cats"
-      ng-class="$ctrl.wideCat(cat.id)"
+  <div class="ui column vertical segment {{cat.mark}} {{$ctrl.wideCat(cat.id)}}"
+      ng-repeat="cat in $ctrl.cats.cats"
+      ng-class="{'darker': $ctrl.darkenedBg}"
     >
-    <div class="ui top attached label"
+    <div class="ui top attached label {{$ctrl.colorfulLabels ? cat.mark : ''}}"
           ng-class="{'big':$ctrl.columns !== 'six','large': $ctrl.columns === 'six' }"
           dnd-droppable
           dnd-droppable-opts="{layer:'heroes'}"
@@ -10,7 +11,7 @@
           dnd-on-drop="$ctrl.cats.addElement(cat.id, $dragmodel)"
     >
       {{$ctrl.cats.getLabel(cat.id);}}
-      <a class="detail">
+      <div class="detail">
         <a class="" ng-click="$ctrl.showCatSettingsModal(cat.id)" sm-modal-show="'.cat-modal'" dnd-draggable="false">
           <i class="cog icon"></i>
         </a>
@@ -23,7 +24,7 @@
         <a class="" ng-click="$ctrl.cats.remove(cat.id)" dnd-draggable="false">
           <i class="delete icon"></i>
         </a>
-      </a>
+      </div>
     </div>
     <div class="ui images heroes-container"
           ng-class="{'small-portraits': !$ctrl.biggerCat(cat.id)}"

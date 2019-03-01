@@ -76,6 +76,21 @@ edit-mode cats .small-portraits .ui.image .ui.corner.label:after {
   border-bottom-width: 1.8vmax;
 }
 
+edit-mode .detail {
+  font-size: .95em;
+  letter-spacing: -.25em;
+}
+edit-mode .detail i.icon {
+  width: 1em;
+}
+edit-mode .detail a {
+  opacity: .6;
+  color: inherit !important;
+}
+edit-mode .detail a:hover {
+  opacity: 1;
+}
+
 .heroes-container.small-portraits {
   min-height: 30px;
 }

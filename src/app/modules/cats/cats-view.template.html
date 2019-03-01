@@ -1,6 +1,7 @@
 <div class="stackable celled divided grid cats ui"
       ng-class="{'center aligned':$ctrl.centeredView}">
-  <div class="ui column vertical segment {{cat.mark}} {{$ctrl.wideCat(cat.id)}}" ng-repeat="cat in $ctrl.cats.cats"
+  <div class="ui column vertical segment {{cat.mark}} {{$ctrl.wideCat(cat.id)}}"
+      ng-repeat="cat in $ctrl.cats.cats"
       ng-class="{'darker': $ctrl.darkenedBg}"
     >
     <div class="ui label {{$ctrl.colorfulLabels ? cat.mark : ''}}"
