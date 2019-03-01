@@ -1,25 +1,26 @@
-<div class="ui stackable internally celled grid">
-  <div class="one wide column"></div>
-  <cats class="ten wide column"></cats>
+<div class="ui stackable internally centered grid">
+  <cats class="eleven wide column"></cats>
   <div class="four wide column sidebar-editor">
-    <div class="ui tabular menu">
-      <div class="item active" data-tab="main-tab">{{'LAYOUTS' | translate}}</div>
-      <div class="item" data-tab="settings">{{'SETTINGS' | translate}}</div>
-      <div class="item" data-tab="herolist">{{'HEROES_LIST' | translate}}</div>
-    </div>
-    <div class="ui tab active" data-tab="main-tab">
-      <layouts-manager></layouts-manager>
-    </div>
-    <div class="ui tab" data-tab="settings">
-      <view-settings class="ui segment settings form"></view-settings>
-    </div>
-    <div class="ui tab" data-tab="herolist">
-      <heroes-list class="heroes-list"></heroes-list>
+    <div id="stickySidebarSettings" class="ui sticky">
+      <div class="ui tabular secondary menu">
+        <div class="item active" data-tab="main-tab">{{'LAYOUTS' | translate}}</div>
+        <div class="item" data-tab="settings">{{'SETTINGS' | translate}}</div>
+        <div class="item" data-tab="herolist">{{'HEROES_LIST' | translate}}</div>
+      </div>
+      <div class="ui tab active" data-tab="main-tab">
+        <layouts-manager></layouts-manager>
+      </div>
+      <div class="ui tab" data-tab="settings">
+        <view-settings class="ui segment settings form"></view-settings>
+      </div>
+      <div class="ui tab" data-tab="herolist">
+        <heroes-list class="heroes-list"></heroes-list>
+      </div>
     </div>
   </div>
-  <div class="one wide column"></div>
 </div>
 
 <script>
   $('.tabular.menu .item').tab();
+  $('#stickySidebarSettings').sticky();
 </script>
