@@ -1,7 +1,7 @@
 <div class="ui stackable internally centered grid">
   <cats class="eleven wide column"></cats>
   <div class="four wide column sidebar-editor">
-    <div id="stickySidebarSettings" class="ui sticky">
+    <div id="stickySidebarSettings" class="ui fixed top sticky">
       <div class="ui tabular secondary menu">
         <div class="item active" data-tab="main-tab">{{'LAYOUTS' | translate}}</div>
         <div class="item" data-tab="settings">{{'SETTINGS' | translate}}</div>
@@ -22,5 +22,10 @@
 
 <script>
   $('.tabular.menu .item').tab();
-  $('#stickySidebarSettings').sticky();
+  $('#stickySidebarSettings').sticky({
+    className: {
+      bound: 'fixed',
+      bottom: 'top'
+    }
+  });
 </script>
