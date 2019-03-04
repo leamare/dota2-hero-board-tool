@@ -1,7 +1,6 @@
 'use strict';
 
 var gulp        = require('gulp'),
-    runSequence = require('run-sequence'),
     plumber     = require('gulp-plumber'),
     rev         = require('gulp-rev'),
     revReplace  = require('gulp-rev-replace'),

@@ -236,9 +236,7 @@ body, html {
 .ui.grey.ribbon.label {
   border-color: #606060!important;
 }
-.ui.black.ribbon.label {
+.ui.black.ribbon.label, .ui.top.attached.black.label {
   border-color: #000!important;
-}
-.ui.black.label {
   background-color: #323232!important;
 }
