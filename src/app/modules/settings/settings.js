@@ -38,12 +38,14 @@ component('viewSettings', {
       localStorage.settingsCenteredView = newValue;
     });
 
+    if (localStorage.settingsDarkenedBg === undefined) localStorage.settingsDarkenedBg = 'true';
     this.rscope.darkenedBg = localStorage.settingsDarkenedBg == 'true';
     $rootScope.$watch('darkenedBg', (newValue, oldValue) => {
       $('.settings .toggle.darkened-bg').checkbox('set ' + (newValue ? '' : 'un') + 'checked');
       localStorage.settingsDarkenedBg = newValue;
     });
 
+    if (localStorage.settingsColorfulLabels === undefined) localStorage.settingsColorfulLabels = 'true';
     this.rscope.colorfulLabels = localStorage.settingsColorfulLabels == 'true';
     $rootScope.$watch('colorfulLabels', (newValue, oldValue) => {
       $('.settings .toggle.colorful-labels').checkbox('set ' + (newValue ? '' : 'un') + 'checked');

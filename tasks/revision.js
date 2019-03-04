@@ -34,10 +34,9 @@ gulp.task('revision-rename', function() {
 
 
 // Start revision task
-gulp.task('revision', function(cb) {
-    runSequence(
+gulp.task('revision', (cb) => {
+    gulp.series(
         'revision-assets',
-        'revision-rename',
-        cb
-    );
+        'revision-rename'
+    )(cb);
 });

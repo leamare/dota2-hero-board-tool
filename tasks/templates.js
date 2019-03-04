@@ -5,6 +5,7 @@ var gulp     = require('gulp'),
     gulpif   = require('gulp-if'),
     rename   = require('gulp-rename'),
     htmlmin  = require('gulp-htmlmin'),
+    browserSync = require('browser-sync'),
     config   = require('../gulpconfig').templates;
 
 
@@ -18,3 +19,5 @@ gulp.task('templates', function() {
         .pipe(rename({extname: '.html'}))
         .pipe(gulp.dest(config.dest));
 });
+
+gulp.task('watch-templates', gulp.parallel('templates'), browserSync.reload);

@@ -8,15 +8,16 @@ var modRewrite  = require('connect-modrewrite');
 var getEnvPostfix = () => global.production ? "min." : "";
 
 var vendorList = [
-  `./node_modules/jquery/dist/jquery.min.js`,
-  `./node_modules/semantic-ui-css/semantic.min.js`,
-  `./node_modules/angular/angular.min.js`,
-  `./node_modules/angular-route/angular-route.min.js`,
-  `./node_modules/angular-dnd-module/dist/angular-dnd.min.js`,
-  `./node_modules/semantic-ui-angular-jquery/angular-semantic-ui.min.js`,
-  `./node_modules/angular-translate/dist/angular-translate.min.js`,
+  `./node_modules/jquery/dist/jquery.%PF.js`,
+  `./node_modules/fomantic-ui-css/semantic.%PF.js`,
+  `./node_modules/angular/angular.%PF.js`,
+  `./node_modules/angular-route/angular-route.%PF.js`,
+  `./node_modules/angular-dnd-module/dist/angular-dnd.%PF.js`,
+  `./node_modules/semantic-ui-angular-jquery/angular-semantic-ui.%PF.js`,
+  `./node_modules/angular-translate/dist/angular-translate.%PF.js`,
   `./node_modules/base64-js/base64js.min.js`
 ];
+
 
 module.exports = {
   clean: {
@@ -27,7 +28,7 @@ module.exports = {
 
   styles: {
     src: [
-      './node_modules/semantic-ui-css/semantic.min.css',
+      './node_modules/fomantic-ui-css/semantic.min.css',
       src + 'res/*.css'
     ],
     dest: build + 'css/',
@@ -40,7 +41,7 @@ module.exports = {
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   createVendorList: () => vendorList.map((currVal, index, array) => {
-    return currVal.replace('min.', getEnvPostfix());
+    return currVal.replace('%PF.', getEnvPostfix());
   }),
 
   vendor: {
@@ -87,7 +88,7 @@ module.exports = {
   images: {
     src: [
       src + 'res/**/*.{png,jpg,gif,svg}',
-      './node_modules/semantic-ui-css/themes/default/assets/images/*.*'
+      './node_modules/fomantic-ui-css/themes/default/assets/images/*.*'
     ],
     dest: build + 'res/'
   },
@@ -119,7 +120,7 @@ module.exports = {
     {
       src: [
         src + 'fonts/**/*.{woff2,woff,ttf}',
-        './node_modules/semantic-ui-css/themes/default/assets/fonts/*.{woff2,woff,ttf}',
+        './node_modules/fomantic-ui-css/themes/default/assets/fonts/*.{woff2,woff,ttf}',
       ],
       dest: build + 'res/fonts/'
     },
@@ -184,7 +185,7 @@ module.exports = {
       ],
       images: src + [
         src + 'res/**/*.{png,jpg,gif,svg}',
-        './node_modules/semantic-ui-css/themes/default/assets/images/*.*'
+        './node_modules/fomantic-ui-css/themes/default/assets/images/*.*'
       ],
       copy: [
         src + 'index.html',

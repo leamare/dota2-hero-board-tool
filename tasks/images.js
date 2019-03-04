@@ -5,6 +5,7 @@ var gulp     = require('gulp'),
     gulpif   = require('gulp-if'),
     imagemin = require('gulp-imagemin'),
     pngquant = require('imagemin-pngquant'),
+    browserSync = require('browser-sync'),
     config   = require('../gulpconfig').images;
 
 
@@ -24,3 +25,5 @@ gulp.task('images', function() {
         )
         .pipe(gulp.dest(config.dest));
 });
+
+gulp.task('watch-images', gulp.parallel('images'), browserSync.reload);

@@ -6,6 +6,7 @@ var gulp       = require('gulp'),
     concat     = require('gulp-concat'),
     minify     = require('gulp-minify'),
     sourcemaps = require('gulp-sourcemaps'),
+    browserSync = require('browser-sync'),
     config     = require('../gulpconfig').scripts;
 
 
@@ -24,3 +25,5 @@ gulp.task('scripts', function() {
     )
     .pipe(gulp.dest(config.dest));
 });
+
+gulp.task('watch-scripts', gulp.parallel('scripts'), browserSync.reload);
