@@ -9,8 +9,9 @@ var gulp     = require('gulp'),
     config   = require('../gulpconfig').images;
 
 
-gulp.task('images', function() {
-    return gulp.src(config.src)
+gulp.task('images', function(cb) {
+  config.forEach(function(config) {
+    gulp.src(config.src)
         .pipe(plumber())
         .pipe(
           // If not production -> Iamges minification
@@ -24,6 +25,9 @@ gulp.task('images', function() {
           )
         )
         .pipe(gulp.dest(config.dest));
+  });
+
+  cb();
 });
 
 gulp.task('watch-images', gulp.parallel('images'), browserSync.reload);

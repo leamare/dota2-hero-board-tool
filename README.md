@@ -12,16 +12,22 @@ It's using browser's local storage, supports file and link export/import feature
 
 ## Main Depedencies
 
-- semantic-ui-css
+- fomantic-ui-css
 - gulp
 - angularjs
 - browser-sync
+
+## Configuration
+
+Copy `config.example.json` to `config.json` and put your Steam API Key here. That's about it.
 
 ## Gulp commands
 
 - `build` - build the app
 - `watch` - launch development server and watch mode
 - `prod` - build the app for production (using minification)
+- `dota-heroes` - get heroes metadata
+- `dota-portraits` - load hero portraits (requires dota-heroes result)
 
 Supporting commands:
 

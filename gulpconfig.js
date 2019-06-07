@@ -5,6 +5,8 @@ var src   = './src/',
 
 var modRewrite  = require('connect-modrewrite');
 
+var config      = require('./config');
+
 var getEnvPostfix = () => global.production ? "min." : "";
 
 var vendorList = [
@@ -20,6 +22,11 @@ var vendorList = [
 
 
 module.exports = {
+  API: {
+    key: config.steamapikey,
+    heroLink: 'http://cdn.dota2.com/apps/dota2/images/heroes/%name%_lg.png',
+  },
+
   clean: {
     src: [build+'**/*', '!'+build+'app/**']
   },
@@ -85,13 +92,21 @@ module.exports = {
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  images: {
-    src: [
-      src + 'res/**/*.{png,jpg,gif,svg}',
-      './node_modules/fomantic-ui-css/themes/default/assets/images/*.*'
-    ],
-    dest: build + 'res/'
-  },
+  images: [
+    {
+      src: [
+        src + 'res/**/*.{png,jpg,gif,svg}',
+        './node_modules/fomantic-ui-css/themes/default/assets/images/*.*'
+      ],
+      dest: build + 'res/',
+    },
+    {
+      src: [
+        './dota/portraits/*.*',
+      ],
+      dest: build + 'res/heroes'
+    },
+  ],
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -107,6 +122,7 @@ module.exports = {
     {
       src: [
         src + 'data/*.*',
+        './dota/*.json'
       ],
       dest: build + 'data/'
     },
