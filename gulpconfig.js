@@ -5,7 +5,7 @@ var src   = './src/',
 
 var modRewrite  = require('connect-modrewrite');
 
-var config      = require('./config');
+//var config      = require('./config.json');
 
 var getEnvPostfix = () => global.production ? "min." : "";
 
@@ -23,7 +23,7 @@ var vendorList = [
 
 module.exports = {
   API: {
-    key: config.steamapikey,
+    //key: config.steamapikey,
     heroLink: 'http://cdn.dota2.com/apps/dota2/images/heroes/%name%_lg.png',
   },
 

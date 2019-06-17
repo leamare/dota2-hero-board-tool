@@ -6,11 +6,49 @@ function layoutsManager(LayoutService, $rootScope, $translate, $routeParams, $lo
   this.rscope = $rootScope;
 
   this.applied = +$routeParams.layout || LayoutService.searchId( LayoutService.loadedLayout ) || 0;
+  
+  this.lastSave
 
-  this.save = () => {
+  this.save = (dontApply) => {
     LayoutService.rewriteLayout();
     LayoutService.saveLayouts();
-    this.apply();
+    if (!dontApply) {
+      this.apply();
+    
+      $('body')
+        .toast({
+          displayTime: 'auto',
+          showProgress: 'bottom',
+          classProgress: 'blue',
+          position: 'bottom right',
+          class: 'inverted blue',
+          displayTime: 500,
+          message: $translate.instant('SAVED_SUCCESS'),
+        })
+      ;
+    }
+  };
+
+  this.autosaver = (restartFlag) => {
+    if (component === 'view') return;
+    if (restartFlag && this.saveIntervalParams) {
+      clearInterval(this.saveIntervalParams.id);
+    } else {
+      if (this.saveIntervalParams && this.saveIntervalParams.id) return;
+    }
+    this.saveIntervalParams = {
+      createdFrom: $location.path()
+    };
+    this.saveIntervalParams.id = setInterval(() => {
+      let currentLoc = $location.path(); 
+      if (currentLoc !== this.saveIntervalParams.createdFrom) {
+        console.log('cancelled');
+        clearInterval(this.saveIntervalParams.id);
+      } else {
+        console.log('autosaving from '+this.saveIntervalParams.id);
+        this.save(true);
+      }
+    }, 5000);
   };
 
   this.rscope.$watch('checkFirstCat', (newValue) => {
@@ -18,6 +56,9 @@ function layoutsManager(LayoutService, $rootScope, $translate, $routeParams, $lo
   });
 
   this.apply = (id, silent) => {
+    //this.save(true);
+    this.autosaver(true);
+
     if (!silent && id !== undefined && this.applied !== null && this.applied != id) {
       let target = LayoutService.wrapCurrentLayout();
       let target_hash = LayoutService.getExportString(target).hashCode();
