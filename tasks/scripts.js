@@ -7,16 +7,23 @@ var gulp       = require('gulp'),
     minify     = require('gulp-minify'),
     sourcemaps = require('gulp-sourcemaps'),
     browserSync = require('browser-sync'),
+    inject     = require('gulp-inject-string'),
     config     = require('../gulpconfig').scripts;
 
 
 gulp.task('scripts', function() {
+  let constList = '';
+  for (let key in config.buildConfig) {
+    constList += `const __${key}__ = '${config.buildConfig[key]}'; \n`;
+  }
+
   return gulp.src(config.src)
     .pipe(plumber())
     .pipe(
       gulpif( ! global.production, sourcemaps.init())
     )
     .pipe(concat(config.name)) // Concat all files
+    .pipe(inject.prepend(constList))
     .pipe(
       gulpif( ! global.production, sourcemaps.write('./'))
     )
