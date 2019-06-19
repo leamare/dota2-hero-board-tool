@@ -6,7 +6,7 @@ angular.module('heroesList').service('HeroListService', ['$http',
 
     this.update = () => //$http.get('https://api.steampowered.com/IEconDOTA2_570/GetHeroes/v1?key=766BB2E9B3343EF6D94851890EDADD1C&language=en').then((response) => {
       // CORS for  Valve API doesn't work for some reason, going to use dump for now
-      $http.get(globalPrefix + 'data/heroes.json').then((response) => {
+      $http.get(__metadataProvider__).then((response) => {
       this.heroes = response.data.result.heroes;
       this.heroes.map((hero) => {
         hero.name = hero.name.replace('npc_dota_hero_', '');

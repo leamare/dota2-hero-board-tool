@@ -42,13 +42,11 @@ function layoutsManager(LayoutService, $rootScope, $translate, $routeParams, $lo
     this.saveIntervalParams.id = setInterval(() => {
       let currentLoc = $location.path(); 
       if (currentLoc !== this.saveIntervalParams.createdFrom) {
-        console.log('cancelled');
         clearInterval(this.saveIntervalParams.id);
       } else {
-        console.log('autosaving from '+this.saveIntervalParams.id);
         this.save(true);
       }
-    }, 5000);
+    }, 2500);
   };
 
   this.rscope.$watch('checkFirstCat', (newValue) => {
