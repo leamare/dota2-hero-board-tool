@@ -19,7 +19,7 @@ component('viewSettings', {
       $rootScope.columns = id;
       localStorage.settingsColumns = id;
     }
-    if (localStorage.settingsColumns === undefined)
+    if (!localStorage.settingsColumns)
       localStorage.settingsColumns = 'three';
     else
       this.setColumns( localStorage.settingsColumns );

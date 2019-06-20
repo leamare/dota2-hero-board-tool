@@ -19,6 +19,9 @@ function CatsController(CatsService, HeroListService, $rootScope, $translate) {
     this.colorfulLabels = localStorage.settingsColorfulLabels == 'true';
 
   this.columns = $rootScope.columns;
+  if (!this.columns) {
+    $rootScope.columns = 'three';
+  }
   $rootScope.$watch('columns', (newValue, oldValue) => {
     $('.cats').removeClass(this.columns).removeClass('column');
     this.columns = newValue;

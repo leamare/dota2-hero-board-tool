@@ -1,3 +1,5 @@
 {
-  "steamapikey": "YOUR STEAM API KEY"
+  "metadataProvider": "http://api.steampowered.com/IEconDOTA2_570/GetHeroes/v1?language=en&key=YOUR_API_KEY",
+  "metadataLink": "data/heroes.json",
+  "heroLink": "http://cdn.dota2.com/apps/dota2/images/heroes/%name%_lg.png"
 }
