@@ -151,7 +151,7 @@ angular.module('layout')
             return this.layouts.push(data);
           }
 
-          this.rewriteLayout = (index) => {
+          this.rewriteLayout = (index, apply = true) => {
             if (index === undefined) {
               index = this.layouts.indexOf( this.loadedLayout );
             } else if (!this.isLayout(index))
@@ -161,7 +161,8 @@ angular.module('layout')
 
             this.loadedLayout = layout;
             this.layouts[index] = layout;
-            this.applyLayout(index);
+            if (apply)
+              this.applyLayout(index);
           };
 
           this.applyLayout = async (index) => {

@@ -10,7 +10,7 @@ function layoutsManager(LayoutService, $rootScope, $translate, $routeParams, $lo
   this.lastSave
 
   this.save = (dontApply) => {
-    LayoutService.rewriteLayout();
+    LayoutService.rewriteLayout(undefined, !dontApply);
     LayoutService.saveLayouts();
     if (!dontApply) {
       this.apply();
@@ -22,7 +22,7 @@ function layoutsManager(LayoutService, $rootScope, $translate, $routeParams, $lo
           classProgress: 'blue',
           position: 'bottom right',
           class: 'inverted blue',
-          displayTime: 500,
+          displayTime: 1500,
           message: $translate.instant('SAVED_SUCCESS'),
         })
       ;
@@ -46,7 +46,7 @@ function layoutsManager(LayoutService, $rootScope, $translate, $routeParams, $lo
       } else {
         this.save(true);
       }
-    }, 2500);
+    }, 5000);
   };
 
   this.rscope.$watch('checkFirstCat', (newValue) => {
