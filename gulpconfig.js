@@ -1,15 +1,17 @@
 'use strict';
 
-var src   = './src/',
+const src   = './src/',
     build = './build/';
 
-var modRewrite  = require('connect-modrewrite');
+const __BUILDID__ = (+new Date).toString(36);
 
-var buildConfig = require('./config.json');
+const modRewrite  = require('connect-modrewrite');
 
-var getEnvPostfix = () => global.production ? "min." : "";
+const buildConfig = require('./config.json');
 
-var vendorList = [
+const getEnvPostfix = () => global.production ? "min." : "";
+
+const vendorList = [
   `./node_modules/jquery/dist/jquery.%PF.js`,
   `./node_modules/fomantic-ui-css/semantic.%PF.js`,
   `./node_modules/angular/angular.%PF.js`,
@@ -58,7 +60,8 @@ module.exports = {
 
   scripts: {
     buildConfig: {
-      metadataProvider: buildConfig.metadataLink
+      metadataProvider: buildConfig.metadataLink,
+      buildId: __BUILDID__,
     },
     src: [
       src + 'app/app.constants.js',

@@ -15,7 +15,7 @@ angular.module('viewMode', [
 angular.
 module('viewMode').
 component('viewMode', {
-  templateUrl: globalPrefix + 'templates/view-mode/view-mode.template.html',
+  templateUrl: globalPrefix + 'templates/view-mode/view-mode.template.html?v=' + __BUILDID__,
   controller: ['MenuService', 'LayoutService', '$rootScope', '$location',
   function viewMode(menu, LayoutService, $rootScope, $location) {
     menu.activeLink = 'view';

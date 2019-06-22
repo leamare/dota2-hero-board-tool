@@ -128,7 +128,7 @@ function layoutsManager(LayoutService, $rootScope, $translate, $routeParams, $lo
 angular.
 module('layout').
 component('layoutsManager', {
-  templateUrl: globalPrefix + 'templates/layout-loader/layouts.template.html',
+  templateUrl: globalPrefix + 'templates/layout-loader/layouts.template.html?v=' + __BUILDID__,
   controller: ['LayoutService', '$rootScope', '$translate', '$routeParams', '$location',
     layoutsManager
   ]
@@ -138,7 +138,7 @@ component('layoutsManager', {
 angular.
 module('layout').
 component('layoutsView', {
-  templateUrl: globalPrefix + 'templates/layout-loader/layouts-view.template.html',
+  templateUrl: globalPrefix + 'templates/layout-loader/layouts-view.template.html?v=' + __BUILDID__,
   controller: ['LayoutService', '$rootScope', '$translate', '$routeParams', '$location',
     layoutsManager
   ]

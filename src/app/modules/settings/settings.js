@@ -8,7 +8,7 @@ angular.module('settings', [
 angular.
 module('settings').
 component('viewSettings', {
-  templateUrl: globalPrefix + 'templates/settings/settings-main.template.html',
+  templateUrl: globalPrefix + 'templates/settings/settings-main.template.html?v=' + __BUILDID__,
   controller: ['$rootScope',
   function viewSettings($rootScope) {
     this.rscope = $rootScope;

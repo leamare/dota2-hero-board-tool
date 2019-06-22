@@ -15,7 +15,7 @@ angular.module('editMode', [
 angular.
 module('editMode').
 component('editMode', {
-  templateUrl: globalPrefix + 'templates/edit-mode/edit-mode.template.html',
+  templateUrl: globalPrefix + 'templates/edit-mode/edit-mode.template.html?v=' + __BUILDID__,
   controller: ['MenuService', '$rootScope',
   function editMode(menu, $rootScope) {
     menu.activeLink = 'edit';

@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('heroesList').component('heroesList', {
-  templateUrl: globalPrefix + 'templates/heroes-list/heroes-list.template.html',
+  templateUrl: globalPrefix + 'templates/heroes-list/heroes-list.template.html?v=' + __BUILDID__,
   controller: ['$http', 'HeroListService',  
     function HeroesListController($http, HeroListService) {
       this.HeroListService = HeroListService;
@@ -17,7 +17,7 @@ angular.module('heroesList').component('heroesList', {
 });
 
 angular.module('heroesList').component('heroesListModal', {
-  templateUrl: globalPrefix + 'templates/heroes-list/heroes-list-modal.template.html',
+  templateUrl: globalPrefix + 'templates/heroes-list/heroes-list-modal.template.html?v=' + __BUILDID__,
   controller: ['$http', 'HeroListService', 'CatsService', 
     function HeroesListController($http, HeroListService, CatsService) {
       this.CatsService = CatsService;

@@ -8,7 +8,7 @@ angular.module('changelog', [
 angular.
 module('changelog').
 component('changelog', {
-  templateUrl: globalPrefix + 'templates/changelog/changelog.template.html',
+  templateUrl: globalPrefix + 'templates/changelog/changelog.template.html?v=' + __BUILDID__,
   controller: ['MenuService', '$rootScope',
   function changelogController(menu, $rootScope) {
     menu.activeLink = 'changelog';

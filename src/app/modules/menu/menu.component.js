@@ -3,7 +3,7 @@
 angular.
 module('menu').
 component('topmenu', {
-  templateUrl: globalPrefix + 'templates/menu/menu.template.html',
+  templateUrl: globalPrefix + 'templates/menu/menu.template.html?v=' + __BUILDID__,
   controller: ['MenuService', '$translate',
   function layoutsManager(MenuService, $translate) {
     this.MenuService = MenuService;

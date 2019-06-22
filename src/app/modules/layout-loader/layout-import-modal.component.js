@@ -3,7 +3,7 @@
 angular.
 module('layout').
 component('layoutImportModal', {
-  templateUrl: globalPrefix + 'templates/layout-loader/layout-import-modal.template.html',
+  templateUrl: globalPrefix + 'templates/layout-loader/layout-import-modal.template.html?v=' + __BUILDID__,
   controller: ['LayoutService', '$rootScope', '$q', 
   function layoutImportModal(LayoutService, $scope, $q) {
     this.layoutsRewrite = false;

@@ -9,7 +9,7 @@ angular.module('about', [
 angular.
 module('about').
 component('about', {
-  templateUrl: globalPrefix + 'templates/about/about.template.html',
+  templateUrl: globalPrefix + 'templates/about/about.template.html?v=' + __BUILDID__,
   controller: ['MenuService', '$rootScope',
   function aboutController(menu, $rootScope) {
     menu.activeLink = 'about';
