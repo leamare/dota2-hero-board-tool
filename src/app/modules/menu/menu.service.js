@@ -22,7 +22,7 @@ service('MenuService', [
       //{ title: 'GitHub', link: '#', icon:'github' },
       { title: '', link: 'changelog', icon: 'newspaper' },
       { title: '', link: 'https://github.com/leamare/dota2-hero-board-tool', icon: 'github' },
-      { title: 'Spectral Alliance', link: 'https://spectralalliance.ru/' }
+      { title: 'Spectral', link: 'https://spectral.gg/' }
     ];
   }
 ]);
