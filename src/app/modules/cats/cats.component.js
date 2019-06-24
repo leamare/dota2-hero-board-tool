@@ -97,7 +97,7 @@ function CatsController(CatsService, HeroListService, $rootScope, $translate) {
 angular.
 module('cats').
 component('cats', {
-  templateUrl: globalPrefix + 'templates/cats/cats.template.html?v=' + __BUILDID__,
+  templateUrl: globalPrefix + 'templates/cats/cats.template.html?v=' + __buildId__,
   controller: ['CatsService', 'HeroListService', '$rootScope', '$translate',
     CatsController
   ]
@@ -106,7 +106,7 @@ component('cats', {
 angular.
 module('cats').
 component('catsView', {
-  templateUrl: globalPrefix + 'templates/cats/cats-view.template.html?v=' + __BUILDID__,
+  templateUrl: globalPrefix + 'templates/cats/cats-view.template.html?v=' + __buildId__,
   controller: ['CatsService', 'HeroListService', '$rootScope',
     CatsController
   ]

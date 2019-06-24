@@ -175,9 +175,7 @@ module.exports = {
       server: {
         baseDir: build,
         middleware: [
-            modRewrite([
-                '!\\.\\w+$ /index.html [L]'
-            ])
+          modRewrite(['^([^.]+)$ /index.html [L]'])
         ]
       },
     },
