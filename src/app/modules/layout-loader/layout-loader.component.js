@@ -7,8 +7,6 @@ function layoutsManager(LayoutService, $rootScope, $translate, $routeParams, $lo
 
   this.applied = +$routeParams.layout || LayoutService.searchId( LayoutService.loadedLayout ) || 0;
   
-  this.lastSave
-
   this.save = (dontApply) => {
     LayoutService.rewriteLayout(undefined, !dontApply);
     LayoutService.saveLayouts();
@@ -30,7 +28,7 @@ function layoutsManager(LayoutService, $rootScope, $translate, $routeParams, $lo
   };
 
   this.autosaver = (restartFlag) => {
-    if (component === 'view') return;
+    if (component === 'view' || !this.autoSave) return;
     if (restartFlag && this.saveIntervalParams) {
       clearInterval(this.saveIntervalParams.id);
     } else {
@@ -51,6 +49,10 @@ function layoutsManager(LayoutService, $rootScope, $translate, $routeParams, $lo
 
   this.rscope.$watch('checkFirstCat', (newValue) => {
     this.checkFirstCat = newValue;
+  });
+
+  this.rscope.$watch('autoSave', (newValue) => {
+    this.autoSave = newValue;
   });
 
   this.apply = (id, silent) => {

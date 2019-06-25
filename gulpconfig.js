@@ -141,7 +141,8 @@ module.exports = {
         src + 'fonts/**/*.{woff2,woff,ttf}',
         './node_modules/fomantic-ui-css/themes/default/assets/fonts/*.{woff2,woff,ttf}',
       ],
-      dest: build + 'res/fonts/'
+      dest: build + 'res/fonts/',
+      binary: true
     },
   ],
 

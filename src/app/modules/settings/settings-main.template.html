@@ -10,6 +10,13 @@
 </div>
 <div class="field">
   <sm-checkbox
+    class="toggle auto-save"
+    model="$ctrl.rscope.autoSave"
+    label="{{'SET_AUTOSAVE' | translate}}"
+  ></sm-checkbox>
+</div>
+<div class="field">
+  <sm-checkbox
     class="toggle forced-big"
     model="$ctrl.rscope.forcedBig"
     label="{{'SET_BIGCAT' | translate}}"

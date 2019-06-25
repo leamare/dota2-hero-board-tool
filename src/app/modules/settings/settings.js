@@ -24,6 +24,13 @@ component('viewSettings', {
     else
       this.setColumns( localStorage.settingsColumns );
 
+    if (localStorage.settingsAutoSave === undefined) localStorage.settingsAutoSave = 'true';
+    this.rscope.autoSave = localStorage.settingsAutoSave == 'true';
+    $rootScope.$watch('autoSave', (newValue, oldValue) => {
+      $('.settings .toggle.auto-save').checkbox('set ' + (newValue ? '' : 'un') + 'checked');
+      localStorage.settingsAutoSave = newValue;
+    });
+
     this.rscope.forcedBig = localStorage.settingsForcedBig == 'true';
     $rootScope.$watch('forcedBig', (newValue, oldValue) => {
       $('.settings .toggle.forced-big').checkbox('set ' + (newValue ? '' : 'un') + 'checked');
