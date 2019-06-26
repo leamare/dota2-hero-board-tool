@@ -11,6 +11,7 @@
   "SETTINGS": "Settings",
 
   "COLUMNS": "Columns",
+  "SET_AUTOSAVE": "Save every 5 seconds",
   "SET_BIGCAT": "First category is always big",
   "SET_CENTER": "Center aligned",
   "SET_DARKENED_BG": "Darkened backgrounds",
@@ -127,5 +128,6 @@
 
   "PROMPT_UNSAFE": "Are you sure? This action cannot be undone.",
   "PROMPT_UNSAVED": "Are you sure? All unsaved changes will be lost.",
-  "PROMPT_UNSAVED_2": "You have unsaved changes. Save them?"
+  "PROMPT_UNSAVED_2": "You have unsaved changes. Save them?",
+  "SAVED_SUCCESS": "Saved!"
 }
