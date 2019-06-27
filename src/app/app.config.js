@@ -14,8 +14,8 @@ config(['$locationProvider', '$routeProvider', '$translateProvider', '$sceProvid
            );
          }
 
-         $translateProvider.fallbackLanguage('en')
-          .preferredLanguage(localStorage.lang || 'en')
+         $translateProvider.fallbackLanguage('en-US')
+          .preferredLanguage(localStorage.lang || navigator.language || 'ru-RU')
           .useSanitizeValueStrategy('sce');
 
          $routeProvider.
