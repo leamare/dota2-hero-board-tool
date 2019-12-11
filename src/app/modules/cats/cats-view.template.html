@@ -6,6 +6,7 @@
     >
     <div class="ui label {{$ctrl.colorfulLabels ? cat.mark : ''}}"
         ng-class="{'big':$ctrl.columns !== 'six','large': $ctrl.columns === 'six', 'ribbon':!$ctrl.centeredView }"
+        ng-if="cat.name !== ''"
     >
       {{$ctrl.cats.getLabel(cat.id);}}
     </div>
