@@ -31,6 +31,16 @@ component('viewSettings', {
       localStorage.settingsAutoSave = newValue;
     });
 
+    $rootScope.$watch('darkTheme', (newValue, oldValue) => {
+      $('.settings .toggle.dark-theme').checkbox('set ' + (newValue ? '' : 'un') + 'checked');
+      localStorage.settingsDarkTheme = newValue;
+      if (newValue)
+        $('body').addClass('dark');
+      else 
+        $('body').removeClass('dark');
+    });
+    this.rscope.darkTheme = localStorage.settingsDarkTheme == 'true';
+
     this.rscope.forcedBig = localStorage.settingsForcedBig == 'true';
     $rootScope.$watch('forcedBig', (newValue, oldValue) => {
       $('.settings .toggle.forced-big').checkbox('set ' + (newValue ? '' : 'un') + 'checked');

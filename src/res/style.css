@@ -2,6 +2,21 @@ body {
   font-size: 18px;
 }
 
+/* dark theme */
+
+.dark {
+  filter: invert(1) hue-rotate(180deg);
+  background-color: #000;
+}
+.dark .button {
+  font-weight: 400;
+}
+.dark img {
+  filter: invert(1) hue-rotate(180deg);
+}
+
+/* */
+
 .sidebar-editor {
   padding-top: 0 !important;
 }
