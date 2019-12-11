@@ -1,6 +1,6 @@
 {
-  "LOCALE_en": "English",
-  "LOCALE_ru": "Русский",
+  "LOCALE_en-US": "English",
+  "LOCALE_ru-RU": "Русский",
 
   "APP_NAME": "Hero Board",
   "VIEW": "View Layouts",

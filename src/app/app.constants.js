@@ -1,5 +1,5 @@
 const globalPrefix = window.location.pathname.substring(0, window.location.pathname.lastIndexOf("/")+1);
-const currentVer = [1,0,1];
+const currentVer = [1,2,1];
 
 
 /* Copied from:
@@ -30,7 +30,7 @@ String.prototype.hashCode = function() {
     return hash;
 }
 
-const LOAD_LOCALES = ['en', 'ru'];
+const LOAD_LOCALES = ['en-US', 'ru-RU'];
 
 const PRESET_NAMES = [
   { value: 1, label: 'PN_1_EMPTY' },
