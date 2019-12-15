@@ -71,7 +71,7 @@ function CatsController(CatsService, HeroListService, $rootScope, $translate) {
   this.biggerCat = (id) => this.cats.cats[id].bigger || id == 0 && this.forcedBig;
 
   this.delAnimation = (id, index) => {
-    this.cats.removeElement(id, index)
+    this.cats.removeElement(id, +index)
   };
 
   this.showAddHeroModal = (id) => {

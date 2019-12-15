@@ -36,12 +36,12 @@
           dnd-on-drop="$ctrl.cats.addElement(cat.id, $dragmodel)"
         >
       <div class="ui rounded image"
-            ng-repeat="hero in cat.heroes"
+            ng-repeat="hero in cat.heroes track by $index"
             ng-hide="deleted"
             dnd-sortable
             dnd-on-sortend="$ctrl.cats.updateHeroIds(cat.id)"
           >
-        <a class="ui right corner mini black label" ng-click="deleted=true; $ctrl.delAnimation(cat.id, hero.id)" >
+        <a class="ui right corner mini black label" ng-click="$ctrl.delAnimation(cat.id, hero.id, $index, hero)" >
           <i class="delete icon" dnd-lasso-area="false" dnd-draggable="false"></i>
         </a>
         <img ng-src="{{$ctrl.herolist.portraitLinkById(hero.value)}}" ng-model="hero" />

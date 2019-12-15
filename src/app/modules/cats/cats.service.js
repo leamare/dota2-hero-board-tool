@@ -24,7 +24,7 @@ angular.module('cats').service('CatsService', ['$q', '$translate',
     this.updateHeroIds = (id) => {
       return this.isCat(id)
         .then(() => {
-          this.cats[id].heroes = this.cats[id].heroes.map((value, index, array) => {
+          this.cats[id].heroes.map((value, index, array) => {
             value.id = index;
             return value;
           });
