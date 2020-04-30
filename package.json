@@ -38,7 +38,7 @@
     "gulp-sourcemaps": "^2.6.4",
     "gulp-uglify": "^3.0.1",
     "imagemin-pngquant": "^6.0.0",
-    "jquery": "^3.4.1",
+    "jquery": "^3.5.0",
     "merge-stream": "^1.0.1",
     "require-dir": "^1.1.0",
     "run-sequence": "^2.2.1",
