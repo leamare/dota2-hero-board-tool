@@ -148,7 +148,7 @@ angular.module('layout')
             if (data === undefined)
               data = this.emptyLayout();
 
-            return this.layouts.push(data);
+            return this.layouts.push(data)-1;
           }
 
           this.rewriteLayout = (index, apply = true) => {

@@ -68,7 +68,10 @@ function layoutsManager(LayoutService, $rootScope, $translate, $routeParams, $lo
 
     if (id === undefined) {
       id == LayoutService.searchId( LayoutService.loadedLayout );
-    } else if (id > 0) {
+    }
+    if (id > 0) {
+      if (id > LayoutService.layouts.length-1) 
+        id = LayoutService.layouts.length-1;
       $location.path(`/${component}-${id}`);
     } else {
       $location.path(`/${component}`);
