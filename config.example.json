@@ -1,5 +1,5 @@
 {
-  "metadataProvider": "http://api.steampowered.com/IEconDOTA2_570/GetHeroes/v1?language=en&key=YOUR_API_KEY",
-  "metadataLink": "data/heroes.json",
-  "heroLink": "http://cdn.dota2.com/apps/dota2/images/heroes/%name%_lg.png"
+  "metadataProvider": "https://stats.spectral.gg/lrg2/api/?mod=metadata&gets=heroes&legacyh",
+  "metadataLink": "https://stats.spectral.gg/lrg2/api/?mod=metadata&gets=heroes&legacyh",
+  "heroLink": "https://courier.spectral.gg/images/dota/portraits_lg/%name%.png"
 }
