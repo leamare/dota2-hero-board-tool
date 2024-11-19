@@ -73,7 +73,6 @@ module.exports = {
       src + 'app/modules/**/*.js',
       src + 'app/app.config.js',
       src + 'app/pages/**/*.js',
-      src + 'app/dark-fomantic-ui.js',
     ],
     dest: build + 'js/',
     name: 'bundle.js'
