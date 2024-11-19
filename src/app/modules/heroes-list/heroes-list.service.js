@@ -42,7 +42,9 @@ angular.module('heroesList').service('HeroListService', ['$http',
       for (let hero of this.heroes) {
         if (hero.id == id)
           //return `http://cdn.dota2.com/apps/dota2/images/heroes/${hero.name}_lg.png`;
-          return globalPrefix+`res/heroes/${hero.name}.png`;
+          return id ? 
+            __heroLink__.replace('%name%', hero.name) :
+            globalPrefix+`res/heroes/${hero.name}.png`;
       }
       return '';
     };

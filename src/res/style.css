@@ -42,7 +42,7 @@ view-settings {
   overflow-y: scroll;
 }
 
-.heroes-list img {
+.heroes-list img, .angular-dnd-draggable-helper img {
   width: 5vmax;
   height: auto;
   transition: all 200ms ease;
@@ -134,9 +134,9 @@ cats .heroes-container.small-portraits img {
   width: 3.2vmax;
 }
 
-cats-view .ui.segment {
+/* cats-view .ui.segment {
   background-color:
-}
+} */
 cats-view .ui.label, cats-view .ui.label.ribbon {
   margin-bottom: 0.75em;
 }

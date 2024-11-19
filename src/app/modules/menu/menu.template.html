@@ -16,6 +16,9 @@
       >{{'LOCALE_'+locale | translate}}</div>
     </div>
   </div>
+  <div class="item icon" id="light-theme">
+    <i class="sun icon"></i>
+  </div>
   <a class="item" ng-href="{{item.link}}" ng-repeat="item in $ctrl.MenuService.rightMenu" ng-class="{'icon': item.title == ''}">
     <i class="{{item.icon}} icon" ng-if="item.icon !== undefined"></i>
     {{item.title | translate}}
