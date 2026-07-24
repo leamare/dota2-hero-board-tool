@@ -1,6 +1,6 @@
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import type { Board, Category } from '../../types/board';
-import { categoryBasis, effectiveStyle } from '../../lib/board';
+import { categoryBasis } from '../../lib/board';
 import { colorIndex, LABEL_COLORS } from '../../lib/constants';
 import CategoryLabel from './CategoryLabel';
 import ElementPortrait from './ElementPortrait';
@@ -8,9 +8,10 @@ import ElementPortrait from './ElementPortrait';
 interface Props {
   category: Category;
   board: Board;
-  /** optional controls rendered in the header (edit mode) */
+  /** when inside a connected group the card takes full width of its column */
+  grouped?: boolean;
   headerControls?: ReactNode;
-  /** optional per-element overlay (edit mode) */
+  dragHandle?: ReactNode;
   renderElementOverlay?: (index: number) => ReactNode;
   bodyExtra?: ReactNode;
 }
@@ -18,47 +19,53 @@ interface Props {
 const isEmptyLabel = (c: Category): boolean =>
   c.name.type === 'text' && !c.name.text?.trim();
 
+const HEADER_SIZE_CLASS = ['hs-small', 'hs-normal', 'hs-large'];
+
 export default function CategoryCard({
   category,
   board,
+  grouped,
   headerControls,
+  dragHandle,
   renderElementOverlay,
   bodyExtra,
 }: Props) {
-  const basis = categoryBasis(category, board);
   const hasColor = board.colorfulLabels && !!category.color;
   const colorVar = hasColor
     ? `var(--label-${LABEL_COLORS[colorIndex(category.color)].key})`
     : undefined;
 
+  const style: CSSProperties = {
+    ...(grouped ? {} : { '--cat-basis': `calc(${categoryBasis(category, board)}% - var(--grid-gap))` }),
+    ...(colorVar ? { '--cat-color': colorVar } : {}),
+  } as CSSProperties;
+
   return (
     <div
       className={[
         'category',
-        category.bigger ? 'bigger' : '',
+        grouped ? 'grouped' : '',
         hasColor ? 'has-color' : '',
+        HEADER_SIZE_CLASS[category.headerSize ?? 1],
+        category.separatorRight ? 'sep-right' : '',
       ]
         .filter(Boolean)
         .join(' ')}
-      style={
-        {
-          '--cat-basis': `calc(${basis}% - var(--grid-gap))`,
-          ...(colorVar ? { '--cat-color': colorVar } : {}),
-        } as React.CSSProperties
-      }
+      style={style}
     >
       <div className="cat-head">
+        {dragHandle}
         <span className={`cat-title${isEmptyLabel(category) ? ' empty' : ''}`}>
           {isEmptyLabel(category) ? 'Untitled' : <CategoryLabel name={category.name} />}
         </span>
         {headerControls}
       </div>
 
-      <div className={`cat-body${category.elements.length ? '' : ' empty'}`}>
+      <div className={`cat-body${category.elements.length || bodyExtra ? '' : ' empty'}`}>
         {category.elements.length === 0 && !bodyExtra && <span>empty</span>}
         {category.elements.map((el, i) => (
           <div className="portrait-slot" key={i}>
-            <ElementPortrait element={el} styleId={effectiveStyle(el, category, board)} />
+            <ElementPortrait element={el} category={category} board={board} />
             {renderElementOverlay?.(i)}
           </div>
         ))}
