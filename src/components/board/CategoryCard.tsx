@@ -18,7 +18,7 @@ interface Props {
 }
 
 const isEmptyLabel = (c: Category): boolean =>
-  c.name.type === 'text' && !c.name.text?.trim();
+  c.preset === undefined && !c.text?.trim() && !c.icon;
 
 const HEADER_SIZE_CLASS = ['hs-small', 'hs-normal', 'hs-large', 'hs-huge'];
 
@@ -58,7 +58,7 @@ export default function CategoryCard({
       <div className="cat-head">
         {dragHandle}
         <span className={`cat-title${isEmptyLabel(category) ? ' empty' : ''}`}>
-          {isEmptyLabel(category) ? 'Untitled' : <CategoryLabel name={category.name} />}
+          {isEmptyLabel(category) ? 'Untitled' : <CategoryLabel category={category} />}
         </span>
         {headerControls}
       </div>

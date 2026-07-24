@@ -16,7 +16,8 @@ const sample: Board = {
   categories: [
     {
       id: 'x1',
-      name: { type: 'preset', preset: 2 },
+      preset: 2,
+      icon: { kind: 'facet', folder: 'facets', tag: 'mana' },
       color: 'green',
       wideness: 2,
       headerSize: 2,
@@ -35,7 +36,8 @@ const sample: Board = {
     },
     {
       id: 'x2',
-      name: { type: 'hero', refId: 8, alticon: 'alt', iconType: 2 },
+      text: 'Supports',
+      icon: { kind: 'hero', refId: 8, alticon: 'alt', iconType: 2 },
       color: '',
       wideness: 0,
       headerSize: 1,
@@ -51,6 +53,9 @@ const sample: Board = {
 const normalize = (b: Board) => ({
   ...b,
   categories: b.categories.map(({ id: _id, ...c }) => ({
+    text: undefined,
+    preset: undefined,
+    icon: undefined,
     headerSize: 1,
     portraitType: undefined,
     itemStyle: undefined,

@@ -190,7 +190,7 @@ export const useBoardStore = create<BoardStore>()(
     }),
     {
       name: 'hgt.board',
-      version: 3,
+      version: 4,
       migrate: (persisted, from) => {
         const state = persisted as { board?: Record<string, unknown> };
         if (!state?.board) return persisted as unknown as { board: Board };
@@ -231,6 +231,27 @@ export const useBoardStore = create<BoardStore>()(
               c.linkOrient = 'v';
             }
             delete c.connectedNext;
+          }
+        }
+
+        // v3 -> v4: category.name -> text/preset + icon
+        if (from < 4) {
+          for (const c of (b.categories ?? []) as Record<string, unknown>[]) {
+            const name = c.name as Record<string, unknown> | undefined;
+            delete c.name;
+            if (!name) continue;
+            if (name.type === 'preset') c.preset = name.preset;
+            else if (name.type === 'text') c.text = name.text ?? '';
+            else if (name.type === 'hero' || name.type === 'item') {
+              c.icon = {
+                kind: name.type,
+                refId: name.refId,
+                iconType: name.iconType,
+                alticon: name.alticon,
+              };
+            } else if (name.type === 'icon') {
+              c.icon = { kind: 'facet', folder: name.iconFolder, tag: name.iconTag };
+            }
           }
         }
 

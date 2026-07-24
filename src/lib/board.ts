@@ -20,11 +20,17 @@ export const genId = (): string =>
 export function newCategory(): Category {
   return {
     id: genId(),
-    name: { type: 'text', text: '' },
+    text: '',
     color: '',
     wideness: 0,
     elements: [],
   };
+}
+
+/** Resolve a category's textual label (preset overrides free text). */
+export function categoryText(category: Category, presetLabel: (v: number) => string): string {
+  if (category.preset !== undefined) return presetLabel(category.preset);
+  return category.text ?? '';
 }
 
 export function emptyBoard(name = 'New Grid'): Board {

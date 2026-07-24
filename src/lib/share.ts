@@ -1,44 +1,35 @@
-import type {
-  Board,
-  Category,
-  CategoryName,
-  CategoryNameType,
-  GridElement,
-} from '../types/board';
+import type { Board, Category, CategoryIcon, GridElement } from '../types/board';
 import { emptyBoard, genId } from './board';
 import { ByteReader, ByteWriter, fromBase64Url, toBase64Url } from './bytes';
+import type { CategoryIconKind } from '../types/board';
 import type { ElementKind } from './images';
 
-const SHARE_VERSION = 3;
+const SHARE_VERSION = 4;
 
-const NAME_TYPE_CODE: Record<CategoryNameType, number> = {
-  text: 0,
-  preset: 1,
-  hero: 2,
-  item: 3,
-  icon: 4,
-};
-const NAME_TYPE_BY_CODE: CategoryNameType[] = ['text', 'preset', 'hero', 'item', 'icon'];
 const KIND_CODE: Record<ElementKind, number> = { hero: 0, item: 1, empty: 2, custom: 3 };
 const KIND_BY_CODE: ElementKind[] = ['hero', 'item', 'empty', 'custom'];
+const ICON_KIND_CODE: Record<CategoryIconKind, number> = { hero: 0, item: 1, facet: 2, custom: 3 };
+const ICON_KIND_BY_CODE: CategoryIconKind[] = ['hero', 'item', 'facet', 'custom'];
 
 // board flag bits
 const B_COLORFUL = 1;
 const B_CENTERED = 2;
 const B_DARKENED = 4;
 
-// name flag bits (hero/item labels)
-const N_ALTICON = 1;
-const N_ICON_TYPE = 2;
+// icon flag bits
+const I_ALTICON = 1;
+const I_ICON_TYPE = 2;
 
 // category flag bits
-const C_LINK = 1;
-const C_SEP_AFTER = 2;
-const C_SEP_RIGHT = 4;
-const C_NEWROW = 8;
-const C_PORTRAIT = 16;
-const C_ITEMSTYLE = 32;
-const C_SIZE = 64;
+const C_PRESET = 1;
+const C_ICON = 2;
+const C_LINK = 4;
+const C_SEP_AFTER = 8;
+const C_SEP_RIGHT = 16;
+const C_NEWROW = 32;
+const C_PORTRAIT = 64;
+const C_ITEMSTYLE = 128;
+const C_SIZE = 256;
 
 // element flag bits (kind in low 2 bits)
 const E_KIND_MASK = 3;
@@ -61,31 +52,26 @@ function encodeElement(w: ByteWriter, el: GridElement): void {
   if (el.alticon) w.string(el.alticon);
 }
 
-function encodeName(w: ByteWriter, name: CategoryName): void {
-  w.u8(NAME_TYPE_CODE[name.type]);
-  if (name.type === 'text') w.string(name.text ?? '');
-  else if (name.type === 'preset') w.varint(name.preset ?? 0);
-  else if (name.type === 'icon') {
-    w.string(name.iconFolder ?? '');
-    w.string(name.iconTag ?? '');
-  } else {
-    w.varint(name.refId ?? 0);
+function encodeIcon(w: ByteWriter, icon: CategoryIcon): void {
+  w.u8(ICON_KIND_CODE[icon.kind]);
+  if (icon.kind === 'hero' || icon.kind === 'item') {
+    w.varint(icon.refId ?? 0);
     let nf = 0;
-    if (name.alticon) nf |= N_ALTICON;
-    if (name.iconType !== undefined) nf |= N_ICON_TYPE;
+    if (icon.alticon) nf |= I_ALTICON;
+    if (icon.iconType !== undefined) nf |= I_ICON_TYPE;
     w.u8(nf);
-    if (name.alticon) w.string(name.alticon);
-    if (name.iconType !== undefined) w.u8(name.iconType);
+    if (icon.alticon) w.string(icon.alticon);
+    if (icon.iconType !== undefined) w.u8(icon.iconType);
+  } else {
+    w.string(icon.folder ?? '');
+    w.string(icon.tag ?? '');
   }
 }
 
 function encodeCategory(w: ByteWriter, c: Category, groupIndex: Map<string, number>): void {
-  encodeName(w, c.name);
-  w.u8(colorIndexOf(c.color));
-  w.u8(c.wideness);
-  w.u8(c.headerSize ?? 1);
-
   let flags = 0;
+  if (c.preset !== undefined) flags |= C_PRESET;
+  if (c.icon) flags |= C_ICON;
   if (c.linkGroup) flags |= C_LINK;
   if (c.separatorAfter) flags |= C_SEP_AFTER;
   if (c.separatorRight) flags |= C_SEP_RIGHT;
@@ -93,7 +79,15 @@ function encodeCategory(w: ByteWriter, c: Category, groupIndex: Map<string, numb
   if (c.portraitType !== undefined) flags |= C_PORTRAIT;
   if (c.itemStyle !== undefined) flags |= C_ITEMSTYLE;
   if (c.size !== undefined) flags |= C_SIZE;
-  w.u8(flags);
+  w.varint(flags);
+
+  if (c.preset !== undefined) w.varint(c.preset);
+  else w.string(c.text ?? '');
+  if (c.icon) encodeIcon(w, c.icon);
+
+  w.u8(colorIndexOf(c.color));
+  w.u8(c.wideness);
+  w.u8(c.headerSize ?? 1);
   if (c.linkGroup) {
     w.varint(groupIndex.get(c.linkGroup) ?? 0);
     w.u8(c.linkOrient === 'h' ? 1 : 0);
@@ -145,59 +139,44 @@ function decodeElement(r: ByteReader): GridElement {
   return el;
 }
 
-function decodeName(r: ByteReader): CategoryName {
-  const type = NAME_TYPE_BY_CODE[r.u8()] ?? 'text';
-  const name: CategoryName = { type };
-  if (type === 'text') name.text = r.string();
-  else if (type === 'preset') name.preset = r.varint();
-  else if (type === 'icon') {
-    name.iconFolder = r.string();
-    name.iconTag = r.string();
-  } else {
-    name.refId = r.varint();
+function decodeIcon(r: ByteReader): CategoryIcon {
+  const kind = ICON_KIND_BY_CODE[r.u8()] ?? 'facet';
+  if (kind === 'hero' || kind === 'item') {
+    const refId = r.varint();
     const nf = r.u8();
-    if (nf & N_ALTICON) name.alticon = r.string();
-    if (nf & N_ICON_TYPE) name.iconType = r.u8();
+    const icon: CategoryIcon = { kind, refId };
+    if (nf & I_ALTICON) icon.alticon = r.string();
+    if (nf & I_ICON_TYPE) icon.iconType = r.u8();
+    return icon;
   }
-  return name;
+  return { kind, folder: r.string(), tag: r.string() };
 }
 
 function decodeCategory(r: ByteReader): Category {
-  const name = decodeName(r);
-  const color = colorKeyOf(r.u8());
-  const wideness = r.u8();
-  const headerSize = r.u8();
-  const flags = r.u8();
-  let linkGroup: string | undefined;
-  let linkOrient: 'v' | 'h' | undefined;
+  const flags = r.varint();
+
+  const cat: Category = { id: genId(), color: '', wideness: 0, elements: [] };
+  if (flags & C_PRESET) cat.preset = r.varint();
+  else cat.text = r.string();
+  if (flags & C_ICON) cat.icon = decodeIcon(r);
+
+  cat.color = colorKeyOf(r.u8());
+  cat.wideness = r.u8();
+  cat.headerSize = r.u8();
   if (flags & C_LINK) {
-    linkGroup = `g${r.varint()}`;
-    linkOrient = r.u8() === 1 ? 'h' : 'v';
+    cat.linkGroup = `g${r.varint()}`;
+    cat.linkOrient = r.u8() === 1 ? 'h' : 'v';
   }
-  const portraitType = flags & C_PORTRAIT ? r.u8() : undefined;
-  const itemStyleOv = flags & C_ITEMSTYLE ? r.u8() : undefined;
-  const size = flags & C_SIZE ? r.u8() : undefined;
+  if (flags & C_PORTRAIT) cat.portraitType = r.u8();
+  if (flags & C_ITEMSTYLE) cat.itemStyle = r.u8();
+  if (flags & C_SIZE) cat.size = r.u8();
 
   const count = r.varint();
-  const elements: GridElement[] = [];
-  for (let i = 0; i < count; i++) elements.push(decodeElement(r));
-
-  return {
-    id: genId(),
-    name,
-    color,
-    wideness,
-    headerSize,
-    portraitType,
-    itemStyle: itemStyleOv,
-    size,
-    linkGroup,
-    linkOrient,
-    separatorAfter: !!(flags & C_SEP_AFTER),
-    separatorRight: !!(flags & C_SEP_RIGHT),
-    newRow: !!(flags & C_NEWROW),
-    elements,
-  };
+  for (let i = 0; i < count; i++) cat.elements.push(decodeElement(r));
+  cat.separatorAfter = !!(flags & C_SEP_AFTER);
+  cat.separatorRight = !!(flags & C_SEP_RIGHT);
+  cat.newRow = !!(flags & C_NEWROW);
+  return cat;
 }
 
 /** Decode a share string back into a board. Throws on malformed input. */

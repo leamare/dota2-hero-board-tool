@@ -1,56 +1,53 @@
 import { heroImageUrl, imageUrl, itemImageUrl } from '../../lib/images';
 import { presetLabel } from '../../lib/constants';
-import type { CategoryName } from '../../types/board';
+import type { Category, CategoryIcon } from '../../types/board';
 import { useMetadata } from '../../state/MetadataProvider';
 
-/** Renders a category header label according to its name type. */
-export default function CategoryLabel({ name }: { name: CategoryName }) {
+function IconImg({ icon }: { icon: CategoryIcon }) {
   const meta = useMetadata();
-
-  switch (name.type) {
-    case 'preset':
-      return <span>{presetLabel(name.preset ?? 0)}</span>;
-
+  switch (icon.kind) {
     case 'hero': {
-      const hero = name.refId != null ? meta?.heroById.get(name.refId) : undefined;
-      if (!hero) return <span className="empty-label">?</span>;
+      const hero = icon.refId != null ? meta?.heroById.get(icon.refId) : undefined;
+      if (!hero) return null;
       return (
         <img
           className="cat-title-icon"
-          src={heroImageUrl(name.iconType ?? 2, hero.tag, name.alticon)}
+          src={heroImageUrl(icon.iconType ?? 2, hero.tag, icon.alticon)}
           alt={hero.name}
           title={hero.name}
         />
       );
     }
-
     case 'item': {
-      const item = name.refId != null ? meta?.itemById.get(name.refId) : undefined;
-      if (!item) return <span className="empty-label">?</span>;
+      const item = icon.refId != null ? meta?.itemById.get(icon.refId) : undefined;
+      if (!item) return null;
+      return (
+        <img className="cat-title-icon contain" src={itemImageUrl(0, item.tag)} alt={item.name} title={item.name} />
+      );
+    }
+    case 'facet':
+    case 'custom':
+      if (!icon.folder || !icon.tag) return null;
       return (
         <img
           className="cat-title-icon contain"
-          src={itemImageUrl(0, item.tag)}
-          alt={item.name}
-          title={item.name}
+          src={imageUrl(icon.folder, icon.tag)}
+          alt={icon.tag}
+          title={icon.tag}
         />
       );
-    }
-
-    case 'icon': {
-      if (!name.iconFolder || !name.iconTag) return <span className="empty-label">?</span>;
-      return (
-        <img
-          className="cat-title-icon contain"
-          src={imageUrl(name.iconFolder, name.iconTag)}
-          alt={name.iconTag}
-          title={name.iconTag}
-        />
-      );
-    }
-
-    case 'text':
     default:
-      return <span>{name.text}</span>;
+      return null;
   }
+}
+
+/** Renders a category header: optional icon then the text/preset label. */
+export default function CategoryLabel({ category }: { category: Category }) {
+  const text = category.preset !== undefined ? presetLabel(category.preset) : category.text ?? '';
+  return (
+    <>
+      {category.icon && <IconImg icon={category.icon} />}
+      {text && <span className="cat-title-text">{text}</span>}
+    </>
+  );
 }

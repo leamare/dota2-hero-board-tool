@@ -5,7 +5,7 @@ import { useBoardStore } from '../../state/boardStore';
 import { LABEL_COLORS, PRESET_NAMES, WIDENESS } from '../../lib/constants';
 import { ITEM_STYLES, PORTRAIT_TYPES, SIZES } from '../../lib/images';
 import { useMetadata } from '../../state/MetadataProvider';
-import type { CategoryName } from '../../types/board';
+import type { CategoryIcon } from '../../types/board';
 
 interface Props {
   categoryId: string | null;
@@ -26,55 +26,41 @@ export default function CategorySettingsModal({ categoryId, onClose }: Props) {
   const [iconPicker, setIconPicker] = useState(false);
 
   if (!category) return null;
-  const name = category.name;
-  const isIcon = name.type === 'hero' || name.type === 'item' || name.type === 'icon';
-  const isRefIcon = name.type === 'hero' || name.type === 'item';
-  const currentMode: 'text' | 'preset' | 'icon' = isIcon ? 'icon' : (name.type as 'text' | 'preset');
+  const icon = category.icon;
+  const usePreset = category.preset !== undefined;
+  const patchIcon = (patch: Partial<CategoryIcon>) =>
+    icon && patchCategory(category.id, { icon: { ...icon, ...patch } });
 
-  const setMode = (mode: string) => {
-    if (mode === 'icon') setIconPicker(true);
-    else if (mode === 'preset')
-      patchCategory(category.id, { name: { type: 'preset', preset: name.preset ?? 1 } });
-    else patchCategory(category.id, { name: { type: 'text', text: name.text ?? '' } });
-  };
-
-  const patchName = (patch: Partial<CategoryName>) =>
-    patchCategory(category.id, { name: { ...name, ...patch } });
-
-  const nameHero =
-    name.type === 'hero' && name.refId != null ? meta?.heroById.get(name.refId) : undefined;
+  const iconHero =
+    icon?.kind === 'hero' && icon.refId != null ? meta?.heroById.get(icon.refId) : undefined;
 
   return (
     <>
       <Modal open onClose={onClose} title="Category settings" width="32rem">
         <div className="settings-grid">
           <div className="field">
-            <label>Label type</label>
-            <select className="select" value={currentMode} onChange={(e) => setMode(e.target.value)}>
+            <label>Label</label>
+            <select
+              className="select"
+              value={usePreset ? 'preset' : 'text'}
+              onChange={(e) =>
+                e.target.value === 'preset'
+                  ? patchCategory(category.id, { preset: category.preset ?? 1, text: undefined })
+                  : patchCategory(category.id, { preset: undefined, text: category.text ?? '' })
+              }
+            >
               <option value="text">Text</option>
               <option value="preset">Preset</option>
-              <option value="icon">Hero / item icon</option>
             </select>
           </div>
 
-          {name.type === 'text' && (
-            <div className="field">
-              <label>Label text</label>
-              <input
-                className="input"
-                value={name.text ?? ''}
-                onChange={(e) => patchName({ text: e.target.value })}
-              />
-            </div>
-          )}
-
-          {name.type === 'preset' && (
+          {usePreset ? (
             <div className="field">
               <label>Preset</label>
               <select
                 className="select"
-                value={name.preset ?? 1}
-                onChange={(e) => patchName({ preset: Number(e.target.value) })}
+                value={category.preset ?? 1}
+                onChange={(e) => patchCategory(category.id, { preset: Number(e.target.value) })}
               >
                 {PRESET_NAMES.map((p) => (
                   <option key={p.value} value={p.value}>
@@ -83,24 +69,41 @@ export default function CategorySettingsModal({ categoryId, onClose }: Props) {
                 ))}
               </select>
             </div>
-          )}
-
-          {isIcon && (
+          ) : (
             <div className="field">
-              <label>Icon</label>
-              <button className="btn" onClick={() => setIconPicker(true)}>
-                Change icon…
-              </button>
+              <label>Label text</label>
+              <input
+                className="input"
+                value={category.text ?? ''}
+                onChange={(e) => patchCategory(category.id, { text: e.target.value })}
+              />
             </div>
           )}
 
-          {isRefIcon && (
+          <div className="field">
+            <label>Icon</label>
+            <div style={{ display: 'flex', gap: '0.4rem' }}>
+              <button className="btn" onClick={() => setIconPicker(true)}>
+                {icon ? 'Change…' : 'Set icon…'}
+              </button>
+              {icon && (
+                <button
+                  className="btn danger"
+                  onClick={() => patchCategory(category.id, { icon: undefined })}
+                >
+                  Remove
+                </button>
+              )}
+            </div>
+          </div>
+
+          {(icon?.kind === 'hero' || icon?.kind === 'item') && (
             <div className="field">
               <label>Icon style</label>
               <select
                 className="select"
-                value={name.iconType ?? 2}
-                onChange={(e) => patchName({ iconType: Number(e.target.value) })}
+                value={icon.iconType ?? 2}
+                onChange={(e) => patchIcon({ iconType: Number(e.target.value) })}
               >
                 {PORTRAIT_TYPES.map((t) => (
                   <option key={t.id} value={t.id}>
@@ -111,16 +114,16 @@ export default function CategorySettingsModal({ categoryId, onClose }: Props) {
             </div>
           )}
 
-          {name.type === 'hero' && (nameHero?.alticons.length ?? 0) > 0 && (
+          {icon?.kind === 'hero' && (iconHero?.alticons.length ?? 0) > 0 && (
             <div className="field">
               <label>Icon variant</label>
               <select
                 className="select"
-                value={name.alticon ?? ''}
-                onChange={(e) => patchName({ alticon: e.target.value || null })}
+                value={icon.alticon ?? ''}
+                onChange={(e) => patchIcon({ alticon: e.target.value || null })}
               >
                 <option value="">Default</option>
-                {nameHero!.alticons.map((a) => (
+                {iconHero!.alticons.map((a) => (
                   <option key={a} value={a}>
                     {a}
                   </option>

@@ -11,31 +11,32 @@ export interface GridElement {
   alticon?: string | null;
 }
 
-export type CategoryNameType = 'text' | 'preset' | 'hero' | 'item' | 'icon';
+export type CategoryIconKind = 'hero' | 'item' | 'facet' | 'custom';
 
-/** How a category header is labelled. */
-export interface CategoryName {
-  type: CategoryNameType;
-  /** free text (type = text) */
-  text?: string;
-  /** preset label id (type = preset) */
-  preset?: number;
-  /** hero/item id shown as an icon (type = hero | item) */
+/** An optional icon shown in a category header, independent of its text label. */
+export interface CategoryIcon {
+  kind: CategoryIconKind;
+  /** hero/item id (kind = hero | item) */
   refId?: number;
-  /** alternate icon for a hero/item name icon */
-  alticon?: string | null;
-  /** portrait type used to render a hero/item name icon */
+  /** courier folder (kind = facet | custom) */
+  folder?: string;
+  /** courier tag (kind = facet | custom) */
+  tag?: string;
+  /** portrait type used to render a hero/item icon */
   iconType?: number;
-  /** courier folder for a generic icon (type = icon), e.g. "facets" */
-  iconFolder?: string;
-  /** courier tag for a generic icon (type = icon), e.g. "mana" */
-  iconTag?: string;
+  /** alternate icon for a hero icon */
+  alticon?: string | null;
 }
 
 export interface Category {
   /** stable local id for react keys and drag-and-drop */
   id: string;
-  name: CategoryName;
+  /** free-text label (used when preset is unset) */
+  text?: string;
+  /** preset label id (overrides text when set) */
+  preset?: number;
+  /** optional icon shown alongside the text label */
+  icon?: CategoryIcon;
   /** label colour key ('' = none), see LABEL_COLORS */
   color: string;
   /** width preset index, see WIDENESS */

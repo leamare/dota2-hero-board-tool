@@ -23,7 +23,7 @@ interface Props {
 export const categoryDragId = (id: string) => `cat:${id}`;
 
 const isEmptyLabel = (c: Category): boolean =>
-  c.name.type === 'text' && !c.name.text?.trim();
+  c.preset === undefined && !c.text?.trim() && !c.icon;
 
 const HEADER_SIZE_CLASS = ['hs-small', 'hs-normal', 'hs-large', 'hs-huge'];
 
@@ -80,7 +80,7 @@ export default function SortableCategory({
           ⠿
         </button>
         <span className={`cat-title${isEmptyLabel(category) ? ' empty' : ''}`}>
-          {isEmptyLabel(category) ? 'Untitled' : <CategoryLabel name={category.name} />}
+          {isEmptyLabel(category) ? 'Untitled' : <CategoryLabel category={category} />}
         </span>
         <span className="cat-controls">
           <button
