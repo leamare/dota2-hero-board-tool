@@ -1,6 +1,7 @@
 import type { ReactElement } from 'react';
 import { NavLink, Outlet, Link } from 'react-router-dom';
 import { PARENT_URL, SECTION_HOME } from '../lib/config';
+import Sidebar from './Sidebar';
 
 const MENU = [
   { to: '/view', label: 'View', icon: 'grid' },
@@ -45,6 +46,8 @@ export default function Layout() {
           </ul>
         </nav>
       </header>
+
+      <Sidebar />
 
       <main className="app-main">
         <Outlet />

@@ -98,11 +98,12 @@
   text-shadow: 0 0 0.4rem #000;
 }
 
-.board:not(.darken) .category.has-color {
-  background-color: color-mix(in srgb, var(--cat-color) 82%, #000);
+/* body keeps a colour tint in both states — darken just mixes in more black */
+.board.darken .category.has-color {
+  background-color: color-mix(in srgb, var(--cat-color) 13%, var(--cat-bg));
 }
-.board:not(.darken) .category.has-color .cat-body {
-  background-color: transparent;
+.board:not(.darken) .category.has-color {
+  background-color: color-mix(in srgb, var(--cat-color) 42%, var(--cat-bg));
 }
 
 /* vertical dashed separator overlaid on the right edge */

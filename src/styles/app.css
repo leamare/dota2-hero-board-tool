@@ -41,10 +41,10 @@ button {
   background-color: var(--header-bg);
   position: relative;
   z-index: 50;
-  height: 5rem;
+  height: 4rem;
   display: flex;
   align-items: stretch;
-  padding-left: 4.5rem; /* room for the absolute root-link */
+  padding-left: 3.5rem; /* room for the absolute root-link */
 }
 
 /* ❮ back to the parent site */
@@ -52,10 +52,10 @@ button {
   position: absolute;
   top: 0;
   left: 0;
-  width: 4.5rem;
-  height: 5rem;
-  line-height: 5rem;
-  font-size: 2rem;
+  width: 3.5rem;
+  height: 4rem;
+  line-height: 4rem;
+  font-size: 1.5rem;
   text-align: center;
   color: var(--menu-link);
   transition: all 200ms linear;
@@ -72,24 +72,26 @@ button {
 /* the logo triangle — leads to the section home (/view) */
 .app-header .gotomain {
   position: relative;
-  border-top: 5rem solid var(--big-button-color);
-  border-left: 1.35rem solid transparent;
-  border-right: 1.35rem solid transparent;
+  border-top: 4rem solid var(--big-button-color);
+  border-left: 1.1rem solid transparent;
+  border-right: 1.1rem solid transparent;
   height: 0;
-  width: 7rem;
+  width: 5.5rem;
   transition: all 300ms linear;
   flex: 0 0 auto;
 }
 .app-header .gotomain::after {
   content: '';
   position: absolute;
-  top: -5.25rem;
-  left: 0.75rem;
-  width: 5.25rem;
-  height: 5.5rem;
+  top: -3.65rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 3.3rem;
+  height: 3.3rem;
   background-image: url('/salogo.png');
   background-repeat: no-repeat;
-  background-size: cover;
+  background-position: center;
+  background-size: contain; /* logo is square — never squish it */
   transition: all 300ms ease;
 }
 .app-header .gotomain:hover {
@@ -107,11 +109,11 @@ ul.menu {
   display: flex;
   align-items: stretch;
   font-size: 0;
-  line-height: 5rem;
-  margin-left: 0.75rem;
+  line-height: 4rem;
+  margin-left: 0.5rem;
 }
 ul.menu li {
-  height: 5rem;
+  height: 4rem;
   transform: skewX(-15deg);
   transition: all 200ms linear;
   position: relative;
@@ -180,53 +182,60 @@ ul.menu li:has(> a.active):hover::after {
 }
 
 @media (max-width: 720px), (orientation: portrait) {
-  .app-header {
-    padding-left: 0;
-  }
   .app-header .root-link {
     left: auto;
     right: 0;
-    width: 3.5rem;
-  }
-  .header-links {
-    position: static;
+    width: 3rem;
   }
   .menu-toggle-button {
     display: flex;
-    flex-direction: column;
+    align-items: center;
     justify-content: center;
     position: absolute;
-    top: 1.4rem;
-    right: 4rem;
-    height: 2.2rem;
-    width: 2.2rem;
+    top: 0;
+    right: 3rem;
+    height: 4rem;
+    width: 3rem;
     z-index: 4;
     cursor: pointer;
   }
-  .menu-toggle-button .burger,
-  .menu-toggle-button::before,
-  .menu-toggle-button::after {
-    content: '';
-    display: block;
-    width: 100%;
-    height: 0.28em;
-    margin: 0.28em 0;
-    border-radius: 0.5em;
+  .menu-toggle-button .burger {
+    position: relative;
+    width: 1.5rem;
+    height: 0.16rem;
+    border-radius: 0.1rem;
     background-color: var(--menu-link);
     transition: 150ms all linear;
   }
-  .menu-toggle:checked ~ .menu-toggle-button::before {
-    transform: rotate(45deg) translateY(0.55em) translateX(0.55em);
+  .menu-toggle-button .burger::before,
+  .menu-toggle-button .burger::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 0.1rem;
+    background-color: var(--menu-link);
+    transition: 150ms all linear;
   }
-  .menu-toggle:checked ~ .menu-toggle-button::after {
-    transform: rotate(-45deg) translateY(-0.55em) translateX(-0.55em);
+  .menu-toggle-button .burger::before {
+    top: -0.48rem;
+  }
+  .menu-toggle-button .burger::after {
+    top: 0.48rem;
   }
   .menu-toggle:checked ~ .menu-toggle-button .burger {
     background-color: transparent;
   }
+  .menu-toggle:checked ~ .menu-toggle-button .burger::before {
+    transform: translateY(0.48rem) rotate(45deg);
+  }
+  .menu-toggle:checked ~ .menu-toggle-button .burger::after {
+    transform: translateY(-0.48rem) rotate(-45deg);
+  }
   ul.menu {
     position: absolute;
-    top: 5rem;
+    top: 4rem;
     left: 0;
     width: 100%;
     flex-direction: column;
@@ -253,6 +262,131 @@ ul.menu li:has(> a.active):hover::after {
   ul.menu li:has(> a.active)::before,
   ul.menu li:has(> a.active)::after {
     display: none;
+  }
+}
+
+/* ========================================== SIDEBAR */
+
+.sidebar-tab {
+  position: fixed;
+  left: 0;
+  top: 40%;
+  z-index: 70;
+  border: none;
+  background: var(--sidebar-trigger);
+  color: #000;
+  font-size: 1.2rem;
+  line-height: 1;
+  padding: 1.2rem 0.35rem;
+  border-radius: 0 0.4rem 0.4rem 0;
+  cursor: pointer;
+  opacity: 0.8;
+  transition: all 200ms ease;
+}
+.sidebar-tab:hover {
+  opacity: 1;
+}
+.sidebar-tab.open {
+  left: 22rem;
+}
+
+.sidebar {
+  position: fixed;
+  top: 4rem;
+  left: 0;
+  width: 22rem;
+  max-width: 85vw;
+  height: calc(100vh - 4rem);
+  background: var(--sidebar-widget-bg);
+  z-index: 71;
+  transform: translateX(-100%);
+  transition: transform 200ms ease;
+  overflow-y: auto;
+  box-shadow: 0.3rem 0 1rem #0007;
+  padding: 1rem;
+}
+.sidebar.open {
+  transform: translateX(0);
+}
+.sidebar-scrim {
+  position: fixed;
+  inset: 4rem 0 0 0;
+  background: #0007;
+  z-index: 70;
+}
+.sidebar-section {
+  margin-bottom: 1.5rem;
+}
+.sidebar-section h3 {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--menu-link);
+  border-bottom: 0.1rem solid var(--cat-outline);
+  padding-bottom: 0.4rem;
+  margin-bottom: 0.6rem;
+  font-weight: bold;
+}
+.sidebar-actions {
+  display: flex;
+  gap: 0.4rem;
+  margin-bottom: 0.6rem;
+}
+.sidebar-grids {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+.sidebar-grids li {
+  display: flex;
+  align-items: stretch;
+  background: var(--cat-bg);
+}
+.sidebar-grids li.active {
+  box-shadow: inset 0.2rem 0 0 var(--sidebar-trigger);
+}
+.sidebar-grid-name {
+  flex: 1;
+  text-align: left;
+  border: none;
+  background: transparent;
+  color: var(--main-text-color);
+  padding: 0.45rem 0.7rem;
+  cursor: pointer;
+  font-size: 0.95rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sidebar-grids li.active .sidebar-grid-name {
+  color: var(--menu-link-active);
+}
+.sidebar-grid-name:hover {
+  background: var(--menu-hover);
+}
+.sidebar-grid-del {
+  border: none;
+  background: transparent;
+  color: var(--menu-link);
+  cursor: pointer;
+  padding: 0 0.6rem;
+}
+.sidebar-grid-del:hover {
+  background: var(--label-red);
+  color: #fff;
+}
+.sidebar .field.row {
+  margin-bottom: 0.6rem;
+}
+.sidebar .checkbox {
+  display: flex;
+  margin-bottom: 0.5rem;
+}
+
+@media (max-width: 720px), (orientation: portrait) {
+  .sidebar-tab.open {
+    left: 85vw;
   }
 }
 
