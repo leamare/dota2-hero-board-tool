@@ -1,1 +1,165 @@
 /* base app styles — see theme.css for design tokens */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  interpolate-size: allow-keywords;
+}
+
+body {
+  background-color: var(--main-bg);
+  color: var(--main-text-color);
+  font-family: var(--font-main);
+  min-height: 100vh;
+}
+
+a {
+  color: var(--links-color);
+  text-decoration: none;
+}
+a:hover {
+  color: var(--menu-link-active);
+}
+
+button {
+  font-family: inherit;
+}
+
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* ========================================== HEADER (skewed spectral menu) */
+
+.app-header {
+  background-color: var(--header-bg);
+  display: flex;
+  align-items: stretch;
+  height: 4rem;
+  position: relative;
+  z-index: 50;
+}
+
+.app-header .brand {
+  border-top: 4rem solid var(--big-button-color);
+  border-left: 1.1rem solid transparent;
+  border-right: 1.1rem solid transparent;
+  height: 0;
+  width: 5rem;
+  transition: all 300ms linear;
+  flex: 0 0 auto;
+}
+.app-header .brand:hover {
+  border-top-color: var(--big-button-color-hover);
+}
+
+nav.app-menu {
+  list-style: none;
+  display: flex;
+  align-items: stretch;
+  font-size: 0;
+  flex: 1;
+}
+
+nav.app-menu a {
+  height: 4rem;
+  line-height: 4rem;
+  padding: 0 1.4rem;
+  font-size: 1rem;
+  text-transform: uppercase;
+  text-shadow: -1px 1px 0.5rem #000;
+  transform: skewX(-15deg);
+  transition: all 200ms linear;
+  color: var(--menu-link);
+  display: block;
+  position: relative;
+}
+nav.app-menu a > span {
+  display: inline-block;
+  transform: skewX(15deg);
+}
+nav.app-menu a:hover {
+  background-color: var(--menu-hover);
+  color: var(--menu-link-active);
+}
+nav.app-menu a.active {
+  background-color: var(--menu-selected);
+  color: var(--menu-link-active);
+  text-shadow: 0 0 0.5rem var(--menu-selected-text-shadow);
+}
+nav.app-menu a.active::before,
+nav.app-menu a.active::after {
+  content: '';
+  position: absolute;
+  width: 0.6rem;
+  height: 100%;
+  top: 0;
+  background-color: var(--menu-selected-borders);
+  transition: all 200ms linear;
+}
+nav.app-menu a.active::before {
+  right: 100%;
+}
+nav.app-menu a.active::after {
+  left: 100%;
+}
+nav.app-menu a.active:hover {
+  background-color: var(--menu-selected-hover);
+}
+
+.app-header .header-tools {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 1rem;
+  flex: 0 0 auto;
+}
+
+/* ========================================== MAIN + FOOTER */
+
+.app-main {
+  flex: 1;
+  padding: 1.25rem;
+  position: relative;
+}
+
+.app-footer {
+  background-color: var(--footer-bg);
+  color: var(--footer-color);
+  font-size: 0.8rem;
+  line-height: 2em;
+  padding: 0.25rem 1rem;
+  text-align: right;
+}
+.app-footer a {
+  color: var(--menu-link);
+}
+
+/* ========================================== TEXT PANEL */
+
+.text-panel {
+  max-width: 60rem;
+  margin: 0 auto;
+  padding: 1.5rem 2.5rem;
+  background-color: var(--text-block-bg);
+  line-height: 1.9em;
+}
+.text-panel h1 {
+  font-weight: normal;
+  font-family: sans-serif;
+  color: var(--text-block-caption-color);
+  background-color: var(--text-block-caption-bg);
+  margin: -1.5rem -2.5rem 1.5rem;
+  padding: 1rem 2.5rem;
+  font-size: 2.4rem;
+}
+.text-panel p {
+  margin-bottom: 1em;
+  text-align: justify;
+}

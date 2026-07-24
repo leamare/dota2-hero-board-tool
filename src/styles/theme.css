@@ -1,1 +1,77 @@
-/* design tokens ported from spectral-main theme */
+/*
+ * Design tokens ported from the spectral-main site theme, extended with
+ * grid / label / layout specific variables for the hero grid tool.
+ */
+
+:root {
+  /* --- base palette (spectral-main) --- */
+  --main-bg: #151529;
+  --main-text-color: #e7e7ec;
+  --header-bg: #29275d;
+  --big-button-color: #5500b3;
+  --big-button-color-hover: #b76b00;
+  --links-color: #cee5ff;
+
+  --menu-selected-text-shadow: #4b9be3;
+  --menu-selected: #3a279d;
+  --menu-selected-borders: #221953;
+  --menu-selected-hover: #4037e6;
+  --menu-selected-borders-hover: #172499;
+  --menu-hover: #201f43;
+  --menu-link-active: #fff;
+  --menu-link: #8891e8;
+
+  --sidebar-widget-bg: #0b173f;
+  --sidebar-trigger: #439ac4;
+
+  --mp-block-outline: #10154a;
+  --mp-block-bg: #03071f;
+  --mp-block-link: #bbe5ff;
+  --mp-block-link-outline: #000;
+  --mp-block-desc-bg: #0f0b35;
+  --mp-block-outline-hover: #7777ff66;
+
+  --table-hover-color: #7777ff22;
+  --text-block-bg: #191e3d;
+  --text-block-outline: #0c0916;
+  --text-block-caption-bg: #000;
+  --text-block-caption-h2-bg: #00000077;
+  --text-block-caption-h3-bg: #00000055;
+  --text-block-caption-h4-bg: #00000033;
+  --text-block-caption-h5-bg: #00000011;
+  --text-block-caption-code-bg: #00000022;
+  --text-block-caption-color: #c1d5e9;
+  --footer-color: #2c3158;
+  --footer-bg: #111120;
+
+  /* --- grid tool extensions --- */
+  --grid-gap: 0.6rem;
+  --cat-bg: #10132e;
+  --cat-outline: #1c2255;
+  --cat-outline-hover: #3a3f8a;
+  --cat-head-bg: #05081c;
+  --portrait-radius: 0.2rem;
+  --separator-color: #4b5591;
+
+  --font-main: 'Noto Sans', 'Open Sans', Tahoma, Helvetica, sans-serif;
+}
+
+/*
+ * Label / mark colors. Same names the old tool used (fomantic palette) so
+ * shared boards keep meaning, but re-tuned for the dark spectral background.
+ */
+:root {
+  --label-red: #db2828;
+  --label-orange: #f2711c;
+  --label-yellow: #e5c100;
+  --label-olive: #b5cc18;
+  --label-green: #21ba45;
+  --label-teal: #00b5ad;
+  --label-blue: #3b83f6;
+  --label-violet: #6435c9;
+  --label-purple: #a333c8;
+  --label-pink: #e03997;
+  --label-brown: #a5673f;
+  --label-grey: #767676;
+  --label-black: #1b1c1d;
+}
