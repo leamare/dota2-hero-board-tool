@@ -2,6 +2,7 @@ import { createHashRouter, RouterProvider, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
 import AboutPage from './pages/AboutPage';
 import ViewPage from './pages/ViewPage';
+import EditPage from './pages/EditPage';
 import { MetadataProvider } from './state/MetadataProvider';
 
 const router = createHashRouter([
@@ -10,7 +11,7 @@ const router = createHashRouter([
     children: [
       { index: true, element: <Navigate to="/view" replace /> },
       { path: 'view', element: <ViewPage /> },
-      { path: 'edit', element: <div className="text-panel">Board editor — coming soon.</div> },
+      { path: 'edit', element: <EditPage /> },
       { path: 'about', element: <AboutPage /> },
       { path: '*', element: <Navigate to="/view" replace /> },
     ],

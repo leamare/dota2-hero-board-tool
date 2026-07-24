@@ -163,3 +163,161 @@ nav.app-menu a.active:hover {
   margin-bottom: 1em;
   text-align: justify;
 }
+
+/* ========================================== FORM PRIMITIVES */
+
+.btn {
+  font-family: inherit;
+  font-size: 0.95rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.9rem;
+  background: var(--text-block-caption-h3-bg);
+  border: none;
+  color: var(--main-text-color);
+  cursor: pointer;
+  transition: all 150ms linear;
+  line-height: 1.6em;
+  white-space: nowrap;
+}
+.btn:hover {
+  background: var(--menu-selected);
+  color: var(--menu-link-active);
+}
+.btn.primary {
+  background: var(--big-button-color);
+}
+.btn.primary:hover {
+  background: var(--menu-selected-hover);
+}
+.btn.danger:hover {
+  background: var(--label-red);
+}
+.btn.small {
+  font-size: 0.8rem;
+  padding: 0.2rem 0.5rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: 0.75rem;
+}
+.field > label {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--menu-link);
+}
+.field.row {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.input,
+.select {
+  font-family: inherit;
+  font-size: 0.95rem;
+  padding: 0.3rem 0.6rem;
+  background: var(--menu-hover);
+  color: var(--main-text-color);
+  border: none;
+  outline: none;
+}
+.input:focus,
+.select:focus {
+  box-shadow: 0 0 0.5rem var(--menu-selected-hover);
+}
+.select {
+  cursor: pointer;
+}
+
+.checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  user-select: none;
+}
+.checkbox input {
+  accent-color: var(--big-button-color);
+  width: 1.05em;
+  height: 1.05em;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem 1rem;
+  align-items: center;
+  background: var(--sidebar-widget-bg);
+  padding: 0.6rem 0.9rem;
+  margin-bottom: 1rem;
+}
+.toolbar .sep {
+  width: 1px;
+  align-self: stretch;
+  background: var(--cat-outline);
+}
+
+/* ========================================== MODAL */
+
+.modal-container {
+  position: fixed;
+  inset: 0;
+  background-color: #00000099;
+  z-index: 99;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 150ms linear;
+}
+.modal-container.visible {
+  opacity: 1;
+}
+.modal-dialog {
+  background-color: var(--header-bg);
+  color: var(--main-text-color);
+  min-width: min(90vw, 32rem);
+  max-width: 90vw;
+  max-height: 88vh;
+  padding: 1rem 1.25rem 1.25rem;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 0 2rem #000a;
+}
+.modal-head {
+  display: flex;
+  align-items: center;
+  border-bottom: 0.1rem solid var(--menu-hover);
+  padding-bottom: 0.6rem;
+  margin-bottom: 0.9rem;
+}
+.modal-title {
+  font-size: 1.4rem;
+}
+.modal-close {
+  margin-left: auto;
+  border: none;
+  background-color: var(--big-button-color);
+  color: #fff;
+  padding: 0.25rem 0.6rem;
+  cursor: pointer;
+  transition: background 200ms ease;
+}
+.modal-close::before {
+  content: '✕';
+}
+.modal-close:hover {
+  background-color: var(--menu-selected-hover);
+}
+.modal-body {
+  overflow: auto;
+  min-height: 0;
+}

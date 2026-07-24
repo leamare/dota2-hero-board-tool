@@ -1,0 +1,111 @@
+/* ========================================== EDIT CONTROLS */
+
+.cat-controls {
+  display: inline-flex;
+  gap: 0.25rem;
+  flex: 0 0 auto;
+}
+
+.portrait-slot {
+  position: relative;
+}
+.portrait-slot .portrait-remove {
+  position: absolute;
+  top: -0.2rem;
+  right: -0.2rem;
+  width: 1.1rem;
+  height: 1.1rem;
+  border: none;
+  border-radius: 50%;
+  background: var(--label-red);
+  color: #fff;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 120ms linear;
+  line-height: 1;
+  padding: 0;
+}
+.portrait-slot:hover .portrait-remove {
+  opacity: 1;
+}
+.portrait-slot .portrait-remove::before {
+  content: '✕';
+  font-size: 0.7rem;
+}
+
+.portrait.add-tile {
+  aspect-ratio: 1;
+  border: 0.12rem dashed var(--cat-outline-hover);
+  background: transparent;
+  color: var(--menu-link);
+  font-size: 1.4rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 150ms linear;
+}
+.portrait.add-tile:hover {
+  background: var(--menu-hover);
+  color: var(--menu-link-active);
+}
+
+/* ========================================== PICKER */
+
+.picker {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  height: 70vh;
+}
+.picker-tabs {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+.picker-search {
+  flex: 1;
+}
+.picker-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(6.5rem, 1fr));
+  gap: 0.4rem;
+  overflow-y: auto;
+  align-content: start;
+}
+.picker-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.3rem;
+  background: var(--menu-hover);
+  border: none;
+  color: var(--main-text-color);
+  cursor: pointer;
+  transition: all 120ms linear;
+  font-size: 0.72rem;
+  line-height: 1.15;
+  text-align: center;
+}
+.picker-tile:hover {
+  background: var(--menu-selected);
+  color: var(--menu-link-active);
+}
+.picker-tile img {
+  width: 100%;
+  height: auto;
+  border-radius: var(--portrait-radius);
+  aspect-ratio: 256 / 144;
+  object-fit: cover;
+}
+.picker-tile.item img {
+  aspect-ratio: 88 / 64;
+  object-fit: contain;
+}
+.picker-tile span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}

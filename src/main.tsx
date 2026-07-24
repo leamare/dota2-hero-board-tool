@@ -4,6 +4,7 @@ import App from './App';
 import './styles/theme.css';
 import './styles/app.css';
 import './styles/board.css';
+import './styles/edit.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
