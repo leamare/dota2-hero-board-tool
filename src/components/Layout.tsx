@@ -3,6 +3,7 @@ import { NavLink, Outlet } from 'react-router-dom';
 const MENU = [
   { to: '/view', label: 'View' },
   { to: '/edit', label: 'Edit' },
+  { to: '/layouts', label: 'Layouts' },
   { to: '/about', label: 'About' },
 ];
 

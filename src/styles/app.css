@@ -336,3 +336,35 @@ nav.app-menu a.active:hover {
 .import-title {
   font-size: 1rem;
 }
+
+/* ========================================== LAYOUTS */
+
+.layouts-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.layout-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: var(--cat-bg);
+  box-shadow: 0 0 0 0.1rem var(--cat-outline);
+  padding: 0.5rem 0.9rem;
+}
+.layout-name {
+  font-size: 1.1rem;
+  flex: 0 0 auto;
+  min-width: 12rem;
+}
+.layout-meta {
+  opacity: 0.5;
+  font-size: 0.85rem;
+  flex: 1;
+}
+.layout-actions {
+  display: flex;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+}
