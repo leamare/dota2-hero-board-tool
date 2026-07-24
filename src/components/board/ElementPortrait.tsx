@@ -1,6 +1,7 @@
 import type { CSSProperties } from 'react';
 import type { Board, Category, GridElement } from '../../types/board';
 import { elementImageUrl, resolveDisplay } from '../../lib/board';
+import { itemStyle } from '../../lib/images';
 import { useMetadata } from '../../state/MetadataProvider';
 
 interface Props {
@@ -16,7 +17,7 @@ interface Props {
  */
 export default function ElementPortrait({ element, category, board }: Props) {
   const meta = useMetadata();
-  const { aspect, heightRem } = resolveDisplay(category, board);
+  const { aspect, heightRem, style: styleId } = resolveDisplay(category, board);
 
   const style: CSSProperties = { aspectRatio: aspect, height: `${heightRem}rem` };
 
@@ -26,6 +27,8 @@ export default function ElementPortrait({ element, category, board }: Props) {
 
   const url = meta ? elementImageUrl(element, category, board, meta) : null;
   const contain = element.kind === 'item' || element.kind === 'custom';
+  // profile badges have lots of transparent padding — scale them up a touch
+  const badge = contain && itemStyle(styleId).key === 'profile_badges';
   const ref =
     element.kind === 'item'
       ? element.refId != null
@@ -37,7 +40,11 @@ export default function ElementPortrait({ element, category, board }: Props) {
   const title = ref?.name ?? element.tag ?? undefined;
 
   return (
-    <div className={`portrait${contain ? ' contain' : ''}`} style={style} title={title}>
+    <div
+      className={`portrait${contain ? ' contain' : ''}${badge ? ' badge' : ''}`}
+      style={style}
+      title={title}
+    >
       {url && <img src={url} alt={title ?? ''} loading="lazy" />}
     </div>
   );

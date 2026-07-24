@@ -44,8 +44,10 @@ export interface Category {
   itemStyle?: number;
   /** override the board's portrait size */
   size?: number;
-  /** connect to the next category so they stay stacked as one column unit */
-  connectedNext?: boolean;
+  /** id shared by linked categories that always render together */
+  linkGroup?: string;
+  /** orientation of the link group this category belongs to */
+  linkOrient?: 'v' | 'h';
   /** dashed separator (row break) after this category */
   separatorAfter?: boolean;
   /** vertical dashed separator overlaid on this category's right edge */
@@ -57,6 +59,8 @@ export interface Category {
 
 export interface Board {
   name: string;
+  /** small glyph shown for the grid in lists and the header */
+  icon?: string;
   /** number of columns the categories flow into (1..6) */
   columns: number;
   /** default hero portrait type */

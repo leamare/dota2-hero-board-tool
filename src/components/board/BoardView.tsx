@@ -1,42 +1,43 @@
 import { Fragment } from 'react';
 import type { CSSProperties } from 'react';
 import type { Board } from '../../types/board';
-import { categoryBasis, groupCategories } from '../../lib/board';
+import { groupCategories, unitSpan } from '../../lib/board';
 import CategoryCard from './CategoryCard';
 
 /**
- * Read-only board renderer. Categories flow in a wrapping grid, honouring
- * width, connected groups, forced row breaks and separators.
+ * Read-only board renderer. A CSS grid keeps rows aligned; categories span
+ * columns by width, and linked categories render together as one unit.
  */
 export default function BoardView({ board }: { board: Board }) {
-  const groups = groupCategories(board.categories);
+  const units = groupCategories(board.categories);
 
   return (
     <div
       className={[
         'board',
         board.centered ? 'centered' : '',
-        board.darkenedBg ? 'darkened' : '',
+        board.darkenedBg ? 'darken' : '',
+        board.colorfulLabels ? 'full-labels' : '',
       ]
         .filter(Boolean)
         .join(' ')}
+      style={{ '--cols': board.columns } as CSSProperties}
     >
-      {groups.map((group) => {
-        const first = group[0];
-        const last = group[group.length - 1];
-        const basis = categoryBasis(first, board);
-        const groupStyle = {
-          '--cat-basis': `calc(${basis}% - var(--grid-gap))`,
-        } as CSSProperties;
+      {units.map((unit) => {
+        const first = unit.categories[0];
+        const last = unit.categories[unit.categories.length - 1];
+        const span = unitSpan(unit, board);
+        const cell: CSSProperties = {
+          gridColumn: first.newRow ? `1 / span ${span}` : `span ${span}`,
+        };
 
         return (
-          <Fragment key={first.id}>
-            {first.newRow && <div className="row-break" />}
-            {group.length === 1 ? (
-              <CategoryCard category={first} board={board} />
+          <Fragment key={unit.key}>
+            {unit.orient === null ? (
+              <CategoryCard category={first} board={board} style={cell} />
             ) : (
-              <div className="category-group" style={groupStyle}>
-                {group.map((c) => (
+              <div className={`category-group ${unit.orient === 'h' ? 'horizontal' : ''}`} style={cell}>
+                {unit.categories.map((c) => (
                   <CategoryCard key={c.id} category={c} board={board} grouped />
                 ))}
               </div>

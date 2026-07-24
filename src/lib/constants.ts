@@ -75,3 +75,8 @@ export const presetLabel = (value: number): string =>
 export const COLUMN_OPTIONS = [1, 2, 3, 4, 5, 6];
 
 export const MAX_COLUMNS = 6;
+
+/** Small glyphs a grid can be tagged with, shown in lists and the header. */
+export const GRID_ICONS = [
+  '', '📋', '⚔️', '🛡️', '🔥', '🌿', '💧', '⭐', '🎯', '🏆', '👑', '💀', '🧊', '🧠', '📈',
+];

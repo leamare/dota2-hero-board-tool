@@ -24,45 +24,45 @@
 /* ========================================== BOARD LAYOUT */
 
 .board {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
+  display: grid;
+  grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr));
+  align-items: start;
   gap: var(--grid-gap);
 }
-.board.centered {
+/* centre the portraits inside every category */
+.board.centered .cat-body {
   justify-content: center;
-}
-.board.darkened {
-  background-color: #00000055;
-  padding: var(--grid-gap);
 }
 
 .board .row-break {
-  flex: 0 0 100%;
+  grid-column: 1 / -1;
   height: 0;
 }
 .board .separator {
-  flex: 0 0 100%;
+  grid-column: 1 / -1;
   border-top: 0.15rem dashed var(--separator-color);
   margin: 0.35rem 0;
   opacity: 0.7;
 }
 
-/* connected categories share one column and stay stacked */
+/* linked categories share one grid cell and stay together */
 .category-group {
-  flex: 0 0 var(--cat-basis, 33.333%);
-  max-width: var(--cat-basis, 33.333%);
   display: flex;
   flex-direction: column;
   gap: var(--grid-gap);
   min-width: 0;
 }
+.category-group.horizontal {
+  flex-direction: row;
+  align-items: start;
+}
+.category-group.horizontal > .category {
+  flex: 1 1 0;
+}
 
 /* ========================================== CATEGORY */
 
 .category {
-  flex: 0 0 var(--cat-basis, 33.333%);
-  max-width: var(--cat-basis, 33.333%);
   background-color: var(--cat-bg);
   box-shadow: 0 0 0 0.12rem var(--cat-outline);
   transition: box-shadow 200ms ease;
@@ -71,25 +71,38 @@
   min-width: 0;
   position: relative;
 }
-.category.grouped {
-  flex: 1 1 auto;
-  max-width: none;
-}
 .category:hover {
   box-shadow: 0 0 0 0.12rem var(--cat-outline-hover);
 }
 
-/* colour tints both the header and, softly, the whole card */
+/*
+ * Colour model:
+ *  - a category with a colour always shows a coloured left edge.
+ *  - colourful labels ON  -> the whole header is filled with the colour.
+ *  - colourful labels OFF -> header stays dark, only the edge is coloured.
+ *  - darken ON (default)  -> the body stays dark.
+ *  - darken OFF           -> the body takes the label colour.
+ */
 .category.has-color {
-  background-color: color-mix(in srgb, var(--cat-color) 12%, var(--cat-bg));
+  box-shadow: inset 0.25rem 0 0 var(--cat-color), 0 0 0 0.12rem var(--cat-outline);
 }
-.category.has-color .cat-head {
-  background-color: color-mix(in srgb, var(--cat-color) 45%, var(--cat-head-bg));
-  box-shadow: inset 0.2rem 0 0 var(--cat-color);
+.category.has-color:hover {
+  box-shadow: inset 0.25rem 0 0 var(--cat-color), 0 0 0 0.12rem var(--cat-outline-hover);
 }
-.category.has-color .cat-title {
+
+.board.full-labels .category.has-color .cat-head {
+  background-color: var(--cat-color);
+}
+.board.full-labels .category.has-color .cat-title {
   color: #fff;
   text-shadow: 0 0 0.4rem #000;
+}
+
+.board:not(.darken) .category.has-color {
+  background-color: color-mix(in srgb, var(--cat-color) 82%, #000);
+}
+.board:not(.darken) .category.has-color .cat-body {
+  background-color: transparent;
 }
 
 /* vertical dashed separator overlaid on the right edge */
@@ -141,6 +154,19 @@
 .category.hs-large .cat-title {
   font-size: 1.4rem;
 }
+.category.hs-large .cat-title-icon {
+  height: 2em;
+}
+.category.hs-huge .cat-head {
+  min-height: 4rem;
+  padding: 0.7rem 1rem;
+}
+.category.hs-huge .cat-title {
+  font-size: 1.9rem;
+}
+.category.hs-huge .cat-title-icon {
+  height: 2.6em;
+}
 
 .cat-title-icon {
   height: 1.6em;
@@ -185,6 +211,9 @@
 .portrait.contain img {
   object-fit: contain;
 }
+.portrait.badge img {
+  transform: scale(1.25);
+}
 .portrait.empty {
   background-color: #ffffff0a;
   box-shadow: inset 0 0 0 0.08rem var(--cat-outline);
@@ -194,19 +223,17 @@
 
 @media (max-width: 720px), (orientation: portrait) {
   .board {
-    flex-direction: column;
-    flex-wrap: nowrap;
-    align-items: stretch;
+    grid-template-columns: 1fr;
   }
-  .category,
-  .category-group {
-    flex: 1 1 auto;
-    max-width: none;
+  /* every unit collapses to the single column */
+  .board > .category,
+  .board > .category-group {
+    grid-column: 1 / -1 !important;
+  }
+  .category-group.horizontal {
+    flex-direction: column;
   }
   .category.sep-right::after {
     display: none;
-  }
-  .board .separator {
-    flex: 1 1 auto;
   }
 }

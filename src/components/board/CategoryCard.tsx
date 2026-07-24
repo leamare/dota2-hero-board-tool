@@ -1,6 +1,5 @@
 import type { CSSProperties, ReactNode } from 'react';
 import type { Board, Category } from '../../types/board';
-import { categoryBasis } from '../../lib/board';
 import { colorIndex, LABEL_COLORS } from '../../lib/constants';
 import CategoryLabel from './CategoryLabel';
 import ElementPortrait from './ElementPortrait';
@@ -8,8 +7,10 @@ import ElementPortrait from './ElementPortrait';
 interface Props {
   category: Category;
   board: Board;
-  /** when inside a connected group the card takes full width of its column */
+  /** when inside a link group the card fills its unit instead of a grid cell */
   grouped?: boolean;
+  /** grid-cell style supplied by the board layout */
+  style?: CSSProperties;
   headerControls?: ReactNode;
   dragHandle?: ReactNode;
   renderElementOverlay?: (index: number) => ReactNode;
@@ -19,24 +20,25 @@ interface Props {
 const isEmptyLabel = (c: Category): boolean =>
   c.name.type === 'text' && !c.name.text?.trim();
 
-const HEADER_SIZE_CLASS = ['hs-small', 'hs-normal', 'hs-large'];
+const HEADER_SIZE_CLASS = ['hs-small', 'hs-normal', 'hs-large', 'hs-huge'];
 
 export default function CategoryCard({
   category,
   board,
   grouped,
+  style: cellStyle,
   headerControls,
   dragHandle,
   renderElementOverlay,
   bodyExtra,
 }: Props) {
-  const hasColor = board.colorfulLabels && !!category.color;
+  const hasColor = !!category.color;
   const colorVar = hasColor
     ? `var(--label-${LABEL_COLORS[colorIndex(category.color)].key})`
     : undefined;
 
   const style: CSSProperties = {
-    ...(grouped ? {} : { '--cat-basis': `calc(${categoryBasis(category, board)}% - var(--grid-gap))` }),
+    ...cellStyle,
     ...(colorVar ? { '--cat-color': colorVar } : {}),
   } as CSSProperties;
 
