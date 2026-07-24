@@ -22,6 +22,32 @@
   margin-right: 0.4em;
 }
 
+.drag-overlay-card {
+  cursor: grabbing;
+  box-shadow: 0 0.4rem 1.2rem #000b;
+  opacity: 0.95;
+}
+
+/* clickable gap between portraits to toggle a dashed divider (edit mode) */
+.divider-gap {
+  flex: 0 0 auto;
+  width: 0.3rem;
+  border: none;
+  background: transparent;
+  border-left: 0.16rem dashed transparent;
+  margin: 0 0.05rem;
+  align-self: flex-start;
+  cursor: pointer;
+  padding: 0;
+  transition: border-color 120ms linear;
+}
+.divider-gap:hover {
+  border-left-color: var(--menu-link);
+}
+.divider-gap.on {
+  border-left-color: var(--separator-color);
+}
+
 .drag-handle {
   border: none;
   background: transparent;
