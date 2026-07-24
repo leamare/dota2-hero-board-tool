@@ -35,16 +35,16 @@ button {
   min-height: 100vh;
 }
 
-/* ========================================== HEADER (skewed spectral menu) */
+/* ========================================== HEADER (spectral skewed menu) */
 
 .app-header {
   background-color: var(--header-bg);
-  display: flex;
-  align-items: stretch;
-  height: 4rem;
   position: relative;
   z-index: 50;
-  padding-left: 2.5rem;
+  height: 5rem;
+  display: flex;
+  align-items: stretch;
+  padding-left: 4.5rem; /* room for the absolute root-link */
 }
 
 /* ❮ back to the parent site */
@@ -52,14 +52,14 @@ button {
   position: absolute;
   top: 0;
   left: 0;
-  width: 2.5rem;
-  height: 4rem;
-  line-height: 4rem;
-  font-size: 1.6rem;
+  width: 4.5rem;
+  height: 5rem;
+  line-height: 5rem;
+  font-size: 2rem;
   text-align: center;
   color: var(--menu-link);
   transition: all 200ms linear;
-  z-index: 2;
+  z-index: 3;
 }
 .app-header .root-link::after {
   content: '❮';
@@ -69,24 +69,24 @@ button {
   background-color: var(--menu-hover);
 }
 
-/* the logo triangle — goes to the section home (/view) */
+/* the logo triangle — leads to the section home (/view) */
 .app-header .gotomain {
   position: relative;
-  border-top: 4rem solid var(--big-button-color);
-  border-left: 1.1rem solid transparent;
-  border-right: 1.1rem solid transparent;
+  border-top: 5rem solid var(--big-button-color);
+  border-left: 1.35rem solid transparent;
+  border-right: 1.35rem solid transparent;
   height: 0;
-  width: 5.5rem;
+  width: 7rem;
   transition: all 300ms linear;
   flex: 0 0 auto;
 }
 .app-header .gotomain::after {
   content: '';
   position: absolute;
-  top: -4.1rem;
-  left: 0.6rem;
-  width: 4.2rem;
-  height: 4.4rem;
+  top: -5.25rem;
+  left: 0.75rem;
+  width: 5.25rem;
+  height: 5.5rem;
   background-image: url('/salogo.png');
   background-repeat: no-repeat;
   background-size: cover;
@@ -96,73 +96,164 @@ button {
   border-top-color: var(--big-button-color-hover);
 }
 
-nav.app-menu {
+.header-links {
+  flex: 1;
+  display: flex;
+  align-items: stretch;
+}
+
+ul.menu {
   list-style: none;
   display: flex;
   align-items: stretch;
   font-size: 0;
-  flex: 1;
-  margin-left: 0.5rem;
+  line-height: 5rem;
+  margin-left: 0.75rem;
 }
-
-nav.app-menu a {
-  height: 4rem;
-  line-height: 4rem;
+ul.menu li {
+  height: 5rem;
+  transform: skewX(-15deg);
+  transition: all 200ms linear;
+  position: relative;
+}
+ul.menu li:hover {
+  background-color: var(--menu-hover);
+}
+ul.menu li a {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 100%;
   padding: 0 1.4rem;
+  transform: skewX(15deg);
   font-size: 1rem;
   text-transform: uppercase;
   text-shadow: -1px 1px 0.5rem #000;
-  transform: skewX(-15deg);
-  transition: all 200ms linear;
   color: var(--menu-link);
-  display: block;
-  position: relative;
+  transition: color 200ms linear;
 }
-nav.app-menu a > .menu-inner {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  transform: skewX(15deg);
+ul.menu li a:hover {
+  color: var(--menu-link-active);
 }
 .menu-icon {
   fill: currentColor;
   flex: 0 0 auto;
 }
-nav.app-menu a:hover {
-  background-color: var(--menu-hover);
-  color: var(--menu-link-active);
-}
-nav.app-menu a.active {
+
+/* active item — side borders that widen on hover, spectral style */
+ul.menu li:has(> a.active) {
   background-color: var(--menu-selected);
-  color: var(--menu-link-active);
   text-shadow: 0 0 0.5rem var(--menu-selected-text-shadow);
 }
-nav.app-menu a.active::before,
-nav.app-menu a.active::after {
+ul.menu li:has(> a.active) > a {
+  color: var(--menu-link-active);
+}
+ul.menu li:has(> a.active)::before,
+ul.menu li:has(> a.active)::after {
   content: '';
   position: absolute;
-  width: 0.6rem;
+  width: 0.75rem;
   height: 100%;
   top: 0;
   background-color: var(--menu-selected-borders);
   transition: all 200ms linear;
 }
-nav.app-menu a.active::before {
+ul.menu li:has(> a.active)::before {
   right: 100%;
 }
-nav.app-menu a.active::after {
+ul.menu li:has(> a.active)::after {
   left: 100%;
 }
-nav.app-menu a.active:hover {
+ul.menu li:has(> a.active):hover {
   background-color: var(--menu-selected-hover);
 }
+ul.menu li:has(> a.active):hover::before,
+ul.menu li:has(> a.active):hover::after {
+  width: 1.25rem;
+  background-color: var(--menu-selected-borders-hover);
+}
 
-.app-header .header-tools {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0 1rem;
-  flex: 0 0 auto;
+/* mobile burger (hidden on desktop) */
+.menu-toggle,
+.menu-toggle-button {
+  display: none;
+}
+
+@media (max-width: 720px), (orientation: portrait) {
+  .app-header {
+    padding-left: 0;
+  }
+  .app-header .root-link {
+    left: auto;
+    right: 0;
+    width: 3.5rem;
+  }
+  .header-links {
+    position: static;
+  }
+  .menu-toggle-button {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: absolute;
+    top: 1.4rem;
+    right: 4rem;
+    height: 2.2rem;
+    width: 2.2rem;
+    z-index: 4;
+    cursor: pointer;
+  }
+  .menu-toggle-button .burger,
+  .menu-toggle-button::before,
+  .menu-toggle-button::after {
+    content: '';
+    display: block;
+    width: 100%;
+    height: 0.28em;
+    margin: 0.28em 0;
+    border-radius: 0.5em;
+    background-color: var(--menu-link);
+    transition: 150ms all linear;
+  }
+  .menu-toggle:checked ~ .menu-toggle-button::before {
+    transform: rotate(45deg) translateY(0.55em) translateX(0.55em);
+  }
+  .menu-toggle:checked ~ .menu-toggle-button::after {
+    transform: rotate(-45deg) translateY(-0.55em) translateX(-0.55em);
+  }
+  .menu-toggle:checked ~ .menu-toggle-button .burger {
+    background-color: transparent;
+  }
+  ul.menu {
+    position: absolute;
+    top: 5rem;
+    left: 0;
+    width: 100%;
+    flex-direction: column;
+    background-color: var(--header-bg);
+    margin: 0;
+    z-index: 40;
+    transform-origin: top;
+    transform: scaleY(0);
+    transition: 150ms transform linear;
+    box-shadow: 0 0.5rem 1rem #0008;
+  }
+  .menu-toggle:checked ~ ul.menu {
+    transform: scaleY(1);
+  }
+  ul.menu li {
+    height: 3.2rem;
+    transform: none;
+    margin: 0 1.5rem;
+  }
+  ul.menu li a {
+    transform: none;
+    justify-content: center;
+  }
+  ul.menu li:has(> a.active)::before,
+  ul.menu li:has(> a.active)::after {
+    display: none;
+  }
 }
 
 /* ========================================== MAIN + FOOTER */
@@ -285,7 +376,7 @@ nav.app-menu a.active:hover {
   cursor: pointer;
 }
 
-/* checkbox styled after the spectral theme (custom check glyph) */
+/* checkbox — exact spectral theme style */
 .checkbox {
   display: inline-flex;
   align-items: center;
@@ -294,7 +385,8 @@ nav.app-menu a.active:hover {
   font-size: 0.9rem;
   user-select: none;
 }
-.checkbox input[type='checkbox'] {
+.checkbox input[type='checkbox'],
+.checkbox input[type='radio'] {
   appearance: none;
   font: inherit;
   width: 1.15em;
@@ -307,10 +399,9 @@ nav.app-menu a.active:hover {
   display: inline-grid;
   place-content: center;
   cursor: pointer;
-  transition: all 120ms linear;
 }
-.checkbox input[type='checkbox']:hover {
-  border-color: var(--menu-link-active);
+.checkbox input[type='radio'] {
+  border-radius: 50%;
 }
 .checkbox input[type='checkbox']::before {
   content: '';
@@ -322,12 +413,18 @@ nav.app-menu a.active:hover {
   transform-origin: bottom left;
   clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
 }
-.checkbox input[type='checkbox']:checked {
-  border-color: var(--big-button-color-hover);
+.checkbox input[type='radio']::before {
+  content: '';
+  width: 0.6em;
+  height: 0.6em;
+  border-radius: 50%;
+  transform: scale(0);
+  transition: 120ms transform ease-in-out;
+  box-shadow: inset 1em 1em var(--menu-link);
 }
-.checkbox input[type='checkbox']:checked::before {
+.checkbox input[type='checkbox']:checked::before,
+.checkbox input[type='radio']:checked::before {
   transform: scale(1);
-  box-shadow: inset 1em 1em var(--menu-link-active);
 }
 
 .toolbar {

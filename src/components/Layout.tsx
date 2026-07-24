@@ -10,18 +10,10 @@ const MENU = [
 ] as const;
 
 const ICONS: Record<string, ReactElement> = {
-  grid: (
-    <path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z" />
-  ),
-  pen: (
-    <path d="M4 20h4L20 8l-4-4L4 16zM14 6l4 4" fill="none" stroke="currentColor" strokeWidth="2" />
-  ),
-  stack: (
-    <path d="M12 2 2 7l10 5 10-5zM2 12l10 5 10-5M2 17l10 5 10-5" fill="none" stroke="currentColor" strokeWidth="2" />
-  ),
-  info: (
-    <path d="M12 2a10 10 0 100 20 10 10 0 000-20zm0 5a1.3 1.3 0 110 2.6A1.3 1.3 0 0112 7zm-1.3 5h2.6v6h-2.6z" />
-  ),
+  grid: <path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z" />,
+  pen: <path d="M4 20h4L20 8l-4-4L4 16zM14 6l4 4" fill="none" stroke="currentColor" strokeWidth="2" />,
+  stack: <path d="M12 2 2 7l10 5 10-5zM2 12l10 5 10-5M2 17l10 5 10-5" fill="none" stroke="currentColor" strokeWidth="2" />,
+  info: <path d="M12 2a10 10 0 100 20 10 10 0 000-20zm0 5a1.3 1.3 0 110 2.6A1.3 1.3 0 0112 7zm-1.3 5h2.6v6h-2.6z" />,
 };
 
 const MenuIcon = ({ name }: { name: string }) => (
@@ -36,21 +28,22 @@ export default function Layout() {
       <header className="app-header">
         <a className="root-link" href={PARENT_URL} title="To main site" />
         <Link className="gotomain" to={SECTION_HOME} title="Hero Grid Tool" aria-label="Home" />
-        <nav className="app-menu">
-          {MENU.map((m) => (
-            <NavLink
-              key={m.to}
-              to={m.to}
-              className={({ isActive }) => (isActive ? 'active' : undefined)}
-            >
-              <span className="menu-inner">
-                <MenuIcon name={m.icon} />
-                {m.label}
-              </span>
-            </NavLink>
-          ))}
+        <nav className="header-links">
+          <input id="menu-toggle" type="checkbox" className="menu-toggle" />
+          <label htmlFor="menu-toggle" className="menu-toggle-button" aria-label="Menu">
+            <span className="burger" />
+          </label>
+          <ul className="menu">
+            {MENU.map((m) => (
+              <li key={m.to}>
+                <NavLink to={m.to} className={({ isActive }) => (isActive ? 'active' : undefined)}>
+                  <MenuIcon name={m.icon} />
+                  <span className="menu-label">{m.label}</span>
+                </NavLink>
+              </li>
+            ))}
+          </ul>
         </nav>
-        <div className="header-tools" />
       </header>
 
       <main className="app-main">
