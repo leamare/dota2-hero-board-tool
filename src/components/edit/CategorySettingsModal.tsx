@@ -247,22 +247,6 @@ export default function CategorySettingsModal({ categoryId, onClose }: Props) {
             />
             Start on a new row
           </label>
-          <label className="checkbox">
-            <input
-              type="checkbox"
-              checked={!!category.separatorAfter}
-              onChange={(e) => patchCategory(category.id, { separatorAfter: e.target.checked })}
-            />
-            Dashed separator after (horizontal)
-          </label>
-          <label className="checkbox">
-            <input
-              type="checkbox"
-              checked={!!category.separatorRight}
-              onChange={(e) => patchCategory(category.id, { separatorRight: e.target.checked })}
-            />
-            Dashed separator on right (vertical)
-          </label>
         </div>
       </Modal>
 
