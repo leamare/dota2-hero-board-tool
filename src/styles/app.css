@@ -321,3 +321,18 @@ nav.app-menu a.active:hover {
   overflow: auto;
   min-height: 0;
 }
+
+.muted {
+  opacity: 0.6;
+  font-size: 0.85rem;
+}
+.share-link {
+  width: 100%;
+  resize: vertical;
+  font-family: ui-monospace, monospace;
+  font-size: 0.8rem;
+  word-break: break-all;
+}
+.import-title {
+  font-size: 1rem;
+}

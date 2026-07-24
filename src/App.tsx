@@ -3,6 +3,7 @@ import Layout from './components/Layout';
 import AboutPage from './pages/AboutPage';
 import ViewPage from './pages/ViewPage';
 import EditPage from './pages/EditPage';
+import ImportPage from './pages/ImportPage';
 import { MetadataProvider } from './state/MetadataProvider';
 
 const router = createHashRouter([
@@ -12,6 +13,7 @@ const router = createHashRouter([
       { index: true, element: <Navigate to="/view" replace /> },
       { path: 'view', element: <ViewPage /> },
       { path: 'edit', element: <EditPage /> },
+      { path: 'import', element: <ImportPage /> },
       { path: 'about', element: <AboutPage /> },
       { path: '*', element: <Navigate to="/view" replace /> },
     ],

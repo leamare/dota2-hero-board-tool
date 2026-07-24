@@ -1,12 +1,15 @@
+import { useState } from 'react';
 import { useBoardStore } from '../../state/boardStore';
 import { COLUMN_OPTIONS } from '../../lib/constants';
 import { stylesForKind } from '../../lib/images';
+import ShareModal from './ShareModal';
 
 export default function BoardToolbar() {
   const board = useBoardStore((s) => s.board);
   const patchBoard = useBoardStore((s) => s.patchBoard);
   const addCategory = useBoardStore((s) => s.addCategory);
   const resetBoard = useBoardStore((s) => s.resetBoard);
+  const [shareOpen, setShareOpen] = useState(false);
 
   return (
     <div className="toolbar">
@@ -100,6 +103,9 @@ export default function BoardToolbar() {
       <button className="btn primary" onClick={addCategory}>
         + Category
       </button>
+      <button className="btn" onClick={() => setShareOpen(true)}>
+        Share
+      </button>
       <button
         className="btn danger"
         onClick={() => {
@@ -108,6 +114,8 @@ export default function BoardToolbar() {
       >
         Clear
       </button>
+
+      <ShareModal open={shareOpen} onClose={() => setShareOpen(false)} />
     </div>
   );
 }
