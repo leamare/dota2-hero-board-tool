@@ -9,7 +9,7 @@ import { emptyBoard, genId } from './board';
 import { ByteReader, ByteWriter, fromBase64Url, toBase64Url } from './bytes';
 import type { ElementKind } from './images';
 
-const SHARE_VERSION = 2;
+const SHARE_VERSION = 3;
 
 const NAME_TYPE_CODE: Record<CategoryNameType, number> = { text: 0, preset: 1, hero: 2, item: 3 };
 const NAME_TYPE_BY_CODE: CategoryNameType[] = ['text', 'preset', 'hero', 'item'];
@@ -26,7 +26,7 @@ const N_ALTICON = 1;
 const N_ICON_TYPE = 2;
 
 // category flag bits
-const C_CONNECTED = 1;
+const C_LINK = 1;
 const C_SEP_AFTER = 2;
 const C_SEP_RIGHT = 4;
 const C_NEWROW = 8;
@@ -70,14 +70,14 @@ function encodeName(w: ByteWriter, name: CategoryName): void {
   }
 }
 
-function encodeCategory(w: ByteWriter, c: Category): void {
+function encodeCategory(w: ByteWriter, c: Category, groupIndex: Map<string, number>): void {
   encodeName(w, c.name);
   w.u8(colorIndexOf(c.color));
   w.u8(c.wideness);
   w.u8(c.headerSize ?? 1);
 
   let flags = 0;
-  if (c.connectedNext) flags |= C_CONNECTED;
+  if (c.linkGroup) flags |= C_LINK;
   if (c.separatorAfter) flags |= C_SEP_AFTER;
   if (c.separatorRight) flags |= C_SEP_RIGHT;
   if (c.newRow) flags |= C_NEWROW;
@@ -85,6 +85,10 @@ function encodeCategory(w: ByteWriter, c: Category): void {
   if (c.itemStyle !== undefined) flags |= C_ITEMSTYLE;
   if (c.size !== undefined) flags |= C_SIZE;
   w.u8(flags);
+  if (c.linkGroup) {
+    w.varint(groupIndex.get(c.linkGroup) ?? 0);
+    w.u8(c.linkOrient === 'h' ? 1 : 0);
+  }
   if (c.portraitType !== undefined) w.u8(c.portraitType);
   if (c.itemStyle !== undefined) w.u8(c.itemStyle);
   if (c.size !== undefined) w.u8(c.size);
@@ -108,9 +112,16 @@ export function encodeBoard(board: Board): string {
   w.u8(board.itemStyle);
   w.u8(board.size);
   w.string(board.name);
+  w.string(board.icon ?? '');
+
+  // index distinct link groups as small ints
+  const groupIndex = new Map<string, number>();
+  for (const c of board.categories) {
+    if (c.linkGroup && !groupIndex.has(c.linkGroup)) groupIndex.set(c.linkGroup, groupIndex.size);
+  }
 
   w.varint(board.categories.length);
-  for (const c of board.categories) encodeCategory(w, c);
+  for (const c of board.categories) encodeCategory(w, c, groupIndex);
 
   return toBase64Url(w.toUint8Array());
 }
@@ -145,6 +156,12 @@ function decodeCategory(r: ByteReader): Category {
   const wideness = r.u8();
   const headerSize = r.u8();
   const flags = r.u8();
+  let linkGroup: string | undefined;
+  let linkOrient: 'v' | 'h' | undefined;
+  if (flags & C_LINK) {
+    linkGroup = `g${r.varint()}`;
+    linkOrient = r.u8() === 1 ? 'h' : 'v';
+  }
   const portraitType = flags & C_PORTRAIT ? r.u8() : undefined;
   const itemStyleOv = flags & C_ITEMSTYLE ? r.u8() : undefined;
   const size = flags & C_SIZE ? r.u8() : undefined;
@@ -162,7 +179,8 @@ function decodeCategory(r: ByteReader): Category {
     portraitType,
     itemStyle: itemStyleOv,
     size,
-    connectedNext: !!(flags & C_CONNECTED),
+    linkGroup,
+    linkOrient,
     separatorAfter: !!(flags & C_SEP_AFTER),
     separatorRight: !!(flags & C_SEP_RIGHT),
     newRow: !!(flags & C_NEWROW),
@@ -186,6 +204,7 @@ export function decodeBoard(str: string): Board {
   board.itemStyle = r.u8();
   board.size = r.u8();
   board.name = r.string();
+  board.icon = r.string();
 
   const count = r.varint();
   board.categories = [];

@@ -13,7 +13,9 @@ import Picker from './Picker';
 import CategorySettingsModal from './CategorySettingsModal';
 import AltIconModal from './AltIconModal';
 import { useBoardStore } from '../../state/boardStore';
-import { categoryBasis, groupCategories, resolveDisplay } from '../../lib/board';
+import { groupCategories, resolveDisplay, unitSpan } from '../../lib/board';
+import type { Category } from '../../types/board';
+import type { CSSProperties } from 'react';
 
 /** Parse an element drag id "el:<catId>:<index>". */
 function parseElId(id: string): { catId: string; index: number } | null {
@@ -30,9 +32,28 @@ export default function EditableBoard() {
   const reorderElements = useBoardStore((s) => s.reorderElements);
   const moveElement = useBoardStore((s) => s.moveElement);
 
+  const linkCategories = useBoardStore((s) => s.linkCategories);
+  const unlinkCategory = useBoardStore((s) => s.unlinkCategory);
+
   const [pickerCat, setPickerCat] = useState<string | null>(null);
   const [settingsCat, setSettingsCat] = useState<string | null>(null);
   const [altTarget, setAltTarget] = useState<{ catId: string; index: number } | null>(null);
+  const [pendingLink, setPendingLink] = useState<{ catId: string; orient: 'v' | 'h' } | null>(null);
+
+  const handleLink = (catId: string, orient: 'v' | 'h') => {
+    if (pendingLink) {
+      if (pendingLink.catId === catId) {
+        setPendingLink(null); // cancel
+      } else {
+        linkCategories(pendingLink.catId, catId, pendingLink.orient);
+        setPendingLink(null);
+      }
+      return;
+    }
+    const cat = board.categories.find((c) => c.id === catId);
+    if (cat?.linkGroup) unlinkCategory(catId);
+    else setPendingLink({ catId, orient });
+  };
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -81,43 +102,48 @@ export default function EditableBoard() {
         className={[
           'board',
           board.centered ? 'centered' : '',
-          board.darkenedBg ? 'darkened' : '',
+          board.darkenedBg ? 'darken' : '',
+          board.colorfulLabels ? 'full-labels' : '',
         ]
           .filter(Boolean)
           .join(' ')}
+        style={{ '--cols': board.columns } as CSSProperties}
       >
         <SortableContext
           items={board.categories.map((c) => categoryDragId(c.id))}
           strategy={rectSortingStrategy}
         >
-          {groupCategories(board.categories).map((group) => {
-            const first = group[0];
-            const last = group[group.length - 1];
-            const basis = categoryBasis(first, board);
-            const renderCat = (cat: (typeof group)[number], grouped: boolean) => (
+          {groupCategories(board.categories).map((unit) => {
+            const first = unit.categories[0];
+            const last = unit.categories[unit.categories.length - 1];
+            const span = unitSpan(unit, board);
+            const cell: CSSProperties = {
+              gridColumn: first.newRow ? `1 / span ${span}` : `span ${span}`,
+            };
+            const renderCat = (cat: Category, grouped: boolean, cs?: CSSProperties) => (
               <SortableCategory
                 key={cat.id}
                 category={cat}
                 board={board}
                 grouped={grouped}
+                cellStyle={cs}
+                linkPending={pendingLink?.catId === cat.id}
                 onOpenSettings={() => setSettingsCat(cat.id)}
                 onAdd={() => setPickerCat(cat.id)}
                 onElementAlt={(index) => setAltTarget({ catId: cat.id, index })}
+                onLink={(orient) => handleLink(cat.id, orient)}
               />
             );
             return (
-              <Fragment key={first.id}>
-                {first.newRow && <div className="row-break" />}
-                {group.length === 1 ? (
-                  renderCat(first, false)
+              <Fragment key={unit.key}>
+                {unit.orient === null ? (
+                  renderCat(first, false, cell)
                 ) : (
                   <div
-                    className="category-group"
-                    style={
-                      { '--cat-basis': `calc(${basis}% - var(--grid-gap))` } as React.CSSProperties
-                    }
+                    className={`category-group ${unit.orient === 'h' ? 'horizontal' : ''}`}
+                    style={cell}
                   >
-                    {group.map((c) => renderCat(c, true))}
+                    {unit.categories.map((c) => renderCat(c, true))}
                   </div>
                 )}
                 {last.separatorAfter && <div className="separator" />}

@@ -5,6 +5,7 @@ import type { Board } from '../types/board';
 
 const sample: Board = {
   name: 'Test Grid ✦',
+  icon: '🔥',
   columns: 4,
   portraitType: 1,
   itemStyle: 0,
@@ -21,7 +22,8 @@ const sample: Board = {
       headerSize: 2,
       portraitType: 2,
       size: 1,
-      connectedNext: true,
+      linkGroup: 'g0',
+      linkOrient: 'v',
       separatorAfter: true,
       elements: [
         { kind: 'hero', refId: 1 },
@@ -37,6 +39,8 @@ const sample: Board = {
       color: '',
       wideness: 0,
       headerSize: 1,
+      linkGroup: 'g0',
+      linkOrient: 'v',
       separatorRight: true,
       elements: [],
     },
@@ -51,7 +55,8 @@ const normalize = (b: Board) => ({
     portraitType: undefined,
     itemStyle: undefined,
     size: undefined,
-    connectedNext: !!c.connectedNext,
+    linkGroup: undefined,
+    linkOrient: undefined,
     separatorAfter: !!c.separatorAfter,
     separatorRight: !!c.separatorRight,
     newRow: !!c.newRow,

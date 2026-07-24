@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Board, Category, GridElement } from '../types/board';
-import { emptyBoard, newCategory } from '../lib/board';
+import { emptyBoard, genId, newCategory } from '../lib/board';
 
 interface BoardStore {
   board: Board;
@@ -17,6 +17,8 @@ interface BoardStore {
   removeCategory: (id: string) => void;
   patchCategory: (id: string, patch: Partial<Category>) => void;
   reorderCategories: (ids: string[]) => void;
+  linkCategories: (aId: string, bId: string, orient: 'v' | 'h') => void;
+  unlinkCategory: (id: string) => void;
 
   addElement: (catId: string, element: GridElement) => void;
   removeElement: (catId: string, index: number) => void;
@@ -74,6 +76,47 @@ export const useBoardStore = create<BoardStore>()(
           const byId = new Map(s.board.categories.map((c) => [c.id, c]));
           const next = ids.map((id) => byId.get(id)).filter((c): c is Category => !!c);
           return { board: { ...s.board, categories: next } };
+        }),
+
+      linkCategories: (aId, bId, orient) =>
+        set((s) => {
+          if (aId === bId) return s;
+          const b = s.board.categories.find((c) => c.id === bId);
+          const a = s.board.categories.find((c) => c.id === aId);
+          if (!a || !b) return s;
+          // join b's group if it already has one of the same orientation
+          const group = b.linkGroup && b.linkOrient === orient ? b.linkGroup : genId();
+          const cats = s.board.categories.map((c) => {
+            if (c.id === aId || c.id === bId) return { ...c, linkGroup: group, linkOrient: orient };
+            return c;
+          });
+          // place a right after the last existing member of the group for tidy order
+          const moved = cats.find((c) => c.id === aId)!;
+          const rest = cats.filter((c) => c.id !== aId);
+          let insertAt = rest.length;
+          rest.forEach((c, i) => {
+            if (c.linkGroup === group) insertAt = i + 1;
+          });
+          rest.splice(insertAt, 0, moved);
+          return { board: { ...s.board, categories: rest } };
+        }),
+
+      unlinkCategory: (id) =>
+        set((s) => {
+          const cat = s.board.categories.find((c) => c.id === id);
+          if (!cat?.linkGroup) return s;
+          const group = cat.linkGroup;
+          let cats = s.board.categories.map((c) =>
+            c.id === id ? { ...c, linkGroup: undefined, linkOrient: undefined } : c,
+          );
+          // dissolve the group if only one member is left
+          const remaining = cats.filter((c) => c.linkGroup === group);
+          if (remaining.length === 1) {
+            cats = cats.map((c) =>
+              c.linkGroup === group ? { ...c, linkGroup: undefined, linkOrient: undefined } : c,
+            );
+          }
+          return { board: { ...s.board, categories: cats } };
         }),
 
       addElement: (catId, element) =>
@@ -147,27 +190,50 @@ export const useBoardStore = create<BoardStore>()(
     }),
     {
       name: 'hgt.board',
-      version: 2,
-      // migrate the pre-refactor shape (heroStyle/itemStyle/bigger) to the
-      // new portraitType/itemStyle/size model.
+      version: 3,
       migrate: (persisted, from) => {
         const state = persisted as { board?: Record<string, unknown> };
-        if (from >= 2 || !state?.board) return persisted as unknown as { board: Board };
+        if (!state?.board) return persisted as unknown as { board: Board };
         const b = state.board as Record<string, unknown> & { categories?: Record<string, unknown>[] };
-        const itemMap = (v: unknown) => (v === 4 ? 1 : 0); // old 3=items,4=badges
-        b.portraitType = typeof b.heroStyle === 'number' ? Math.min(2, b.heroStyle) : 0;
-        b.itemStyle = itemMap(b.itemStyle);
-        b.size = 0;
-        b.categories = (b.categories ?? []).map((c) => {
-          const cat = c as Record<string, unknown>;
-          if (typeof cat.heroStyle === 'number') cat.portraitType = Math.min(2, cat.heroStyle);
-          if (typeof cat.itemStyle === 'number') cat.itemStyle = itemMap(cat.itemStyle);
-          if (cat.bigger) cat.size = 2;
-          delete cat.heroStyle;
-          delete cat.bigger;
-          return cat;
-        });
-        delete b.heroStyle;
+
+        // v1 -> v2: heroStyle/itemStyle/bigger -> portraitType/itemStyle/size
+        if (from < 2) {
+          const itemMap = (v: unknown) => (v === 4 ? 1 : 0);
+          b.portraitType = typeof b.heroStyle === 'number' ? Math.min(2, b.heroStyle) : 0;
+          b.itemStyle = itemMap(b.itemStyle);
+          b.size = 0;
+          b.categories = (b.categories ?? []).map((c) => {
+            const cat = c as Record<string, unknown>;
+            if (typeof cat.heroStyle === 'number') cat.portraitType = Math.min(2, cat.heroStyle);
+            if (typeof cat.itemStyle === 'number') cat.itemStyle = itemMap(cat.itemStyle);
+            if (cat.bigger) cat.size = 2;
+            delete cat.heroStyle;
+            delete cat.bigger;
+            return cat;
+          });
+          delete b.heroStyle;
+        }
+
+        // v2 -> v3: connectedNext runs -> vertical link groups
+        if (from < 3) {
+          const cats = (b.categories ?? []) as Record<string, unknown>[];
+          let group: string | null = null;
+          for (let i = 0; i < cats.length; i++) {
+            const c = cats[i];
+            const prev = cats[i - 1];
+            if (prev && prev.connectedNext) {
+              c.linkGroup = group;
+              c.linkOrient = 'v';
+            }
+            if (c.connectedNext) {
+              if (!prev || !prev.connectedNext) group = `mig-${i}`;
+              c.linkGroup = group;
+              c.linkOrient = 'v';
+            }
+            delete c.connectedNext;
+          }
+        }
+
         return { board: b as unknown as Board };
       },
     },

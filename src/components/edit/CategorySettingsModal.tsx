@@ -16,6 +16,7 @@ const HEADER_SIZES = [
   { value: 0, label: 'Small' },
   { value: 1, label: 'Normal' },
   { value: 2, label: 'Large' },
+  { value: 3, label: 'Huge' },
 ];
 
 export default function CategorySettingsModal({ categoryId, onClose }: Props) {
@@ -234,14 +235,6 @@ export default function CategorySettingsModal({ categoryId, onClose }: Props) {
         </div>
 
         <div className="settings-toggles">
-          <label className="checkbox">
-            <input
-              type="checkbox"
-              checked={!!category.connectedNext}
-              onChange={(e) => patchCategory(category.id, { connectedNext: e.target.checked })}
-            />
-            Connect to next category
-          </label>
           <label className="checkbox">
             <input
               type="checkbox"

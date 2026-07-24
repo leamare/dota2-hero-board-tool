@@ -12,7 +12,8 @@ export default function SaveControls() {
   const { layouts, save, overwrite } = useLayoutsStore();
   const toast = useToast();
 
-  const [autosave, setAutosave] = useState(() => localStorage.getItem(AUTOSAVE_KEY) === '1');
+  // autosave defaults on (only '0' disables it)
+  const [autosave, setAutosave] = useState(() => localStorage.getItem(AUTOSAVE_KEY) !== '0');
   const firstRun = useRef(true);
 
   const current = layouts.find((l) => l.id === currentLayoutId) ?? null;

@@ -16,7 +16,10 @@ export default function ViewPage() {
   return (
     <div className="view-page">
       <div className="view-head">
-        <h1 className="board-name">{board.name}</h1>
+        <h1 className="board-name">
+          {board.icon && <span className="grid-icon">{board.icon}</span>}
+          {board.name}
+        </h1>
         <div className="view-actions">
           <Link className="btn" to="/edit">
             Edit

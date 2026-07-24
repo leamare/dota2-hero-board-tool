@@ -18,7 +18,7 @@ export default function SortableElement({ category, board, index, onRemove, onAl
   const el = category.elements[index];
   const meta = useMetadata();
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({ id: elementDragId(category.id, index) });
+    useSortable({ id: elementDragId(category.id, index), animateLayoutChanges: () => false });
 
   const hasAlticons =
     el.kind === 'hero' && (meta?.heroById.get(el.refId ?? -1)?.alticons.length ?? 0) > 0;

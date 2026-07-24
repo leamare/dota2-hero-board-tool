@@ -5,6 +5,23 @@
   gap: 0.25rem;
   flex: 0 0 auto;
 }
+.cat-controls .btn.active {
+  background: var(--menu-selected);
+  color: var(--menu-link-active);
+}
+
+.category.link-pending {
+  outline: 0.15rem dashed var(--sidebar-trigger);
+  outline-offset: 0.1rem;
+}
+
+.grid-icon {
+  margin-right: 0.4em;
+}
+.grid-icon-select {
+  min-width: 3.5rem;
+  text-align: center;
+}
 
 .drag-handle {
   border: none;

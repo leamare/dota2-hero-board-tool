@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useBoardStore } from '../../state/boardStore';
-import { COLUMN_OPTIONS } from '../../lib/constants';
+import { COLUMN_OPTIONS, GRID_ICONS } from '../../lib/constants';
 import { ITEM_STYLES, PORTRAIT_TYPES, SIZES } from '../../lib/images';
 import ShareModal from './ShareModal';
 import SaveControls from './SaveControls';
@@ -14,6 +14,22 @@ export default function BoardToolbar() {
 
   return (
     <div className="toolbar">
+      <div className="field row">
+        <label htmlFor="board-icon">Icon</label>
+        <select
+          id="board-icon"
+          className="select grid-icon-select"
+          value={board.icon ?? ''}
+          onChange={(e) => patchBoard({ icon: e.target.value })}
+        >
+          {GRID_ICONS.map((g) => (
+            <option key={g} value={g}>
+              {g || '—'}
+            </option>
+          ))}
+        </select>
+      </div>
+
       <div className="field row">
         <label htmlFor="board-name">Name</label>
         <input

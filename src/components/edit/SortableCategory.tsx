@@ -2,7 +2,7 @@ import { useSortable, SortableContext, rectSortingStrategy } from '@dnd-kit/sort
 import { CSS } from '@dnd-kit/utilities';
 import type { CSSProperties } from 'react';
 import type { Board, Category } from '../../types/board';
-import { categoryBasis, resolveDisplay } from '../../lib/board';
+import { resolveDisplay } from '../../lib/board';
 import { colorIndex, LABEL_COLORS } from '../../lib/constants';
 import CategoryLabel from '../board/CategoryLabel';
 import SortableElement, { elementDragId } from './SortableElement';
@@ -12,9 +12,12 @@ interface Props {
   category: Category;
   board: Board;
   grouped?: boolean;
+  cellStyle?: CSSProperties;
+  linkPending?: boolean;
   onOpenSettings: () => void;
   onAdd: () => void;
   onElementAlt: (index: number) => void;
+  onLink: (orient: 'v' | 'h') => void;
 }
 
 export const categoryDragId = (id: string) => `cat:${id}`;
@@ -22,34 +25,36 @@ export const categoryDragId = (id: string) => `cat:${id}`;
 const isEmptyLabel = (c: Category): boolean =>
   c.name.type === 'text' && !c.name.text?.trim();
 
-const HEADER_SIZE_CLASS = ['hs-small', 'hs-normal', 'hs-large'];
+const HEADER_SIZE_CLASS = ['hs-small', 'hs-normal', 'hs-large', 'hs-huge'];
 
 export default function SortableCategory({
   category,
   board,
   grouped,
+  cellStyle,
+  linkPending,
   onOpenSettings,
   onAdd,
   onElementAlt,
+  onLink,
 }: Props) {
   const removeCategory = useBoardStore((s) => s.removeCategory);
   const removeElement = useBoardStore((s) => s.removeElement);
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({ id: categoryDragId(category.id) });
+    useSortable({ id: categoryDragId(category.id), animateLayoutChanges: () => false });
 
   const { aspect, heightRem } = resolveDisplay(category, board);
-  const hasColor = board.colorfulLabels && !!category.color;
+  const hasColor = !!category.color;
+  const linked = !!category.linkGroup;
   const colorVar = hasColor
     ? `var(--label-${LABEL_COLORS[colorIndex(category.color)].key})`
     : undefined;
 
   const style: CSSProperties = {
+    ...cellStyle,
     transform: CSS.Transform.toString(transform),
     transition,
-    ...(grouped
-      ? {}
-      : { '--cat-basis': `calc(${categoryBasis(category, board)}% - var(--grid-gap))` }),
     ...(colorVar ? { '--cat-color': colorVar } : {}),
     opacity: isDragging ? 0.5 : undefined,
     zIndex: isDragging ? 5 : undefined,
@@ -63,6 +68,7 @@ export default function SortableCategory({
         'category',
         grouped ? 'grouped' : '',
         hasColor ? 'has-color' : '',
+        linkPending ? 'link-pending' : '',
         HEADER_SIZE_CLASS[category.headerSize ?? 1],
         category.separatorRight ? 'sep-right' : '',
       ]
@@ -77,6 +83,22 @@ export default function SortableCategory({
           {isEmptyLabel(category) ? 'Untitled' : <CategoryLabel name={category.name} />}
         </span>
         <span className="cat-controls">
+          <button
+            className={`btn small${linkPending ? ' primary' : ''}${linked ? ' active' : ''}`}
+            title={linked ? 'Unlink' : 'Link vertically'}
+            onClick={() => onLink('v')}
+          >
+            {linked ? '⛓' : '↕'}
+          </button>
+          {!linked && (
+            <button
+              className={`btn small${linkPending ? ' primary' : ''}`}
+              title="Link horizontally"
+              onClick={() => onLink('h')}
+            >
+              ↔
+            </button>
+          )}
           <button className="btn small" title="Settings" onClick={onOpenSettings}>
             ⚙
           </button>

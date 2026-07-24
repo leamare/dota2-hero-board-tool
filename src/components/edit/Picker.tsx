@@ -14,7 +14,7 @@ interface Props {
   keepOpen?: boolean;
 }
 
-type Tab = 'hero' | 'item' | 'special';
+type Tab = 'hero' | 'item';
 
 const matches = (haystack: string, query: string): boolean =>
   query
@@ -27,7 +27,6 @@ export default function Picker({ open, onClose, onPick, previewType = 0, keepOpe
   const meta = useMetadata();
   const [tab, setTab] = useState<Tab>('hero');
   const [query, setQuery] = useState('');
-  const [customTag, setCustomTag] = useState('');
   const searchRef = useRef<HTMLInputElement>(null);
 
   // auto-focus the search box every time the picker opens
@@ -53,6 +52,9 @@ export default function Picker({ open, onClose, onPick, previewType = 0, keepOpe
     return meta.items.filter((i: Item) => matches(`${i.name} ${i.tag}`.toLowerCase(), query));
   }, [meta, query]);
 
+  // secret: typing "!<tag>" in the item search offers a custom courier icon
+  const customTag = tab === 'item' && query.startsWith('!') ? query.slice(1).trim() : '';
+
   const pick = (element: GridElement) => {
     onPick(element);
     if (!keepOpen) onClose();
@@ -71,22 +73,17 @@ export default function Picker({ open, onClose, onPick, previewType = 0, keepOpe
           <button className={`btn small${tab === 'item' ? ' primary' : ''}`} onClick={() => setTab('item')}>
             Items
           </button>
-          <button
-            className={`btn small${tab === 'special' ? ' primary' : ''}`}
-            onClick={() => setTab('special')}
-          >
-            Special
+          <button className="btn small" title="Add a blank block" onClick={() => pick({ kind: 'empty' })}>
+            ＋ Empty
           </button>
-          {tab !== 'special' && (
-            <input
-              ref={searchRef}
-              className="input picker-search"
-              type="search"
-              placeholder="Search…"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-            />
-          )}
+          <input
+            ref={searchRef}
+            className="input picker-search"
+            type="search"
+            placeholder="Search…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
         </div>
 
         {tab === 'hero' && (
@@ -107,6 +104,16 @@ export default function Picker({ open, onClose, onPick, previewType = 0, keepOpe
 
         {tab === 'item' && (
           <div className="picker-grid">
+            {customTag && (
+              <button
+                className="picker-tile item"
+                title={`Custom icon: ${customTag}`}
+                onClick={() => pick({ kind: 'custom', tag: customTag })}
+              >
+                <img style={tileStyle} className="contain" src={itemImageUrl(0, customTag)} alt={customTag} />
+                <span>custom: {customTag}</span>
+              </button>
+            )}
             {items.map((i) => (
               <button
                 key={i.id}
@@ -118,38 +125,6 @@ export default function Picker({ open, onClose, onPick, previewType = 0, keepOpe
                 <span>{i.name}</span>
               </button>
             ))}
-          </div>
-        )}
-
-        {tab === 'special' && (
-          <div className="picker-special">
-            <button className="btn" onClick={() => pick({ kind: 'empty' })}>
-              Add empty block
-            </button>
-            <div className="field">
-              <label>Custom icon tag</label>
-              <p className="muted">
-                Enter a courier tag for an icon not in the item list (advanced).
-              </p>
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <input
-                  className="input"
-                  placeholder="e.g. seasonal_rank_1"
-                  value={customTag}
-                  onChange={(e) => setCustomTag(e.target.value)}
-                />
-                <button
-                  className="btn primary"
-                  disabled={!customTag.trim()}
-                  onClick={() => {
-                    pick({ kind: 'custom', tag: customTag.trim() });
-                    setCustomTag('');
-                  }}
-                >
-                  Add
-                </button>
-              </div>
-            </div>
           </div>
         )}
       </div>

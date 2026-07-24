@@ -72,7 +72,10 @@ export default function LayoutsPage() {
         <ul className="layouts-list">
           {layouts.map((l) => (
             <li key={l.id} className="layout-row">
-              <span className="layout-name">{l.name}</span>
+              <span className="layout-name">
+                {l.board.icon && <span className="grid-icon">{l.board.icon}</span>}
+                {l.name}
+              </span>
               <span className="layout-meta">{l.board.categories.length} categories</span>
               <span className="layout-actions">
                 <button className="btn small primary" onClick={() => load(l)}>
