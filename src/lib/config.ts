@@ -10,5 +10,11 @@ export const LRG2_API = 'https://stats.spectral.gg/lrg2/api/';
 
 export const COURIER_BASE = 'https://courier.spectral.gg/images/dota';
 
+/** Parent site the ❮ root-link returns to (one level up from this section). */
+export const PARENT_URL = 'https://spectral.gg';
+
+/** The section's own home — where the logo button leads. */
+export const SECTION_HOME = '/view';
+
 export const metadataUrl = (gets: string): string =>
   `${LRG2_API}?mod=metadata&gets=${encodeURIComponent(gets)}`;

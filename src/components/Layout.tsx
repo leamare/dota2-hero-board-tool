@@ -1,22 +1,41 @@
-import { NavLink, Outlet } from 'react-router-dom';
+import type { ReactElement } from 'react';
+import { NavLink, Outlet, Link } from 'react-router-dom';
+import { PARENT_URL, SECTION_HOME } from '../lib/config';
 
 const MENU = [
-  { to: '/view', label: 'View' },
-  { to: '/edit', label: 'Edit' },
-  { to: '/layouts', label: 'Layouts' },
-  { to: '/about', label: 'About' },
-];
+  { to: '/view', label: 'View', icon: 'grid' },
+  { to: '/edit', label: 'Edit', icon: 'pen' },
+  { to: '/layouts', label: 'Layouts', icon: 'stack' },
+  { to: '/about', label: 'About', icon: 'info' },
+] as const;
+
+const ICONS: Record<string, ReactElement> = {
+  grid: (
+    <path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z" />
+  ),
+  pen: (
+    <path d="M4 20h4L20 8l-4-4L4 16zM14 6l4 4" fill="none" stroke="currentColor" strokeWidth="2" />
+  ),
+  stack: (
+    <path d="M12 2 2 7l10 5 10-5zM2 12l10 5 10-5M2 17l10 5 10-5" fill="none" stroke="currentColor" strokeWidth="2" />
+  ),
+  info: (
+    <path d="M12 2a10 10 0 100 20 10 10 0 000-20zm0 5a1.3 1.3 0 110 2.6A1.3 1.3 0 0112 7zm-1.3 5h2.6v6h-2.6z" />
+  ),
+};
+
+const MenuIcon = ({ name }: { name: string }) => (
+  <svg className="menu-icon" viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true">
+    {ICONS[name]}
+  </svg>
+);
 
 export default function Layout() {
   return (
     <div className="app-shell">
       <header className="app-header">
-        <a
-          className="brand"
-          href="https://spectral.gg"
-          title="spectral.gg"
-          aria-label="spectral.gg"
-        />
+        <a className="root-link" href={PARENT_URL} title="To main site" />
+        <Link className="gotomain" to={SECTION_HOME} title="Hero Grid Tool" aria-label="Home" />
         <nav className="app-menu">
           {MENU.map((m) => (
             <NavLink
@@ -24,7 +43,10 @@ export default function Layout() {
               to={m.to}
               className={({ isActive }) => (isActive ? 'active' : undefined)}
             >
-              <span>{m.label}</span>
+              <span className="menu-inner">
+                <MenuIcon name={m.icon} />
+                {m.label}
+              </span>
             </NavLink>
           ))}
         </nav>
@@ -36,7 +58,7 @@ export default function Layout() {
       </main>
 
       <footer className="app-footer">
-        <a href="https://spectral.gg">spectral.gg</a> — Dota 2 Hero Grid Tool
+        <a href={PARENT_URL}>spectral.gg</a> — Dota 2 Hero Grid Tool
       </footer>
     </div>
   );

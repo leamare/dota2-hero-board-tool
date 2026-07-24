@@ -1,4 +1,4 @@
-import { createHashRouter, RouterProvider, Navigate } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
 import AboutPage from './pages/AboutPage';
 import ViewPage from './pages/ViewPage';
@@ -7,7 +7,7 @@ import ImportPage from './pages/ImportPage';
 import LayoutsPage from './pages/LayoutsPage';
 import { MetadataProvider } from './state/MetadataProvider';
 
-const router = createHashRouter([
+const router = createBrowserRouter([
   {
     element: <Layout />,
     children: [

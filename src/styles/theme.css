@@ -4,54 +4,58 @@
  */
 
 :root {
-  /* --- base palette (spectral-main) --- */
-  --main-bg: #151529;
-  --main-text-color: #e7e7ec;
-  --header-bg: #29275d;
-  --big-button-color: #5500b3;
-  --big-button-color-hover: #b76b00;
-  --links-color: #cee5ff;
+  /*
+   * Base palette. The spectral-main hues were run through OKLCH with the
+   * chroma zeroed out — same perceptual lightness, neutral dark grey. The
+   * original hex is kept in a comment beside each token for reference.
+   */
+  --main-bg: #181818;                    /* #151529 */
+  --main-text-color: #e7e7e7;            /* #e7e7ec */
+  --header-bg: #303030;                  /* #29275d */
+  --big-button-color: #484848;           /* #5500b3 */
+  --big-button-color-hover: #808080;     /* #b76b00 */
+  --links-color: #e2e2e2;                /* #cee5ff */
 
-  --menu-selected-text-shadow: #4b9be3;
-  --menu-selected: #3a279d;
-  --menu-selected-borders: #221953;
-  --menu-selected-hover: #4037e6;
-  --menu-selected-borders-hover: #172499;
-  --menu-hover: #201f43;
+  --menu-selected-text-shadow: #959595;  /* #4b9be3 */
+  --menu-selected: #434343;              /* #3a279d */
+  --menu-selected-borders: #252525;      /* #221953 */
+  --menu-selected-hover: #5e5e5e;        /* #4037e6 */
+  --menu-selected-borders-hover: #3b3b3b;/* #172499 */
+  --menu-hover: #242424;                 /* #201f43 */
   --menu-link-active: #fff;
-  --menu-link: #8891e8;
+  --menu-link: #9a9a9a;                  /* #8891e8 */
 
-  --sidebar-widget-bg: #0b173f;
-  --sidebar-trigger: #439ac4;
+  --sidebar-widget-bg: #1b1b1b;          /* #0b173f */
+  --sidebar-trigger: #8f8f8f;            /* #439ac4 */
 
-  --mp-block-outline: #10154a;
-  --mp-block-bg: #03071f;
-  --mp-block-link: #bbe5ff;
+  --mp-block-outline: #1d1d1d;           /* #10154a */
+  --mp-block-bg: #0a0a0a;                /* #03071f */
+  --mp-block-link: #dedede;              /* #bbe5ff */
   --mp-block-link-outline: #000;
-  --mp-block-desc-bg: #0f0b35;
-  --mp-block-outline-hover: #7777ff66;
+  --mp-block-desc-bg: #131313;           /* #0f0b35 */
+  --mp-block-outline-hover: #8a8a8a66;   /* #7777ff66 */
 
-  --table-hover-color: #7777ff22;
-  --text-block-bg: #191e3d;
-  --text-block-outline: #0c0916;
+  --table-hover-color: #8a8a8a22;        /* #7777ff22 */
+  --text-block-bg: #212121;              /* #191e3d */
+  --text-block-outline: #0f0f0f;         /* #0c0916 */
   --text-block-caption-bg: #000;
   --text-block-caption-h2-bg: #00000077;
   --text-block-caption-h3-bg: #00000055;
   --text-block-caption-h4-bg: #00000033;
   --text-block-caption-h5-bg: #00000011;
   --text-block-caption-code-bg: #00000022;
-  --text-block-caption-color: #c1d5e9;
-  --footer-color: #2c3158;
-  --footer-bg: #111120;
+  --text-block-caption-color: #d2d2d2;   /* #c1d5e9 */
+  --footer-color: #353535;               /* #2c3158 */
+  --footer-bg: #131313;                  /* #111120 */
 
   /* --- grid tool extensions --- */
   --grid-gap: 0.6rem;
-  --cat-bg: #10132e;
-  --cat-outline: #1c2255;
-  --cat-outline-hover: #3a3f8a;
-  --cat-head-bg: #05081c;
+  --cat-bg: #161616;                     /* #10132e */
+  --cat-outline: #292929;                /* #1c2255 */
+  --cat-outline-hover: #494949;          /* #3a3f8a */
+  --cat-head-bg: #0a0a0a;                /* #05081c */
   --portrait-radius: 0.2rem;
-  --separator-color: #4b5591;
+  --separator-color: #5b5b5b;            /* #4b5591 */
 
   --font-main: 'Noto Sans', 'Open Sans', Tahoma, Helvetica, sans-serif;
 }
