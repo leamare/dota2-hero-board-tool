@@ -1,5 +1,11 @@
-node_modules/
-npm-debug.log
-build/
-dota/
-config.json
+node_modules
+dist
+dist-ssr
+*.local
+.DS_Store
+.vscode/*
+!.vscode/extensions.json
+*.log
+.env
+.env.*
+!.env.example

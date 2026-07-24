@@ -1,51 +1,38 @@
 {
-  "name": "hero-grid-angular",
-  "version": "1.0.1",
-  "description": "Web App for custom Dota 2 hero boards",
-  "main": "src/index.html",
-  "scripts": {
-    "build": "node ./node_modules/gulp/bin/gulp.js build",
-    "prod": "node ./node_modules/gulp/bin/gulp.js prod",
-    "watch": "node ./node_modules/gulp/bin/gulp.js watch",
-    "gulp": "node ./node_modules/gulp/bin/gulp.js"
-  },
+  "name": "hero-grid-tool",
+  "version": "2.0.0",
+  "description": "Web app for building and sharing custom Dota 2 hero grids",
+  "type": "module",
+  "license": "GPL-3.0",
   "author": "me@ileamare.ru",
   "private": true,
-  "license": "GPL-3.0",
-  "devDependencies": {
-    "angular": "^1.7.9",
-    "angular-animate": "^1.7.5",
-    "angular-dnd-module": "^0.1.25",
-    "angular-route": "^1.7.4",
-    "angular-translate": "^2.18.1",
-    "base64-js": "^1.3.0",
-    "browser-sync": "^2.26.7",
-    "connect-modrewrite": "^0.10.2",
-    "del": "^3.0.0",
-    "fomantic-ui-css": "^2.4.0",
-    "gulp": "^4.0.0",
-    "gulp-concat": "^2.6.1",
-    "gulp-cssnano": "^2.1.3",
-    "gulp-htmlmin": "^5.0.1",
-    "gulp-if": "^2.0.2",
-    "gulp-imagemin": "^5.0.3",
-    "gulp-minify": "^3.1.0",
-    "gulp-plumber": "^1.2.0",
-    "gulp-rename": "^1.4.0",
-    "gulp-replace": "^1.0.0",
-    "gulp-rev": "^9.0.0",
-    "gulp-rev-replace": "^0.4.4",
-    "gulp-sourcemaps": "^2.6.4",
-    "gulp-uglify": "^3.0.1",
-    "imagemin-pngquant": "^6.0.0",
-    "jquery": "^3.5.1",
-    "merge-stream": "^1.0.1",
-    "require-dir": "^1.1.0",
-    "run-sequence": "^2.2.1",
-    "semantic-ui-angular-jquery": "^0.2.4"
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc -b --noEmit",
+    "test": "vitest run"
   },
   "dependencies": {
-    "gulp-inject-string": "^1.1.2",
-    "gulp-token-replace": "^1.1.5"
+    "@dnd-kit/core": "^6.1.0",
+    "@dnd-kit/modifiers": "^7.0.0",
+    "@dnd-kit/sortable": "^8.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.26.2",
+    "zustand": "^4.5.5"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.1",
+    "@types/react": "^18.3.11",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.2",
+    "typescript": "^5.6.2",
+    "vite": "^5.4.8",
+    "vitest": "^2.1.2"
+  },
+  "allowScripts": {
+    "esbuild@0.21.5": true
   }
 }
