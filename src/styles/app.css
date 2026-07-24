@@ -163,6 +163,12 @@ nav.app-menu a.active:hover {
   margin-bottom: 1em;
   text-align: justify;
 }
+.text-panel ul {
+  margin: 0 0 1em 1.5em;
+}
+.text-panel li {
+  margin-bottom: 0.4em;
+}
 
 /* ========================================== FORM PRIMITIVES */
 
