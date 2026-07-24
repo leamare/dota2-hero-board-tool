@@ -1,4 +1,4 @@
-import { heroImageUrl, itemImageUrl } from '../../lib/images';
+import { heroImageUrl, imageUrl, itemImageUrl } from '../../lib/images';
 import { presetLabel } from '../../lib/constants';
 import type { CategoryName } from '../../types/board';
 import { useMetadata } from '../../state/MetadataProvider';
@@ -33,6 +33,18 @@ export default function CategoryLabel({ name }: { name: CategoryName }) {
           src={itemImageUrl(0, item.tag)}
           alt={item.name}
           title={item.name}
+        />
+      );
+    }
+
+    case 'icon': {
+      if (!name.iconFolder || !name.iconTag) return <span className="empty-label">?</span>;
+      return (
+        <img
+          className="cat-title-icon contain"
+          src={imageUrl(name.iconFolder, name.iconTag)}
+          alt={name.iconTag}
+          title={name.iconTag}
         />
       );
     }

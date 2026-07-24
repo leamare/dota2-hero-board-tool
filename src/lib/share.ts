@@ -11,8 +11,14 @@ import type { ElementKind } from './images';
 
 const SHARE_VERSION = 3;
 
-const NAME_TYPE_CODE: Record<CategoryNameType, number> = { text: 0, preset: 1, hero: 2, item: 3 };
-const NAME_TYPE_BY_CODE: CategoryNameType[] = ['text', 'preset', 'hero', 'item'];
+const NAME_TYPE_CODE: Record<CategoryNameType, number> = {
+  text: 0,
+  preset: 1,
+  hero: 2,
+  item: 3,
+  icon: 4,
+};
+const NAME_TYPE_BY_CODE: CategoryNameType[] = ['text', 'preset', 'hero', 'item', 'icon'];
 const KIND_CODE: Record<ElementKind, number> = { hero: 0, item: 1, empty: 2, custom: 3 };
 const KIND_BY_CODE: ElementKind[] = ['hero', 'item', 'empty', 'custom'];
 
@@ -59,7 +65,10 @@ function encodeName(w: ByteWriter, name: CategoryName): void {
   w.u8(NAME_TYPE_CODE[name.type]);
   if (name.type === 'text') w.string(name.text ?? '');
   else if (name.type === 'preset') w.varint(name.preset ?? 0);
-  else {
+  else if (name.type === 'icon') {
+    w.string(name.iconFolder ?? '');
+    w.string(name.iconTag ?? '');
+  } else {
     w.varint(name.refId ?? 0);
     let nf = 0;
     if (name.alticon) nf |= N_ALTICON;
@@ -141,7 +150,10 @@ function decodeName(r: ByteReader): CategoryName {
   const name: CategoryName = { type };
   if (type === 'text') name.text = r.string();
   else if (type === 'preset') name.preset = r.varint();
-  else {
+  else if (type === 'icon') {
+    name.iconFolder = r.string();
+    name.iconTag = r.string();
+  } else {
     name.refId = r.varint();
     const nf = r.u8();
     if (nf & N_ALTICON) name.alticon = r.string();

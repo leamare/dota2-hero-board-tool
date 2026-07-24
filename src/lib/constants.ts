@@ -80,3 +80,17 @@ export const MAX_COLUMNS = 6;
 export const GRID_ICONS = [
   '', '📋', '⚔️', '🛡️', '🔥', '🌿', '💧', '⭐', '🎯', '🏆', '👑', '💀', '🧊', '🧠', '📈',
 ];
+
+/** Dota facet icons available at courier `facets/<name>.png` (from the LRG2 facets metadata). */
+export const FACET_ICONS = [
+  'aghs', 'agility', 'arc_warden', 'arc_warden_alt', 'area_of_effect', 'armor', 'armor_broken',
+  'barrier', 'broken_chain', 'brush', 'bubbles', 'chicken', 'chrono_cube', 'cooldown', 'curve_ball',
+  'damage', 'dawnbreaker_hammer', 'death_ward', 'debuff', 'double_bounce', 'dragon_fire',
+  'dragon_frost', 'dragon_poison', 'empower', 'execute', 'fence', 'fist', 'focus_fire', 'full_heart',
+  'gold', 'healing', 'illusion', 'invoker_exort', 'invoker_quas', 'invoker_wex', 'item', 'kez_flutter',
+  'kez_shadowhawk', 'lifestealer_rage', 'mana', 'meat', 'moon', 'movement', 'multi_arrow', 'no_facet',
+  'no_vision', 'nuke', 'ogre', 'overshadow', 'phantom_ass_dagger', 'phantom_lance', 'pie', 'pudge_hook',
+  'range', 'ricochet', 'rng', 'rune', 'siege', 'silencer', 'skull', 'slow', 'snake', 'snot', 'snowflake',
+  'spectre', 'speed', 'spinning', 'spirit', 'strength', 'summons', 'sun', 'teleport', 'tower', 'tree',
+  'twin_hearts', 'vision', 'vortex_in', 'vortex_out', 'web', 'whoopee_cushion', 'wolf', 'xp',
+];

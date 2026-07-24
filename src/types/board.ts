@@ -11,7 +11,7 @@ export interface GridElement {
   alticon?: string | null;
 }
 
-export type CategoryNameType = 'text' | 'preset' | 'hero' | 'item';
+export type CategoryNameType = 'text' | 'preset' | 'hero' | 'item' | 'icon';
 
 /** How a category header is labelled. */
 export interface CategoryName {
@@ -26,6 +26,10 @@ export interface CategoryName {
   alticon?: string | null;
   /** portrait type used to render a hero/item name icon */
   iconType?: number;
+  /** courier folder for a generic icon (type = icon), e.g. "facets" */
+  iconFolder?: string;
+  /** courier tag for a generic icon (type = icon), e.g. "mana" */
+  iconTag?: string;
 }
 
 export interface Category {

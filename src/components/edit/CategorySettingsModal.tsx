@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import Modal from '../ui/Modal';
-import Picker from './Picker';
+import CategoryIconModal from './CategoryIconModal';
 import { useBoardStore } from '../../state/boardStore';
 import { LABEL_COLORS, PRESET_NAMES, WIDENESS } from '../../lib/constants';
 import { ITEM_STYLES, PORTRAIT_TYPES, SIZES } from '../../lib/images';
@@ -27,7 +27,8 @@ export default function CategorySettingsModal({ categoryId, onClose }: Props) {
 
   if (!category) return null;
   const name = category.name;
-  const isIcon = name.type === 'hero' || name.type === 'item';
+  const isIcon = name.type === 'hero' || name.type === 'item' || name.type === 'icon';
+  const isRefIcon = name.type === 'hero' || name.type === 'item';
   const currentMode: 'text' | 'preset' | 'icon' = isIcon ? 'icon' : (name.type as 'text' | 'preset');
 
   const setMode = (mode: string) => {
@@ -93,7 +94,7 @@ export default function CategorySettingsModal({ categoryId, onClose }: Props) {
             </div>
           )}
 
-          {isIcon && (
+          {isRefIcon && (
             <div className="field">
               <label>Icon style</label>
               <select
@@ -262,17 +263,9 @@ export default function CategorySettingsModal({ categoryId, onClose }: Props) {
         </div>
       </Modal>
 
-      <Picker
-        open={iconPicker}
-        previewType={name.iconType ?? 2}
+      <CategoryIconModal
+        categoryId={iconPicker ? category.id : null}
         onClose={() => setIconPicker(false)}
-        onPick={(el) => {
-          if (el.kind === 'hero' || el.kind === 'item') {
-            patchCategory(category.id, {
-              name: { type: el.kind, refId: el.refId, iconType: name.iconType ?? 2 },
-            });
-          }
-        }}
       />
     </>
   );
