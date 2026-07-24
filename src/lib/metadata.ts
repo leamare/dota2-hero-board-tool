@@ -70,10 +70,47 @@ async function fetchJson<T>(url: string): Promise<T> {
   return (await res.json()) as T;
 }
 
+const CACHE_KEY = 'hgt.metadata';
+const CACHE_TTL = 6 * 60 * 60 * 1000; // 6 hours
+
+interface CachedMetadata {
+  ts: number;
+  heroes: Hero[];
+  items: Item[];
+}
+
+const build = (heroes: Hero[], items: Item[]): Metadata => ({
+  heroes,
+  items,
+  heroById: new Map(heroes.map((h) => [h.id, h])),
+  itemById: new Map(items.map((i) => [i.id, i])),
+});
+
+function readCache(now: number): Metadata | null {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const c = JSON.parse(raw) as CachedMetadata;
+    if (!c.ts || now - c.ts > CACHE_TTL || !c.heroes?.length) return null;
+    return build(c.heroes, c.items);
+  } catch {
+    return null;
+  }
+}
+
 let cached: Promise<Metadata> | undefined;
 
 export function loadMetadata(): Promise<Metadata> {
   if (cached) return cached;
+
+  // Date.now is fine at runtime in the browser
+  const now = Date.now();
+  const fromCache = readCache(now);
+  if (fromCache) {
+    cached = Promise.resolve(fromCache);
+    return cached;
+  }
+
   cached = (async () => {
     const [heroesRes, itemsRes] = await Promise.all([
       fetchJson<RawResult<{ heroes: Record<string, RawHero> }>>(metadataUrl('heroes')),
@@ -83,12 +120,13 @@ export function loadMetadata(): Promise<Metadata> {
     const heroes = normalizeHeroes(heroesRes.result.heroes);
     const items = normalizeItems(itemsRes.result.items);
 
-    return {
-      heroes,
-      items,
-      heroById: new Map(heroes.map((h) => [h.id, h])),
-      itemById: new Map(items.map((i) => [i.id, i])),
-    } satisfies Metadata;
+    try {
+      localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: now, heroes, items } satisfies CachedMetadata));
+    } catch {
+      /* quota — ignore, just skip caching */
+    }
+
+    return build(heroes, items);
   })();
   return cached;
 }
