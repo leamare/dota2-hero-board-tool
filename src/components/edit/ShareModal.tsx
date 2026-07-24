@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import Modal from '../ui/Modal';
+import QRCode from '../ui/QRCode';
 import { buildShareUrl } from '../../lib/shareUrl';
 import { useBoardStore } from '../../state/boardStore';
 
@@ -23,12 +24,23 @@ export default function ShareModal({ open, onClose }: { open: boolean; onClose: 
       <p className="muted" style={{ marginBottom: '0.75rem' }}>
         The whole grid is packed into this link — no server needed.
       </p>
-      <textarea className="input share-link" readOnly value={url} rows={4} onFocus={(e) => e.target.select()} />
-      <div style={{ marginTop: '0.75rem', display: 'flex', gap: '0.5rem' }}>
-        <button className="btn primary" onClick={copy}>
-          {copied ? 'Copied!' : 'Copy link'}
-        </button>
-        <span className="muted" style={{ alignSelf: 'center' }}>{url.length} characters</span>
+      <div className="share-body">
+        <div className="share-main">
+          <textarea
+            className="input share-link"
+            readOnly
+            value={url}
+            rows={4}
+            onFocus={(e) => e.target.select()}
+          />
+          <div style={{ marginTop: '0.75rem', display: 'flex', gap: '0.5rem' }}>
+            <button className="btn primary" onClick={copy}>
+              {copied ? 'Copied!' : 'Copy link'}
+            </button>
+            <span className="muted" style={{ alignSelf: 'center' }}>{url.length} characters</span>
+          </div>
+        </div>
+        {open && <QRCode text={url} />}
       </div>
     </Modal>
   );
