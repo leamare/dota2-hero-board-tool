@@ -1,0 +1,130 @@
+.board-name {
+  font-weight: normal;
+  font-family: sans-serif;
+  font-size: 1.6rem;
+  margin-bottom: 1rem;
+  color: var(--text-block-caption-color);
+}
+.board-empty {
+  opacity: 0.4;
+  padding: 2rem;
+  font-style: italic;
+}
+
+/* ========================================== BOARD LAYOUT */
+
+.board {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--grid-gap);
+}
+.board.centered {
+  justify-content: center;
+}
+.board.darkened {
+  background-color: #00000055;
+  padding: var(--grid-gap);
+}
+
+/* forced row break + dashed separator, both span the full width */
+.board .row-break {
+  flex: 0 0 100%;
+  height: 0;
+}
+.board .separator {
+  flex: 0 0 100%;
+  border-top: 0.15rem dashed var(--separator-color);
+  margin: 0.35rem 0;
+  opacity: 0.7;
+}
+
+/* ========================================== CATEGORY */
+
+.category {
+  flex: 0 0 var(--cat-basis, 33.333%);
+  max-width: var(--cat-basis, 33.333%);
+  background-color: var(--cat-bg);
+  box-shadow: 0 0 0 0.12rem var(--cat-outline);
+  transition: box-shadow 200ms ease;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.category:hover {
+  box-shadow: 0 0 0 0.12rem var(--cat-outline-hover);
+}
+
+.category .cat-head {
+  background-color: var(--cat-head-bg);
+  padding: 0.35rem 0.6rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2rem;
+}
+.category .cat-title {
+  font-size: 1rem;
+  line-height: 1.5;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.category .cat-title.empty {
+  opacity: 0.35;
+  font-style: italic;
+}
+
+/* coloured label pill */
+.category.has-color .cat-head {
+  background-color: color-mix(in srgb, var(--cat-color) 35%, var(--cat-head-bg));
+  box-shadow: inset 0.2rem 0 0 var(--cat-color);
+}
+.category.has-color .cat-title {
+  color: #fff;
+  text-shadow: 0 0 0.4rem #000;
+}
+
+.cat-title-icon {
+  height: 1.4em;
+  width: auto;
+  vertical-align: middle;
+  border-radius: 0.15em;
+}
+
+/* ========================================== ELEMENTS */
+
+.category .cat-body {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem;
+  padding: 0.35rem;
+  align-content: flex-start;
+}
+.category .cat-body.empty {
+  min-height: 2.5rem;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.3;
+  font-size: 0.85rem;
+}
+
+.portrait {
+  height: var(--portrait-h, 2.6rem);
+  border-radius: var(--portrait-radius);
+  overflow: hidden;
+  background-color: #000;
+  flex: 0 0 auto;
+  position: relative;
+}
+.category.bigger .portrait {
+  --portrait-h: 4.2rem;
+}
+.portrait img {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+  display: block;
+}
