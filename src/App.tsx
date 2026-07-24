@@ -6,6 +6,7 @@ import EditPage from './pages/EditPage';
 import ImportPage from './pages/ImportPage';
 import LayoutsPage from './pages/LayoutsPage';
 import { MetadataProvider } from './state/MetadataProvider';
+import { ToastProvider } from './state/ToastProvider';
 
 const router = createBrowserRouter([
   {
@@ -25,7 +26,9 @@ const router = createBrowserRouter([
 export default function App() {
   return (
     <MetadataProvider>
-      <RouterProvider router={router} />
+      <ToastProvider>
+        <RouterProvider router={router} />
+      </ToastProvider>
     </MetadataProvider>
   );
 }

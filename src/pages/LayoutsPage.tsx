@@ -26,7 +26,7 @@ export default function LayoutsPage() {
   };
 
   const load = (l: SavedLayout) => {
-    setBoard({ ...l.board, name: l.board.name });
+    setBoard({ ...l.board, name: l.board.name }, l.id);
     navigate('/view');
   };
 
