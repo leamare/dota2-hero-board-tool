@@ -1,59 +1,73 @@
 import { COURIER_BASE } from './config';
 
-export type ElementKind = 'hero' | 'item';
+export type ElementKind = 'hero' | 'item' | 'empty' | 'custom';
 
-export interface ImageStyle {
-  /** stable id — equals the index in IMAGE_STYLES; used by the binary encoder */
+/**
+ * Hero portrait *type* — the shape of the box. Size is a separate axis.
+ * Index is the persisted id (append-only), used by the share encoder.
+ */
+export interface PortraitType {
   id: number;
-  /** short machine key */
   key: string;
-  /** courier folder the image lives in */
-  folder: string;
-  /** display label */
   label: string;
-  /** which element kind this style renders */
-  kind: ElementKind;
-  /** width / height ratio, used as a layout hint */
+  folder: string;
+  /** width / height of the box this type renders into */
   aspect: number;
 }
 
-/*
- * Append-only registry. The array index is the persisted id, so never reorder
- * or remove entries — only append. All folders verified against the courier CDN.
- */
-export const IMAGE_STYLES: ImageStyle[] = [
-  { id: 0, key: 'portraits_lg', folder: 'portraits_lg', label: 'Portrait (wide)', kind: 'hero', aspect: 256 / 144 },
-  { id: 1, key: 'portraits_vert_lg', folder: 'portraits_vert_lg', label: 'Portrait (tall)', kind: 'hero', aspect: 235 / 272 },
-  { id: 2, key: 'icons', folder: 'icons', label: 'Icon', kind: 'hero', aspect: 1 },
-  { id: 3, key: 'items', folder: 'items', label: 'Item icon', kind: 'item', aspect: 88 / 64 },
-  { id: 4, key: 'profile_badges', folder: 'profile_badges', label: 'Badge', kind: 'item', aspect: 1 },
-  { id: 5, key: 'portraits', folder: 'portraits', label: 'Portrait (small)', kind: 'hero', aspect: 256 / 144 },
-  { id: 6, key: 'portraits_vert', folder: 'portraits_vert', label: 'Portrait (small, tall)', kind: 'hero', aspect: 235 / 272 },
+export const PORTRAIT_TYPES: PortraitType[] = [
+  { id: 0, key: 'horizontal', label: 'Horizontal', folder: 'portraits_lg', aspect: 256 / 144 },
+  { id: 1, key: 'vertical', label: 'Vertical', folder: 'portraits_vert_lg', aspect: 235 / 272 },
+  { id: 2, key: 'icon', label: 'Icon', folder: 'icons', aspect: 1 },
 ];
 
-export const DEFAULT_HERO_STYLE = 0; // portraits_lg
-export const DEFAULT_ITEM_STYLE = 3; // items
-
-export const defaultStyleFor = (kind: ElementKind): number =>
-  kind === 'item' ? DEFAULT_ITEM_STYLE : DEFAULT_HERO_STYLE;
-
-export function getStyle(id: number): ImageStyle {
-  return IMAGE_STYLES[id] ?? IMAGE_STYLES[DEFAULT_HERO_STYLE];
+/** Item image *source* — the box shape still comes from the category portrait type. */
+export interface ItemStyle {
+  id: number;
+  key: string;
+  label: string;
+  folder: string;
 }
 
-export const stylesForKind = (kind: ElementKind): ImageStyle[] =>
-  IMAGE_STYLES.filter((s) => s.kind === kind);
+export const ITEM_STYLES: ItemStyle[] = [
+  { id: 0, key: 'items', label: 'Item icon', folder: 'items' },
+  { id: 1, key: 'profile_badges', label: 'Profile badge', folder: 'profile_badges' },
+];
 
-/**
- * Build the courier image URL for a hero/item.
- * @param alticon optional alternate icon suffix (heroes only), e.g. "persona1"
- */
-export function imageUrl(
-  styleId: number,
-  tag: string,
-  alticon?: string | null,
-): string {
-  const style = getStyle(styleId);
+/** Portrait size scale — box height in rem. */
+export interface SizeStep {
+  id: number;
+  label: string;
+  rem: number;
+}
+
+export const SIZES: SizeStep[] = [
+  { id: 0, label: 'Small', rem: 2.4 },
+  { id: 1, label: 'Medium', rem: 3.2 },
+  { id: 2, label: 'Large', rem: 4.4 },
+  { id: 3, label: 'Huge', rem: 6 },
+];
+
+export const DEFAULT_PORTRAIT_TYPE = 0;
+export const DEFAULT_ITEM_STYLE = 0;
+export const DEFAULT_SIZE = 0;
+
+export const portraitType = (id: number): PortraitType =>
+  PORTRAIT_TYPES[id] ?? PORTRAIT_TYPES[DEFAULT_PORTRAIT_TYPE];
+
+export const itemStyle = (id: number): ItemStyle =>
+  ITEM_STYLES[id] ?? ITEM_STYLES[DEFAULT_ITEM_STYLE];
+
+export const sizeStep = (id: number): SizeStep => SIZES[id] ?? SIZES[DEFAULT_SIZE];
+
+/** Low-level courier URL builder. */
+export function imageUrl(folder: string, tag: string, alticon?: string | null): string {
   const name = alticon ? `${tag}_${alticon}` : tag;
-  return `${COURIER_BASE}/${style.folder}/${name}.png`;
+  return `${COURIER_BASE}/${folder}/${name}.png`;
 }
+
+export const heroImageUrl = (type: number, tag: string, alticon?: string | null): string =>
+  imageUrl(portraitType(type).folder, tag, alticon);
+
+export const itemImageUrl = (style: number, tag: string): string =>
+  imageUrl(itemStyle(style).folder, tag);

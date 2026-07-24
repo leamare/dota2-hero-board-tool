@@ -5,8 +5,11 @@ import { emptyBoard, newCategory } from '../lib/board';
 
 interface BoardStore {
   board: Board;
+  /** id of the saved layout this board is currently tracking, if any */
+  currentLayoutId: string | null;
 
-  setBoard: (board: Board) => void;
+  setBoard: (board: Board, layoutId?: string | null) => void;
+  setCurrentLayoutId: (id: string | null) => void;
   resetBoard: () => void;
   patchBoard: (patch: Partial<Board>) => void;
 
@@ -37,9 +40,12 @@ export const useBoardStore = create<BoardStore>()(
   persist(
     (set) => ({
       board: emptyBoard(),
+      currentLayoutId: null,
 
-      setBoard: (board) => set({ board }),
-      resetBoard: () => set({ board: emptyBoard() }),
+      setBoard: (board, layoutId) =>
+        set(layoutId === undefined ? { board } : { board, currentLayoutId: layoutId }),
+      setCurrentLayoutId: (id) => set({ currentLayoutId: id }),
+      resetBoard: () => set({ board: emptyBoard(), currentLayoutId: null }),
       patchBoard: (patch) => set((s) => ({ board: { ...s.board, ...patch } })),
 
       addCategory: () =>
@@ -139,6 +145,31 @@ export const useBoardStore = create<BoardStore>()(
           return { board: { ...s.board, categories } };
         }),
     }),
-    { name: 'hgt.board', version: 1 },
+    {
+      name: 'hgt.board',
+      version: 2,
+      // migrate the pre-refactor shape (heroStyle/itemStyle/bigger) to the
+      // new portraitType/itemStyle/size model.
+      migrate: (persisted, from) => {
+        const state = persisted as { board?: Record<string, unknown> };
+        if (from >= 2 || !state?.board) return persisted as unknown as { board: Board };
+        const b = state.board as Record<string, unknown> & { categories?: Record<string, unknown>[] };
+        const itemMap = (v: unknown) => (v === 4 ? 1 : 0); // old 3=items,4=badges
+        b.portraitType = typeof b.heroStyle === 'number' ? Math.min(2, b.heroStyle) : 0;
+        b.itemStyle = itemMap(b.itemStyle);
+        b.size = 0;
+        b.categories = (b.categories ?? []).map((c) => {
+          const cat = c as Record<string, unknown>;
+          if (typeof cat.heroStyle === 'number') cat.portraitType = Math.min(2, cat.heroStyle);
+          if (typeof cat.itemStyle === 'number') cat.itemStyle = itemMap(cat.itemStyle);
+          if (cat.bigger) cat.size = 2;
+          delete cat.heroStyle;
+          delete cat.bigger;
+          return cat;
+        });
+        delete b.heroStyle;
+        return { board: b as unknown as Board };
+      },
+    },
   ),
 );

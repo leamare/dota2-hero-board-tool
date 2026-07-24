@@ -6,8 +6,9 @@ import type { Board } from '../types/board';
 const sample: Board = {
   name: 'Test Grid ✦',
   columns: 4,
-  heroStyle: 1,
-  itemStyle: 3,
+  portraitType: 1,
+  itemStyle: 0,
+  size: 2,
   colorfulLabels: true,
   centered: false,
   darkenedBg: true,
@@ -17,22 +18,26 @@ const sample: Board = {
       name: { type: 'preset', preset: 2 },
       color: 'green',
       wideness: 2,
-      bigger: true,
+      headerSize: 2,
+      portraitType: 2,
+      size: 1,
+      connectedNext: true,
       separatorAfter: true,
-      newRow: false,
-      heroStyle: 2,
       elements: [
         { kind: 'hero', refId: 1 },
         { kind: 'hero', refId: 5, alticon: 'persona1' },
         { kind: 'item', refId: 116 },
+        { kind: 'empty' },
+        { kind: 'custom', tag: 'seasonal_rank_1' },
       ],
     },
     {
       id: 'x2',
-      name: { type: 'hero', refId: 8 },
+      name: { type: 'hero', refId: 8, alticon: 'alt', iconType: 2 },
       color: '',
       wideness: 0,
-      bigger: false,
+      headerSize: 1,
+      separatorRight: true,
       elements: [],
     },
   ],
@@ -42,31 +47,31 @@ const sample: Board = {
 const normalize = (b: Board) => ({
   ...b,
   categories: b.categories.map(({ id: _id, ...c }) => ({
-    ...c,
-    bigger: !!c.bigger,
+    headerSize: 1,
+    portraitType: undefined,
+    itemStyle: undefined,
+    size: undefined,
+    connectedNext: !!c.connectedNext,
     separatorAfter: !!c.separatorAfter,
+    separatorRight: !!c.separatorRight,
     newRow: !!c.newRow,
-    heroStyle: c.heroStyle,
-    itemStyle: c.itemStyle,
+    ...c,
   })),
 });
-const stripIds = normalize;
 
 describe('board share encoding', () => {
   it('round-trips a populated board', () => {
     const decoded = decodeBoard(encodeBoard(sample));
-    expect(stripIds(decoded)).toEqual(stripIds(sample));
+    expect(normalize(decoded)).toEqual(normalize(sample));
   });
 
   it('round-trips an empty board', () => {
     const b = emptyBoard('Empty');
-    const decoded = decodeBoard(encodeBoard(b));
-    expect(stripIds(decoded)).toEqual(stripIds(b));
+    expect(normalize(decodeBoard(encodeBoard(b)))).toEqual(normalize(b));
   });
 
   it('produces url-safe output', () => {
-    const s = encodeBoard(sample);
-    expect(s).toMatch(/^[A-Za-z0-9_-]+$/);
+    expect(encodeBoard(sample)).toMatch(/^[A-Za-z0-9_-]+$/);
   });
 
   it('rejects an unknown version', () => {
