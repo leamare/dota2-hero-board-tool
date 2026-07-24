@@ -3,12 +3,14 @@ import type { CSSProperties } from 'react';
 import type { Board } from '../../types/board';
 import { groupCategories, unitSpan } from '../../lib/board';
 import CategoryCard from './CategoryCard';
+import { useT } from '../../lib/i18n';
 
 /**
  * Read-only board renderer. A CSS grid keeps rows aligned; categories span
  * columns by width, and linked categories render together as one unit.
  */
 export default function BoardView({ board }: { board: Board }) {
+  const t = useT();
   const units = groupCategories(board.categories);
 
   return (
@@ -25,7 +27,6 @@ export default function BoardView({ board }: { board: Board }) {
     >
       {units.map((unit) => {
         const first = unit.categories[0];
-        const last = unit.categories[unit.categories.length - 1];
         const span = unitSpan(unit, board);
         const cell: CSSProperties = {
           gridColumn: first.newRow ? `1 / span ${span}` : `span ${span}`,
@@ -42,12 +43,11 @@ export default function BoardView({ board }: { board: Board }) {
                 ))}
               </div>
             )}
-            {last.separatorAfter && <div className="separator" />}
           </Fragment>
         );
       })}
       {board.categories.length === 0 && (
-        <div className="board-empty">This grid is empty. Switch to Edit to add categories.</div>
+        <div className="board-empty">{t('view.empty')}</div>
       )}
     </div>
   );

@@ -1,17 +1,21 @@
 import { Fragment, useState } from 'react';
 import {
   DndContext,
+  DragOverlay,
   PointerSensor,
   closestCenter,
   useSensor,
   useSensors,
   type DragEndEvent,
+  type DragStartEvent,
 } from '@dnd-kit/core';
 import { SortableContext, arrayMove, rectSortingStrategy } from '@dnd-kit/sortable';
 import SortableCategory, { categoryDragId } from './SortableCategory';
 import Picker from './Picker';
 import CategorySettingsModal from './CategorySettingsModal';
 import AltIconModal from './AltIconModal';
+import CategoryCard from '../board/CategoryCard';
+import ElementPortrait from '../board/ElementPortrait';
 import { useBoardStore } from '../../state/boardStore';
 import { groupCategories, resolveDisplay, unitSpan } from '../../lib/board';
 import type { Category } from '../../types/board';
@@ -39,6 +43,8 @@ export default function EditableBoard() {
   const [settingsCat, setSettingsCat] = useState<string | null>(null);
   const [altTarget, setAltTarget] = useState<{ catId: string; index: number } | null>(null);
   const [pendingLink, setPendingLink] = useState<{ catId: string; orient: 'v' | 'h' } | null>(null);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const toggleDivider = useBoardStore((s) => s.toggleDivider);
 
   const handleLink = (catId: string, orient: 'v' | 'h') => {
     if (pendingLink) {
@@ -59,22 +65,25 @@ export default function EditableBoard() {
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
   );
 
+  const handleDragStart = ({ active }: DragStartEvent) => setActiveId(String(active.id));
+
   const handleDragEnd = ({ active, over }: DragEndEvent) => {
+    setActiveId(null);
     if (!over || active.id === over.id) return;
-    const activeId = String(active.id);
+    const aId = String(active.id);
     const overId = String(over.id);
 
     // reorder categories
-    if (activeId.startsWith('cat:') && overId.startsWith('cat:')) {
+    if (aId.startsWith('cat:') && overId.startsWith('cat:')) {
       const ids = board.categories.map((c) => c.id);
-      const from = ids.indexOf(activeId.slice(4));
+      const from = ids.indexOf(aId.slice(4));
       const to = ids.indexOf(overId.slice(4));
       if (from >= 0 && to >= 0) reorderCategories(arrayMove(ids, from, to));
       return;
     }
 
     // move elements
-    const src = parseElId(activeId);
+    const src = parseElId(aId);
     if (!src) return;
     const dst = parseElId(overId);
     if (dst) {
@@ -97,7 +106,13 @@ export default function EditableBoard() {
   };
 
   return (
-    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+      onDragCancel={() => setActiveId(null)}
+    >
       <div
         className={[
           'board',
@@ -115,7 +130,6 @@ export default function EditableBoard() {
         >
           {groupCategories(board.categories).map((unit) => {
             const first = unit.categories[0];
-            const last = unit.categories[unit.categories.length - 1];
             const span = unitSpan(unit, board);
             const cell: CSSProperties = {
               gridColumn: first.newRow ? `1 / span ${span}` : `span ${span}`,
@@ -132,6 +146,7 @@ export default function EditableBoard() {
                 onAdd={() => setPickerCat(cat.id)}
                 onElementAlt={(index) => setAltTarget({ catId: cat.id, index })}
                 onLink={(orient) => handleLink(cat.id, orient)}
+                onToggleDivider={(index) => toggleDivider(cat.id, index)}
               />
             );
             return (
@@ -146,7 +161,6 @@ export default function EditableBoard() {
                     {unit.categories.map((c) => renderCat(c, true))}
                   </div>
                 )}
-                {last.separatorAfter && <div className="separator" />}
               </Fragment>
             );
           })}
@@ -169,6 +183,29 @@ export default function EditableBoard() {
       />
       <CategorySettingsModal categoryId={settingsCat} onClose={() => setSettingsCat(null)} />
       <AltIconModal target={altTarget} onClose={() => setAltTarget(null)} />
+
+      <DragOverlay dropAnimation={null}>
+        {activeId && renderDragOverlay(activeId)}
+      </DragOverlay>
     </DndContext>
   );
+
+  function renderDragOverlay(id: string) {
+    if (id.startsWith('cat:')) {
+      const cat = board.categories.find((c) => c.id === id.slice(4));
+      if (!cat) return null;
+      return (
+        <div className="drag-overlay-card">
+          <CategoryCard category={cat} board={board} />
+        </div>
+      );
+    }
+    const src = parseElId(id);
+    if (src) {
+      const cat = board.categories.find((c) => c.id === src.catId);
+      const el = cat?.elements[src.index];
+      if (cat && el) return <ElementPortrait element={el} category={cat} board={board} />;
+    }
+    return null;
+  }
 }

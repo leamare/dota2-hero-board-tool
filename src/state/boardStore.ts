@@ -19,6 +19,7 @@ interface BoardStore {
   reorderCategories: (ids: string[]) => void;
   linkCategories: (aId: string, bId: string, orient: 'v' | 'h') => void;
   unlinkCategory: (id: string) => void;
+  toggleDivider: (id: string, index: number) => void;
 
   addElement: (catId: string, element: GridElement) => void;
   removeElement: (catId: string, index: number) => void;
@@ -84,21 +85,16 @@ export const useBoardStore = create<BoardStore>()(
           const b = s.board.categories.find((c) => c.id === bId);
           const a = s.board.categories.find((c) => c.id === aId);
           if (!a || !b) return s;
-          // join b's group if it already has one of the same orientation
+          // join b's existing group if orientations match, else start a new one
           const group = b.linkGroup && b.linkOrient === orient ? b.linkGroup : genId();
+          // only reassign the two endpoints (and keep any current group members);
+          // do NOT reorder the array — groupCategories gathers members for layout.
           const cats = s.board.categories.map((c) => {
-            if (c.id === aId || c.id === bId) return { ...c, linkGroup: group, linkOrient: orient };
+            if (c.id === aId || c.id === bId || (b.linkGroup && c.linkGroup === b.linkGroup))
+              return { ...c, linkGroup: group, linkOrient: orient };
             return c;
           });
-          // place a right after the last existing member of the group for tidy order
-          const moved = cats.find((c) => c.id === aId)!;
-          const rest = cats.filter((c) => c.id !== aId);
-          let insertAt = rest.length;
-          rest.forEach((c, i) => {
-            if (c.linkGroup === group) insertAt = i + 1;
-          });
-          rest.splice(insertAt, 0, moved);
-          return { board: { ...s.board, categories: rest } };
+          return { board: { ...s.board, categories: cats } };
         }),
 
       unlinkCategory: (id) =>
@@ -113,11 +109,26 @@ export const useBoardStore = create<BoardStore>()(
           const remaining = cats.filter((c) => c.linkGroup === group);
           if (remaining.length === 1) {
             cats = cats.map((c) =>
-              c.linkGroup === group ? { ...c, linkGroup: undefined, linkOrient: undefined } : c,
+              c.linkGroup === group
+                ? { ...c, linkGroup: undefined, linkOrient: undefined }
+                : c,
             );
           }
           return { board: { ...s.board, categories: cats } };
         }),
+
+      toggleDivider: (id, index) =>
+        set((s) => ({
+          board: {
+            ...s.board,
+            categories: mapCategory(s.board, id, (c) => {
+              const set = new Set(c.dividers ?? []);
+              if (set.has(index)) set.delete(index);
+              else set.add(index);
+              return { ...c, dividers: [...set].sort((a, b) => a - b) };
+            }),
+          },
+        })),
 
       addElement: (catId, element) =>
         set((s) => ({

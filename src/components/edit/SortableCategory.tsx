@@ -1,3 +1,4 @@
+import { Fragment } from 'react';
 import { useSortable, SortableContext, rectSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import type { CSSProperties } from 'react';
@@ -18,6 +19,7 @@ interface Props {
   onAdd: () => void;
   onElementAlt: (index: number) => void;
   onLink: (orient: 'v' | 'h') => void;
+  onToggleDivider: (index: number) => void;
 }
 
 export const categoryDragId = (id: string) => `cat:${id}`;
@@ -37,6 +39,7 @@ export default function SortableCategory({
   onAdd,
   onElementAlt,
   onLink,
+  onToggleDivider,
 }: Props) {
   const removeCategory = useBoardStore((s) => s.removeCategory);
   const removeElement = useBoardStore((s) => s.removeElement);
@@ -53,11 +56,11 @@ export default function SortableCategory({
 
   const style: CSSProperties = {
     ...cellStyle,
-    transform: CSS.Transform.toString(transform),
+    // the DragOverlay shows the dragged card; the source just dims and holds its place
+    transform: isDragging ? undefined : CSS.Transform.toString(transform),
     transition,
     ...(colorVar ? { '--cat-color': colorVar } : {}),
-    opacity: isDragging ? 0.5 : undefined,
-    zIndex: isDragging ? 5 : undefined,
+    opacity: isDragging ? 0.35 : undefined,
   } as CSSProperties;
 
   return (
@@ -70,7 +73,6 @@ export default function SortableCategory({
         hasColor ? 'has-color' : '',
         linkPending ? 'link-pending' : '',
         HEADER_SIZE_CLASS[category.headerSize ?? 1],
-        category.separatorRight ? 'sep-right' : '',
       ]
         .filter(Boolean)
         .join(' ')}
@@ -118,14 +120,24 @@ export default function SortableCategory({
           strategy={rectSortingStrategy}
         >
           {category.elements.map((_, i) => (
-            <SortableElement
-              key={elementDragId(category.id, i)}
-              category={category}
-              board={board}
-              index={i}
-              onRemove={() => removeElement(category.id, i)}
-              onAlt={() => onElementAlt(i)}
-            />
+            <Fragment key={elementDragId(category.id, i)}>
+              {i > 0 && (
+                <button
+                  className={`divider-gap${category.dividers?.includes(i) ? ' on' : ''}`}
+                  style={{ height: `${heightRem}rem` }}
+                  title="Toggle dashed divider"
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onClick={() => onToggleDivider(i)}
+                />
+              )}
+              <SortableElement
+                category={category}
+                board={board}
+                index={i}
+                onRemove={() => removeElement(category.id, i)}
+                onAlt={() => onElementAlt(i)}
+              />
+            </Fragment>
           ))}
         </SortableContext>
         <button

@@ -24,12 +24,11 @@ const I_ICON_TYPE = 2;
 const C_PRESET = 1;
 const C_ICON = 2;
 const C_LINK = 4;
-const C_SEP_AFTER = 8;
-const C_SEP_RIGHT = 16;
-const C_NEWROW = 32;
-const C_PORTRAIT = 64;
-const C_ITEMSTYLE = 128;
-const C_SIZE = 256;
+const C_DIVIDERS = 8;
+const C_NEWROW = 16;
+const C_PORTRAIT = 32;
+const C_ITEMSTYLE = 64;
+const C_SIZE = 128;
 
 // element flag bits (kind in low 2 bits)
 const E_KIND_MASK = 3;
@@ -73,8 +72,7 @@ function encodeCategory(w: ByteWriter, c: Category, groupIndex: Map<string, numb
   if (c.preset !== undefined) flags |= C_PRESET;
   if (c.icon) flags |= C_ICON;
   if (c.linkGroup) flags |= C_LINK;
-  if (c.separatorAfter) flags |= C_SEP_AFTER;
-  if (c.separatorRight) flags |= C_SEP_RIGHT;
+  if (c.dividers?.length) flags |= C_DIVIDERS;
   if (c.newRow) flags |= C_NEWROW;
   if (c.portraitType !== undefined) flags |= C_PORTRAIT;
   if (c.itemStyle !== undefined) flags |= C_ITEMSTYLE;
@@ -95,6 +93,10 @@ function encodeCategory(w: ByteWriter, c: Category, groupIndex: Map<string, numb
   if (c.portraitType !== undefined) w.u8(c.portraitType);
   if (c.itemStyle !== undefined) w.u8(c.itemStyle);
   if (c.size !== undefined) w.u8(c.size);
+  if (c.dividers?.length) {
+    w.varint(c.dividers.length);
+    for (const d of c.dividers) w.varint(d);
+  }
 
   w.varint(c.elements.length);
   for (const el of c.elements) encodeElement(w, el);
@@ -170,11 +172,14 @@ function decodeCategory(r: ByteReader): Category {
   if (flags & C_PORTRAIT) cat.portraitType = r.u8();
   if (flags & C_ITEMSTYLE) cat.itemStyle = r.u8();
   if (flags & C_SIZE) cat.size = r.u8();
+  if (flags & C_DIVIDERS) {
+    const n = r.varint();
+    cat.dividers = [];
+    for (let i = 0; i < n; i++) cat.dividers.push(r.varint());
+  }
 
   const count = r.varint();
   for (let i = 0; i < count; i++) cat.elements.push(decodeElement(r));
-  cat.separatorAfter = !!(flags & C_SEP_AFTER);
-  cat.separatorRight = !!(flags & C_SEP_RIGHT);
   cat.newRow = !!(flags & C_NEWROW);
   return cat;
 }
