@@ -17,6 +17,7 @@ interface Props {
   board: Board;
   onOpenSettings: () => void;
   onAdd: () => void;
+  onElementAlt: (index: number) => void;
 }
 
 export const categoryDragId = (id: string) => `cat:${id}`;
@@ -24,7 +25,13 @@ export const categoryDragId = (id: string) => `cat:${id}`;
 const isEmptyLabel = (c: Category): boolean =>
   c.name.type === 'text' && !c.name.text?.trim();
 
-export default function SortableCategory({ category, board, onOpenSettings, onAdd }: Props) {
+export default function SortableCategory({
+  category,
+  board,
+  onOpenSettings,
+  onAdd,
+  onElementAlt,
+}: Props) {
   const removeCategory = useBoardStore((s) => s.removeCategory);
   const removeElement = useBoardStore((s) => s.removeElement);
 
@@ -91,6 +98,7 @@ export default function SortableCategory({ category, board, onOpenSettings, onAd
               board={board}
               index={i}
               onRemove={() => removeElement(category.id, i)}
+              onAlt={() => onElementAlt(i)}
             />
           ))}
         </SortableContext>

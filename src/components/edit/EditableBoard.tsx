@@ -11,6 +11,7 @@ import { SortableContext, arrayMove, rectSortingStrategy } from '@dnd-kit/sortab
 import SortableCategory, { categoryDragId } from './SortableCategory';
 import Picker from './Picker';
 import CategorySettingsModal from './CategorySettingsModal';
+import AltIconModal from './AltIconModal';
 import { useBoardStore } from '../../state/boardStore';
 
 /** Parse an element drag id "el:<catId>:<index>". */
@@ -30,6 +31,7 @@ export default function EditableBoard() {
 
   const [pickerCat, setPickerCat] = useState<string | null>(null);
   const [settingsCat, setSettingsCat] = useState<string | null>(null);
+  const [altTarget, setAltTarget] = useState<{ catId: string; index: number } | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -95,6 +97,7 @@ export default function EditableBoard() {
                 board={board}
                 onOpenSettings={() => setSettingsCat(cat.id)}
                 onAdd={() => setPickerCat(cat.id)}
+                onElementAlt={(index) => setAltTarget({ catId: cat.id, index })}
               />
               {cat.separatorAfter && <div className="separator" />}
             </Fragment>
@@ -109,6 +112,7 @@ export default function EditableBoard() {
         onPick={(kind, refId) => pickerCat && addElement(pickerCat, { kind, refId })}
       />
       <CategorySettingsModal categoryId={settingsCat} onClose={() => setSettingsCat(null)} />
+      <AltIconModal target={altTarget} onClose={() => setAltTarget(null)} />
     </DndContext>
   );
 }

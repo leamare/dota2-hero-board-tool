@@ -17,6 +17,7 @@ interface BoardStore {
 
   addElement: (catId: string, element: GridElement) => void;
   removeElement: (catId: string, index: number) => void;
+  patchElement: (catId: string, index: number, patch: Partial<GridElement>) => void;
   reorderElements: (catId: string, indices: number[]) => void;
   moveElement: (
     fromCat: string,
@@ -87,6 +88,17 @@ export const useBoardStore = create<BoardStore>()(
             categories: mapCategory(s.board, catId, (c) => ({
               ...c,
               elements: c.elements.filter((_, i) => i !== index),
+            })),
+          },
+        })),
+
+      patchElement: (catId, index, patch) =>
+        set((s) => ({
+          board: {
+            ...s.board,
+            categories: mapCategory(s.board, catId, (c) => ({
+              ...c,
+              elements: c.elements.map((el, i) => (i === index ? { ...el, ...patch } : el)),
             })),
           },
         })),

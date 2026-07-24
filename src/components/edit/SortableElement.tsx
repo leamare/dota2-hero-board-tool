@@ -3,20 +3,26 @@ import { CSS } from '@dnd-kit/utilities';
 import ElementPortrait from '../board/ElementPortrait';
 import type { Board, Category } from '../../types/board';
 import { effectiveStyle } from '../../lib/board';
+import { useMetadata } from '../../state/MetadataProvider';
 
 interface Props {
   category: Category;
   board: Board;
   index: number;
   onRemove: () => void;
+  onAlt: () => void;
 }
 
 export const elementDragId = (catId: string, index: number) => `el:${catId}:${index}`;
 
-export default function SortableElement({ category, board, index, onRemove }: Props) {
+export default function SortableElement({ category, board, index, onRemove, onAlt }: Props) {
   const el = category.elements[index];
+  const meta = useMetadata();
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: elementDragId(category.id, index) });
+
+  const hasAlticons =
+    el.kind === 'hero' && (meta?.heroById.get(el.refId)?.alticons.length ?? 0) > 0;
 
   return (
     <div
@@ -27,6 +33,16 @@ export default function SortableElement({ category, board, index, onRemove }: Pr
       {...listeners}
     >
       <ElementPortrait element={el} styleId={effectiveStyle(el, category, board)} />
+      {hasAlticons && (
+        <button
+          className="portrait-alt"
+          title="Change portrait variant"
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={onAlt}
+        >
+          ★
+        </button>
+      )}
       <button
         className="portrait-remove"
         title="Remove"
