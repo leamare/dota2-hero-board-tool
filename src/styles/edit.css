@@ -6,6 +6,32 @@
   flex: 0 0 auto;
 }
 
+.drag-handle {
+  border: none;
+  background: transparent;
+  color: var(--menu-link);
+  cursor: grab;
+  font-size: 1.1rem;
+  line-height: 1;
+  padding: 0 0.3rem 0 0;
+  flex: 0 0 auto;
+  touch-action: none;
+}
+.drag-handle:hover {
+  color: var(--menu-link-active);
+}
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+.portrait-slot {
+  touch-action: none;
+  cursor: grab;
+}
+.portrait-slot.dragging {
+  opacity: 0.4;
+}
+
 .portrait-slot {
   position: relative;
 }
