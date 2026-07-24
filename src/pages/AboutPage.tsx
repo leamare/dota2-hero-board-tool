@@ -1,27 +1,59 @@
 export default function AboutPage() {
   return (
     <div className="text-panel">
-      <h1>Dota 2 Hero Grid Tool</h1>
+      <h1>About</h1>
       <p>
-        Build custom hero grids, arrange them into categories, and share them
-        with a single link. A modern rebuild of the original tool in TypeScript
-        and React.
+        <b>Hero Grid Tool</b> is an "alt-tab" tool for creating and customizing
+        Dota 2 hero layouts.
       </p>
-      <ul>
-        <li>Group heroes and items into coloured, labelled categories.</li>
-        <li>
-          Choose how portraits look — wide, tall, square icons — per board or
-          per category, and swap in alternate hero portraits (personas, arcanas).
-        </li>
-        <li>Add items as grid entries or use hero/item icons as category labels.</li>
-        <li>Line categories up with separators and custom widths.</li>
-        <li>Reorder everything by dragging.</li>
-        <li>Share a whole grid in a short link — no account, no server.</li>
-      </ul>
       <p>
-        Hero and item data come from the{' '}
-        <a href="https://stats.spectral.gg">spectral LRG2 API</a>; images from the
-        spectral courier CDN.
+        You can use it as a personal notebook to create and customize categories
+        however you want to keep track of your own thoughts.
+      </p>
+      <p>
+        Use the "Edit" tab to customize your hero layouts. You can create new
+        categories and layouts as well as rearrange and customize them. And of
+        course you can add heroes — and now items — to them using the adding
+        dialog or by dragging portraits around.
+      </p>
+      <hr />
+      <p>The board is made out of layouts which you can create, delete or import.</p>
+      <p>
+        Every layout is empty by default, but you can add new categories to it and
+        fill them with heroes and items using the adding menu.
+      </p>
+      <p>
+        You can also drag heroes around the categories, rename categories, add
+        colour tags to them, pick portrait styles, and swap in alternate hero
+        portraits.
+      </p>
+      <p>
+        Your whole board is saved in your browser's local storage. But you can
+        also export your board to a file, export a single layout, or just share it
+        with a compact link.
+      </p>
+      <hr />
+      <p>
+        <b>Idea:</b>{' '}
+        <a href="https://twitch.tv/xakoh" target="_blank" rel="noreferrer">
+          TPB.XaKoH
+        </a>
+        <br />
+        <b>Developer:</b>{' '}
+        <a href="https://spectral.gg" target="_blank" rel="noreferrer">
+          Leamare
+        </a>
+      </p>
+      <p>
+        Inspired by{' '}
+        <a
+          href="https://www.reddit.com/r/DotA2/comments/7iurzb/i_started_creating_a_drafting_chart_around_my/"
+          target="_blank"
+          rel="noreferrer"
+        >
+          this reddit post
+        </a>
+        .
       </p>
     </div>
   );
