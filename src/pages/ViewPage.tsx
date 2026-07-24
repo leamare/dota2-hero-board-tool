@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import BoardView from '../components/board/BoardView';
+import GridIcon from '../components/GridIcon';
 import ShareModal from '../components/edit/ShareModal';
 import { useBoardStore } from '../state/boardStore';
 import { useMetadataState } from '../state/MetadataProvider';
@@ -15,9 +16,9 @@ export default function ViewPage() {
 
   return (
     <div className="view-page">
-      <div className="view-head">
+      <div className={`view-head${board.centered ? ' centered' : ''}`}>
         <h1 className="board-name">
-          {board.icon && <span className="grid-icon">{board.icon}</span>}
+          <GridIcon tag={board.icon} />
           {board.name}
         </h1>
         <div className="view-actions">

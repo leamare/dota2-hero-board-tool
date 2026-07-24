@@ -2,6 +2,7 @@ import type { ReactElement } from 'react';
 import { NavLink, Outlet, Link } from 'react-router-dom';
 import { PARENT_URL, SECTION_HOME } from '../lib/config';
 import Sidebar from './Sidebar';
+import { useUiStore } from '../state/uiStore';
 
 const MENU = [
   { to: '/view', label: 'View', icon: 'grid' },
@@ -24,8 +25,9 @@ const MenuIcon = ({ name }: { name: string }) => (
 );
 
 export default function Layout() {
+  const pinned = useUiStore((s) => s.sidebarPinned);
   return (
-    <div className="app-shell">
+    <div className={`app-shell${pinned ? ' sb-pinned' : ''}`}>
       <header className="app-header">
         <a className="root-link" href={PARENT_URL} title="To main site" />
         <Link className="gotomain" to={SECTION_HOME} title="Hero Grid Tool" aria-label="Home" />

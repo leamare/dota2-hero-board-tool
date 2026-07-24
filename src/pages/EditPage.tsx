@@ -1,10 +1,11 @@
-import BoardToolbar from '../components/edit/BoardToolbar';
 import EditableBoard from '../components/edit/EditableBoard';
+import GridIcon from '../components/GridIcon';
 import { useBoardStore } from '../state/boardStore';
 import { useMetadataState } from '../state/MetadataProvider';
 
 export default function EditPage() {
   const board = useBoardStore((s) => s.board);
+  const addCategory = useBoardStore((s) => s.addCategory);
   const { data, error } = useMetadataState();
 
   if (error) return <div className="text-panel">Failed to load metadata: {error}</div>;
@@ -12,7 +13,17 @@ export default function EditPage() {
 
   return (
     <div className="edit-page">
-      <BoardToolbar />
+      <div className={`view-head${board.centered ? ' centered' : ''}`}>
+        <h1 className="board-name">
+          <GridIcon tag={board.icon} />
+          {board.name || 'Untitled grid'}
+        </h1>
+        <div className="view-actions">
+          <button className="btn primary" onClick={addCategory}>
+            ＋ Category
+          </button>
+        </div>
+      </div>
       {board.categories.length === 0 && (
         <p className="board-empty">Add a category to start building your grid.</p>
       )}

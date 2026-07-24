@@ -41,10 +41,10 @@ button {
   background-color: var(--header-bg);
   position: relative;
   z-index: 50;
-  height: 4rem;
+  height: 3.75rem;
   display: flex;
   align-items: stretch;
-  padding-left: 3.5rem; /* room for the absolute root-link */
+  padding-left: 3.25rem; /* room for the absolute root-link */
 }
 
 /* ❮ back to the parent site */
@@ -52,9 +52,9 @@ button {
   position: absolute;
   top: 0;
   left: 0;
-  width: 3.5rem;
-  height: 4rem;
-  line-height: 4rem;
+  width: 3.25rem;
+  height: 3.75rem;
+  line-height: 3.75rem;
   font-size: 1.5rem;
   text-align: center;
   color: var(--menu-link);
@@ -69,25 +69,29 @@ button {
   background-color: var(--menu-hover);
 }
 
-/* the logo triangle — leads to the section home (/view) */
+/*
+ * The logo triangle deliberately overhangs the header bar: its 5rem top border
+ * protrudes ~1.25rem below the 3.75rem header, giving the distinctive badge.
+ */
 .app-header .gotomain {
   position: relative;
-  border-top: 4rem solid var(--big-button-color);
-  border-left: 1.1rem solid transparent;
-  border-right: 1.1rem solid transparent;
+  border-top: 5rem solid var(--big-button-color);
+  border-left: 1.35rem solid transparent;
+  border-right: 1.35rem solid transparent;
   height: 0;
-  width: 5.5rem;
+  width: 7rem;
   transition: all 300ms linear;
   flex: 0 0 auto;
+  z-index: 2;
 }
 .app-header .gotomain::after {
   content: '';
   position: absolute;
-  top: -3.65rem;
+  top: -4.7rem;
   left: 50%;
   transform: translateX(-50%);
-  width: 3.3rem;
-  height: 3.3rem;
+  width: 4rem;
+  height: 4rem;
   background-image: url('/salogo.png');
   background-repeat: no-repeat;
   background-position: center;
@@ -109,11 +113,12 @@ ul.menu {
   display: flex;
   align-items: stretch;
   font-size: 0;
-  line-height: 4rem;
-  margin-left: 0.5rem;
+  line-height: 3.75rem;
+  margin-left: 0.75rem;
 }
 ul.menu li {
-  height: 4rem;
+  height: 3.75rem;
+  min-width: 7rem;
   transform: skewX(-15deg);
   transition: all 200ms linear;
   position: relative;
@@ -124,8 +129,10 @@ ul.menu li:hover {
 ul.menu li a {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
   height: 100%;
+  width: 100%;
   padding: 0 1.4rem;
   transform: skewX(15deg);
   font-size: 1rem;
@@ -269,7 +276,7 @@ ul.menu li:has(> a.active):hover::after {
 
 .sidebar-tab {
   position: fixed;
-  left: 0;
+  right: 0;
   top: 40%;
   z-index: 70;
   border: none;
@@ -278,7 +285,7 @@ ul.menu li:has(> a.active):hover::after {
   font-size: 1.2rem;
   line-height: 1;
   padding: 1.2rem 0.35rem;
-  border-radius: 0 0.4rem 0.4rem 0;
+  border-radius: 0.4rem 0 0 0.4rem;
   cursor: pointer;
   opacity: 0.8;
   transition: all 200ms ease;
@@ -287,22 +294,22 @@ ul.menu li:has(> a.active):hover::after {
   opacity: 1;
 }
 .sidebar-tab.open {
-  left: 22rem;
+  right: 23rem;
 }
 
 .sidebar {
   position: fixed;
-  top: 4rem;
-  left: 0;
-  width: 22rem;
-  max-width: 85vw;
-  height: calc(100vh - 4rem);
+  top: 3.75rem;
+  right: 0;
+  width: 23rem;
+  max-width: 88vw;
+  height: calc(100vh - 3.75rem);
   background: var(--sidebar-widget-bg);
   z-index: 71;
-  transform: translateX(-100%);
+  transform: translateX(100%);
   transition: transform 200ms ease;
   overflow-y: auto;
-  box-shadow: 0.3rem 0 1rem #0007;
+  box-shadow: -0.3rem 0 1rem #0007;
   padding: 1rem;
 }
 .sidebar.open {
@@ -310,9 +317,40 @@ ul.menu li:has(> a.active):hover::after {
 }
 .sidebar-scrim {
   position: fixed;
-  inset: 4rem 0 0 0;
+  inset: 3.75rem 0 0 0;
   background: #0007;
   z-index: 70;
+}
+
+.sidebar-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 0.1rem solid var(--cat-outline);
+}
+
+/* pinned: keep the sidebar in flow and push the page content left */
+.app-shell.sb-pinned .app-main,
+.app-shell.sb-pinned .app-footer {
+  margin-right: 23rem;
+}
+.app-shell.sb-pinned .sidebar-scrim {
+  display: none;
+}
+.icon-btn {
+  width: 2.4rem;
+  height: 2.4rem;
+  padding: 0.25rem;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.icon-btn img {
+  max-width: 100%;
+  max-height: 100%;
 }
 .sidebar-section {
   margin-bottom: 1.5rem;
@@ -378,6 +416,15 @@ ul.menu li:has(> a.active):hover::after {
 }
 .sidebar .field.row {
   margin-bottom: 0.6rem;
+  justify-content: space-between;
+}
+.sidebar .field.row > label {
+  flex: 0 0 auto;
+}
+.sidebar .field.row .select,
+.sidebar .field.row .input {
+  flex: 1;
+  min-width: 0;
 }
 .sidebar .checkbox {
   display: flex;
@@ -386,7 +433,11 @@ ul.menu li:has(> a.active):hover::after {
 
 @media (max-width: 720px), (orientation: portrait) {
   .sidebar-tab.open {
-    left: 85vw;
+    right: 88vw;
+  }
+  .app-shell.sb-pinned .app-main,
+  .app-shell.sb-pinned .app-footer {
+    margin-right: 0;
   }
 }
 

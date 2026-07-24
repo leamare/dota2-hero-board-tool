@@ -1,5 +1,6 @@
 import { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import GridIcon from '../components/GridIcon';
 import { useBoardStore } from '../state/boardStore';
 import { useLayoutsStore, type SavedLayout } from '../state/layoutsStore';
 
@@ -73,7 +74,7 @@ export default function LayoutsPage() {
           {layouts.map((l) => (
             <li key={l.id} className="layout-row">
               <span className="layout-name">
-                {l.board.icon && <span className="grid-icon">{l.board.icon}</span>}
+                <GridIcon tag={l.board.icon} />
                 {l.name}
               </span>
               <span className="layout-meta">{l.board.categories.length} categories</span>
