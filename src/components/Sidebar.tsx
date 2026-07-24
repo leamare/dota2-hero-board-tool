@@ -7,6 +7,8 @@ import { useToast } from '../state/ToastProvider';
 import { COLUMN_OPTIONS } from '../lib/constants';
 import { ITEM_STYLES, PORTRAIT_TYPES, SIZES, imageUrl } from '../lib/images';
 import { emptyBoard } from '../lib/board';
+import { useIsMobile } from '../lib/useIsMobile';
+import { useT } from '../lib/i18n';
 import GridIcon from './GridIcon';
 import BoardIconModal from './edit/BoardIconModal';
 import ShareModal from './edit/ShareModal';
@@ -17,9 +19,13 @@ const AUTOSAVE_KEY = 'hgt.autosave';
 export default function Sidebar() {
   const navigate = useNavigate();
   const toast = useToast();
+  const t = useT();
 
   const { sidebarOpen, sidebarPinned, setOpen, toggleOpen, setPinned } = useUiStore();
-  const open = sidebarOpen || sidebarPinned;
+  const isMobile = useIsMobile();
+  // on mobile the sidebar is always a plain overlay; pinning only affects desktop
+  const pinned = sidebarPinned && !isMobile;
+  const open = sidebarOpen || pinned;
 
   const board = useBoardStore((s) => s.board);
   const setBoard = useBoardStore((s) => s.setBoard);
@@ -48,11 +54,11 @@ export default function Sidebar() {
       return;
     }
     if (!autosave || !currentLayoutId) return;
-    const t = setTimeout(() => {
+    const timer = setTimeout(() => {
       overwrite(currentLayoutId, board);
       toast('Autosaved', 'info');
     }, 1500);
-    return () => clearTimeout(t);
+    return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [board, autosave, currentLayoutId]);
 
@@ -61,7 +67,10 @@ export default function Sidebar() {
       overwrite(current.id, board);
       toast(`Saved "${current.name}"`);
     } else {
-      setSaveAsOpen(true);
+      // no tracked layout yet — save immediately under the grid's name
+      const name = board.name.trim() || 'Untitled grid';
+      setCurrentLayoutId(save(name, board));
+      toast(`Saved "${name}"`);
     }
   };
 
@@ -75,13 +84,13 @@ export default function Sidebar() {
     if (!l) return;
     setBoard({ ...l.board }, l.id);
     navigate('/view');
-    if (!sidebarPinned) setOpen(false);
+    if (!pinned) setOpen(false);
   };
 
   const newGrid = () => {
     setBoard(emptyBoard(), null);
     navigate('/edit');
-    if (!sidebarPinned) setOpen(false);
+    if (!pinned) setOpen(false);
   };
 
   return (
@@ -97,19 +106,21 @@ export default function Sidebar() {
 
       <aside className={`sidebar${open ? ' open' : ''}`}>
         <div className="sidebar-head">
-          <strong>Grids &amp; settings</strong>
-          <label className="checkbox" title="Keep open and shift the page">
-            <input
-              type="checkbox"
-              checked={sidebarPinned}
-              onChange={(e) => setPinned(e.target.checked)}
-            />
-            Pin
-          </label>
+          <strong>{t('sidebar.title')}</strong>
+          {!isMobile && (
+            <label className="checkbox" title="Keep open and shift the page">
+              <input
+                type="checkbox"
+                checked={sidebarPinned}
+                onChange={(e) => setPinned(e.target.checked)}
+              />
+              {t('sidebar.pin')}
+            </label>
+          )}
         </div>
 
         <div className="sidebar-section">
-          <h3>Current grid</h3>
+          <h3>{t('sidebar.currentGrid')}</h3>
           <div className="field row">
             <button className="btn icon-btn" title="Grid icon" onClick={() => setIconModal(true)}>
               {board.icon ? (
@@ -121,31 +132,31 @@ export default function Sidebar() {
             <input
               className="input"
               value={board.name}
-              placeholder="Grid name"
+              placeholder={t('sidebar.gridName')}
               onChange={(e) => patchBoard({ name: e.target.value })}
             />
           </div>
           <div className="sidebar-actions">
             <button className="btn small primary" onClick={saveCurrent}>
-              Save
+              {t('common.save')}
             </button>
             <button className="btn small" onClick={() => setSaveAsOpen(true)}>
-              Save as…
+              {t('common.saveAs')}
             </button>
             <button className="btn small" onClick={() => setShareOpen(true)}>
-              Share
+              {t('common.share')}
             </button>
           </div>
           <label className="checkbox">
             <input type="checkbox" checked={autosave} onChange={(e) => setAutosave(e.target.checked)} />
-            Autosave{current ? ` → ${current.name}` : ''}
+            {t('sidebar.autosave')}
           </label>
         </div>
 
         <div className="sidebar-section">
-          <h3>Display</h3>
+          <h3>{t('sidebar.display')}</h3>
           <div className="field row">
-            <label>Columns</label>
+            <label>{t('sidebar.columns')}</label>
             <select
               className="select"
               value={board.columns}
@@ -159,21 +170,21 @@ export default function Sidebar() {
             </select>
           </div>
           <div className="field row">
-            <label>Portraits</label>
+            <label>{t('sidebar.portraits')}</label>
             <select
               className="select"
               value={board.portraitType}
               onChange={(e) => patchBoard({ portraitType: Number(e.target.value) })}
             >
-              {PORTRAIT_TYPES.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.label}
+              {PORTRAIT_TYPES.map((pt) => (
+                <option key={pt.id} value={pt.id}>
+                  {pt.label}
                 </option>
               ))}
             </select>
           </div>
           <div className="field row">
-            <label>Size</label>
+            <label>{t('sidebar.size')}</label>
             <select
               className="select"
               value={board.size}
@@ -187,7 +198,7 @@ export default function Sidebar() {
             </select>
           </div>
           <div className="field row">
-            <label>Items</label>
+            <label>{t('sidebar.items')}</label>
             <select
               className="select"
               value={board.itemStyle}
@@ -206,7 +217,7 @@ export default function Sidebar() {
               checked={board.colorfulLabels}
               onChange={(e) => patchBoard({ colorfulLabels: e.target.checked })}
             />
-            Colourful labels
+            {t('sidebar.colorfulLabels')}
           </label>
           <label className="checkbox">
             <input
@@ -214,7 +225,7 @@ export default function Sidebar() {
               checked={board.centered}
               onChange={(e) => patchBoard({ centered: e.target.checked })}
             />
-            Centered
+            {t('sidebar.centered')}
           </label>
           <label className="checkbox">
             <input
@@ -222,26 +233,26 @@ export default function Sidebar() {
               checked={board.darkenedBg}
               onChange={(e) => patchBoard({ darkenedBg: e.target.checked })}
             />
-            Darken
+            {t('sidebar.darken')}
           </label>
           <button
             className="btn small danger"
             style={{ marginTop: '0.5rem' }}
             onClick={() => confirm('Clear the whole board?') && resetBoard()}
           >
-            Clear board
+            {t('common.clear')}
           </button>
         </div>
 
         <div className="sidebar-section">
-          <h3>Saved grids</h3>
+          <h3>{t('sidebar.savedGrids')}</h3>
           <div className="sidebar-actions">
             <button className="btn small primary" onClick={newGrid}>
-              ＋ New grid
+              ＋ {t('common.newGrid')}
             </button>
           </div>
           <ul className="sidebar-grids">
-            {layouts.length === 0 && <li className="muted">No saved grids yet.</li>}
+            {layouts.length === 0 && <li className="muted">{t('sidebar.noGrids')}</li>}
             {layouts.map((l) => (
               <li key={l.id} className={l.id === currentLayoutId ? 'active' : undefined}>
                 <button className="sidebar-grid-name" onClick={() => loadLayout(l.id)}>
@@ -261,7 +272,7 @@ export default function Sidebar() {
         </div>
       </aside>
 
-      {open && !sidebarPinned && <div className="sidebar-scrim" onClick={() => setOpen(false)} />}
+      {open && !pinned && <div className="sidebar-scrim" onClick={() => { setOpen(false); if (sidebarPinned) setPinned(false); }} />}
 
       <BoardIconModal open={iconModal} onClose={() => setIconModal(false)} />
       <ShareModal open={shareOpen} onClose={() => setShareOpen(false)} />

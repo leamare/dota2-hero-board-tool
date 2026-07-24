@@ -37,14 +37,18 @@ button {
 
 /* ========================================== HEADER (spectral skewed menu) */
 
+/*
+ * Header proportions taken straight from the spectral-main theme: a 4rem bar,
+ * a 2rem ❮ root-link, and a 5rem logo triangle that overhangs the bar by 1rem.
+ */
 .app-header {
   background-color: var(--header-bg);
   position: relative;
   z-index: 50;
-  height: 3.75rem;
+  height: 4rem;
   display: flex;
-  align-items: stretch;
-  padding-left: 3.25rem; /* room for the absolute root-link */
+  align-items: flex-start;
+  padding-left: 4.5rem; /* room for the absolute root-link */
 }
 
 /* ❮ back to the parent site */
@@ -52,10 +56,10 @@ button {
   position: absolute;
   top: 0;
   left: 0;
-  width: 3.25rem;
-  height: 3.75rem;
-  line-height: 3.75rem;
-  font-size: 1.5rem;
+  width: 4.5rem;
+  height: 4rem;
+  line-height: 4rem;
+  font-size: 2rem;
   text-align: center;
   color: var(--menu-link);
   transition: all 200ms linear;
@@ -69,10 +73,7 @@ button {
   background-color: var(--menu-hover);
 }
 
-/*
- * The logo triangle deliberately overhangs the header bar: its 5rem top border
- * protrudes ~1.25rem below the 3.75rem header, giving the distinctive badge.
- */
+/* the logo triangle (border trick) with the logo sitting on top via ::after */
 .app-header .gotomain {
   position: relative;
   border-top: 5rem solid var(--big-button-color);
@@ -87,15 +88,14 @@ button {
 .app-header .gotomain::after {
   content: '';
   position: absolute;
-  top: -4.7rem;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 4rem;
-  height: 4rem;
+  top: -5.25rem;
+  left: 0.75rem;
+  width: 5.25rem;
+  height: 5.5rem;
   background-image: url('/salogo.png');
   background-repeat: no-repeat;
   background-position: center;
-  background-size: contain; /* logo is square — never squish it */
+  background-size: contain;
   transition: all 300ms ease;
 }
 .app-header .gotomain:hover {
@@ -105,7 +105,7 @@ button {
 .header-links {
   flex: 1;
   display: flex;
-  align-items: stretch;
+  align-items: flex-start;
 }
 
 ul.menu {
@@ -113,11 +113,11 @@ ul.menu {
   display: flex;
   align-items: stretch;
   font-size: 0;
-  line-height: 3.75rem;
+  line-height: 4rem;
   margin-left: 0.75rem;
 }
 ul.menu li {
-  height: 3.75rem;
+  height: 4rem;
   min-width: 7rem;
   transform: skewX(-15deg);
   transition: all 200ms linear;
@@ -130,7 +130,7 @@ ul.menu li a {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 0.75rem;
   height: 100%;
   width: 100%;
   padding: 0 1.4rem;
@@ -146,6 +146,20 @@ ul.menu li a:hover {
 }
 .menu-icon {
   fill: currentColor;
+  flex: 0 0 auto;
+}
+
+.locale-select {
+  align-self: center;
+  margin: 0 1rem 0 auto;
+  height: 2.2rem;
+  background: var(--menu-selected-borders);
+  color: var(--menu-link);
+  border: none;
+  font-family: inherit;
+  font-size: 0.9rem;
+  padding: 0 0.5rem;
+  cursor: pointer;
   flex: 0 0 auto;
 }
 
@@ -189,18 +203,43 @@ ul.menu li:has(> a.active):hover::after {
 }
 
 @media (max-width: 720px), (orientation: portrait) {
-  .app-header .root-link {
-    left: auto;
-    right: 0;
-    width: 3rem;
+  .app-header {
+    padding-left: 0;
   }
+  /* backlink in the left corner */
+  .app-header .root-link {
+    left: 0;
+    right: auto;
+    width: 3rem;
+    height: 4rem;
+    line-height: 4rem;
+  }
+  /* logo centred, no overhang, same height as the header */
+  .app-header .gotomain {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    border-top-width: 4rem;
+    width: 5.5rem;
+  }
+  .app-header .gotomain::after {
+    top: -3.6rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2.9rem;
+    height: 2.9rem;
+  }
+  .header-links {
+    position: static;
+  }
+  /* hamburger on the right */
   .menu-toggle-button {
     display: flex;
     align-items: center;
     justify-content: center;
     position: absolute;
     top: 0;
-    right: 3rem;
+    right: 0.5rem;
     height: 4rem;
     width: 3rem;
     z-index: 4;
@@ -249,22 +288,28 @@ ul.menu li:has(> a.active):hover::after {
     background-color: var(--header-bg);
     margin: 0;
     z-index: 40;
-    transform-origin: top;
-    transform: scaleY(0);
-    transition: 150ms transform linear;
-    box-shadow: 0 0.5rem 1rem #0008;
+    max-height: 0;
+    overflow: hidden;
+    transition: 150ms max-height linear;
+    border-top: 0.1rem solid var(--menu-hover);
   }
   .menu-toggle:checked ~ ul.menu {
-    transform: scaleY(1);
+    max-height: 20rem;
+    border-bottom: 0.2rem solid var(--big-button-color);
   }
   ul.menu li {
     height: 3.2rem;
     transform: none;
-    margin: 0 1.5rem;
+    margin: 0;
+    border-bottom: 0.05rem solid var(--menu-hover);
   }
   ul.menu li a {
     transform: none;
     justify-content: center;
+  }
+  /* keep the coloured accent on the active item */
+  ul.menu li:has(> a.active) {
+    box-shadow: inset 0.3rem 0 0 var(--big-button-color-hover);
   }
   ul.menu li:has(> a.active)::before,
   ul.menu li:has(> a.active)::after {
@@ -277,29 +322,35 @@ ul.menu li:has(> a.active):hover::after {
 .sidebar-tab {
   position: fixed;
   right: 0;
-  top: 40%;
+  top: 35%;
   z-index: 70;
   border: none;
   background: var(--sidebar-trigger);
   color: #000;
-  font-size: 1.2rem;
+  font-size: 1.5rem;
+  font-weight: bold;
   line-height: 1;
-  padding: 1.2rem 0.35rem;
+  padding: 2.2rem 0.7rem;
   border-radius: 0.4rem 0 0 0.4rem;
   cursor: pointer;
-  opacity: 0.8;
+  opacity: 0.85;
   transition: all 200ms ease;
 }
 .sidebar-tab:hover {
   opacity: 1;
+  padding-right: 0.95rem;
 }
 .sidebar-tab.open {
   right: 23rem;
 }
+/* the tab is redundant when the sidebar is pinned open */
+.app-shell.sb-pinned .sidebar-tab {
+  display: none;
+}
 
 .sidebar {
   position: fixed;
-  top: 3.75rem;
+  top: 4rem;
   right: 0;
   width: 23rem;
   max-width: 88vw;
@@ -380,9 +431,15 @@ ul.menu li:has(> a.active):hover::after {
   display: flex;
   align-items: stretch;
   background: var(--cat-bg);
+  transition: all 150ms linear;
 }
 .sidebar-grids li.active {
-  box-shadow: inset 0.2rem 0 0 var(--sidebar-trigger);
+  background: var(--menu-hover);
+  filter: brightness(1.35);
+}
+.sidebar-grids li.active:hover {
+  filter: brightness(1.1);
+  box-shadow: 0 0 0.6rem var(--sidebar-trigger);
 }
 .sidebar-grid-name {
   flex: 1;
@@ -399,8 +456,9 @@ ul.menu li:has(> a.active):hover::after {
 }
 .sidebar-grids li.active .sidebar-grid-name {
   color: var(--menu-link-active);
+  font-weight: bold;
 }
-.sidebar-grid-name:hover {
+.sidebar-grids li:not(.active) .sidebar-grid-name:hover {
   background: var(--menu-hover);
 }
 .sidebar-grid-del {
@@ -435,9 +493,17 @@ ul.menu li:has(> a.active):hover::after {
   .sidebar-tab.open {
     right: 88vw;
   }
+  /* on mobile the sidebar is always an overlay — never push the page, and keep
+     the toggle reachable so a pinned sidebar can still be closed */
   .app-shell.sb-pinned .app-main,
   .app-shell.sb-pinned .app-footer {
     margin-right: 0;
+  }
+  .app-shell.sb-pinned .sidebar-tab {
+    display: block;
+  }
+  .app-shell.sb-pinned .sidebar-scrim {
+    display: block;
   }
 }
 
@@ -681,8 +747,11 @@ ul.menu li:has(> a.active):hover::after {
   background-color: var(--menu-selected-hover);
 }
 .modal-body {
-  overflow: auto;
+  overflow-y: auto;
   min-height: 0;
+  /* breathing room so focus/box-shadows on selects aren't clipped at the edges */
+  padding: 0.35rem 0.5rem;
+  margin: -0.35rem -0.5rem;
 }
 
 .muted {
@@ -695,6 +764,41 @@ ul.menu li:has(> a.active):hover::after {
   font-family: ui-monospace, monospace;
   font-size: 0.8rem;
   word-break: break-all;
+}
+.share-body {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+.share-main {
+  flex: 1;
+  min-width: 0;
+}
+.qr {
+  flex: 0 0 auto;
+  background: #fff;
+  padding: 0.4rem;
+  border-radius: 0.3rem;
+  image-rendering: pixelated;
+}
+.qr-fail {
+  flex: 0 0 auto;
+  width: 12rem;
+  font-size: 0.85rem;
+  opacity: 0.6;
+}
+.qr-scanner {
+  width: 100%;
+  max-height: 50vh;
+  background: #000;
+  border-radius: 0.3rem;
+}
+
+@media (max-width: 620px) {
+  .share-body {
+    flex-direction: column;
+    align-items: center;
+  }
 }
 .import-title {
   font-size: 1rem;

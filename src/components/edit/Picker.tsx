@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import Modal from '../ui/Modal';
 import { heroImageUrl, itemImageUrl, portraitType } from '../../lib/images';
 import { useMetadata } from '../../state/MetadataProvider';
+import { useT } from '../../lib/i18n';
 import type { GridElement } from '../../types/board';
 import type { Hero, Item } from '../../types/metadata';
 
@@ -25,6 +26,7 @@ const matches = (haystack: string, query: string): boolean =>
 
 export default function Picker({ open, onClose, onPick, previewType = 0, keepOpen }: Props) {
   const meta = useMetadata();
+  const t = useT();
   const [tab, setTab] = useState<Tab>('hero');
   const [query, setQuery] = useState('');
   const searchRef = useRef<HTMLInputElement>(null);
@@ -64,23 +66,23 @@ export default function Picker({ open, onClose, onPick, previewType = 0, keepOpe
   const tileStyle = { aspectRatio: previewAspect };
 
   return (
-    <Modal open={open} onClose={onClose} title="Add to category" width="54rem">
+    <Modal open={open} onClose={onClose} title={t('picker.add')} width="54rem">
       <div className="picker">
         <div className="picker-tabs">
           <button className={`btn small${tab === 'hero' ? ' primary' : ''}`} onClick={() => setTab('hero')}>
-            Heroes
+            {t('picker.heroes')}
           </button>
           <button className={`btn small${tab === 'item' ? ' primary' : ''}`} onClick={() => setTab('item')}>
-            Items
+            {t('picker.items')}
           </button>
           <button className="btn small" title="Add a blank block" onClick={() => pick({ kind: 'empty' })}>
-            ＋ Empty
+            ＋ {t('picker.empty')}
           </button>
           <input
             ref={searchRef}
             className="input picker-search"
             type="search"
-            placeholder="Search…"
+            placeholder={t('common.search')}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />

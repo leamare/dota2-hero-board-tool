@@ -3,12 +3,14 @@ import { NavLink, Outlet, Link } from 'react-router-dom';
 import { PARENT_URL, SECTION_HOME } from '../lib/config';
 import Sidebar from './Sidebar';
 import { useUiStore } from '../state/uiStore';
+import { useIsMobile } from '../lib/useIsMobile';
+import { useI18n, LOCALES, type LocaleCode } from '../lib/i18n';
 
 const MENU = [
-  { to: '/view', label: 'View', icon: 'grid' },
-  { to: '/edit', label: 'Edit', icon: 'pen' },
-  { to: '/layouts', label: 'Layouts', icon: 'stack' },
-  { to: '/about', label: 'About', icon: 'info' },
+  { to: '/view', key: 'nav.view', icon: 'grid' },
+  { to: '/edit', key: 'nav.edit', icon: 'pen' },
+  { to: '/layouts', key: 'nav.layouts', icon: 'stack' },
+  { to: '/about', key: 'nav.about', icon: 'info' },
 ] as const;
 
 const ICONS: Record<string, ReactElement> = {
@@ -25,7 +27,8 @@ const MenuIcon = ({ name }: { name: string }) => (
 );
 
 export default function Layout() {
-  const pinned = useUiStore((s) => s.sidebarPinned);
+  const pinned = useUiStore((s) => s.sidebarPinned) && !useIsMobile();
+  const { t, locale, setLocale } = useI18n();
   return (
     <div className={`app-shell${pinned ? ' sb-pinned' : ''}`}>
       <header className="app-header">
@@ -41,12 +44,25 @@ export default function Layout() {
               <li key={m.to}>
                 <NavLink to={m.to} className={({ isActive }) => (isActive ? 'active' : undefined)}>
                   <MenuIcon name={m.icon} />
-                  <span className="menu-label">{m.label}</span>
+                  <span className="menu-label">{t(m.key)}</span>
                 </NavLink>
               </li>
             ))}
           </ul>
         </nav>
+        <select
+          className="locale-select"
+          value={locale}
+          onChange={(e) => setLocale(e.target.value as LocaleCode)}
+          title={t('lang.label')}
+          aria-label={t('lang.label')}
+        >
+          {LOCALES.map((l) => (
+            <option key={l.code} value={l.code}>
+              {l.label}
+            </option>
+          ))}
+        </select>
       </header>
 
       <Sidebar />
