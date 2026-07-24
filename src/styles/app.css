@@ -285,18 +285,49 @@ nav.app-menu a.active:hover {
   cursor: pointer;
 }
 
+/* checkbox styled after the spectral theme (custom check glyph) */
 .checkbox {
   display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
+  gap: 0.5rem;
   cursor: pointer;
   font-size: 0.9rem;
   user-select: none;
 }
-.checkbox input {
-  accent-color: var(--big-button-color);
-  width: 1.05em;
-  height: 1.05em;
+.checkbox input[type='checkbox'] {
+  appearance: none;
+  font: inherit;
+  width: 1.15em;
+  height: 1.15em;
+  transform: translateY(-0.025em);
+  background-color: var(--menu-hover);
+  border: 0.1em solid var(--menu-link);
+  color: var(--menu-link);
+  border-radius: 15%;
+  display: inline-grid;
+  place-content: center;
+  cursor: pointer;
+  transition: all 120ms linear;
+}
+.checkbox input[type='checkbox']:hover {
+  border-color: var(--menu-link-active);
+}
+.checkbox input[type='checkbox']::before {
+  content: '';
+  width: 0.65em;
+  height: 0.65em;
+  transform: scale(0);
+  transition: 120ms transform ease-in-out;
+  box-shadow: inset 1em 1em var(--menu-link);
+  transform-origin: bottom left;
+  clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+}
+.checkbox input[type='checkbox']:checked {
+  border-color: var(--big-button-color-hover);
+}
+.checkbox input[type='checkbox']:checked::before {
+  transform: scale(1);
+  box-shadow: inset 1em 1em var(--menu-link-active);
 }
 
 .toolbar {
@@ -385,6 +416,44 @@ nav.app-menu a.active:hover {
 }
 .import-title {
   font-size: 1rem;
+}
+
+.save-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* ========================================== TOASTS */
+
+.toast-stack {
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  z-index: 200;
+  pointer-events: none;
+}
+.toast {
+  background: var(--menu-selected);
+  color: var(--menu-link-active);
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  box-shadow: 0 0.2rem 1rem #000a;
+  border-left: 0.25rem solid var(--big-button-color-hover);
+  animation: toast-in 150ms ease;
+}
+.toast.info {
+  border-left-color: var(--sidebar-trigger);
+  opacity: 0.9;
+}
+@keyframes toast-in {
+  from {
+    transform: translateX(1rem);
+    opacity: 0;
+  }
 }
 
 /* ========================================== LAYOUTS */

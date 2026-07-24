@@ -2,7 +2,6 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import ElementPortrait from '../board/ElementPortrait';
 import type { Board, Category } from '../../types/board';
-import { effectiveStyle } from '../../lib/board';
 import { useMetadata } from '../../state/MetadataProvider';
 
 interface Props {
@@ -22,7 +21,7 @@ export default function SortableElement({ category, board, index, onRemove, onAl
     useSortable({ id: elementDragId(category.id, index) });
 
   const hasAlticons =
-    el.kind === 'hero' && (meta?.heroById.get(el.refId)?.alticons.length ?? 0) > 0;
+    el.kind === 'hero' && (meta?.heroById.get(el.refId ?? -1)?.alticons.length ?? 0) > 0;
 
   return (
     <div
@@ -32,7 +31,7 @@ export default function SortableElement({ category, board, index, onRemove, onAl
       {...attributes}
       {...listeners}
     >
-      <ElementPortrait element={el} styleId={effectiveStyle(el, category, board)} />
+      <ElementPortrait element={el} category={category} board={board} />
       {hasAlticons && (
         <button
           className="portrait-alt"

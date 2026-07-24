@@ -174,12 +174,34 @@
   width: 100%;
   height: auto;
   border-radius: var(--portrait-radius);
-  aspect-ratio: 256 / 144;
   object-fit: cover;
 }
-.picker-tile.item img {
-  aspect-ratio: 88 / 64;
+.picker-tile img.contain {
   object-fit: contain;
+}
+
+.picker-special {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem 0.5rem;
+}
+
+.settings-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem 1rem;
+}
+.settings-grid .field {
+  margin-bottom: 0.25rem;
+}
+.settings-toggles {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-top: 1rem;
+  padding-top: 0.85rem;
+  border-top: 0.1rem solid var(--menu-hover);
 }
 .picker-tile span {
   overflow: hidden;

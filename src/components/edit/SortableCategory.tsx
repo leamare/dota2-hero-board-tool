@@ -1,12 +1,8 @@
-import { useSortable } from '@dnd-kit/sortable';
-import {
-  SortableContext,
-  rectSortingStrategy,
-} from '@dnd-kit/sortable';
+import { useSortable, SortableContext, rectSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import type { CSSProperties } from 'react';
 import type { Board, Category } from '../../types/board';
-import { categoryBasis } from '../../lib/board';
+import { categoryBasis, resolveDisplay } from '../../lib/board';
 import { colorIndex, LABEL_COLORS } from '../../lib/constants';
 import CategoryLabel from '../board/CategoryLabel';
 import SortableElement, { elementDragId } from './SortableElement';
@@ -15,6 +11,7 @@ import { useBoardStore } from '../../state/boardStore';
 interface Props {
   category: Category;
   board: Board;
+  grouped?: boolean;
   onOpenSettings: () => void;
   onAdd: () => void;
   onElementAlt: (index: number) => void;
@@ -25,9 +22,12 @@ export const categoryDragId = (id: string) => `cat:${id}`;
 const isEmptyLabel = (c: Category): boolean =>
   c.name.type === 'text' && !c.name.text?.trim();
 
+const HEADER_SIZE_CLASS = ['hs-small', 'hs-normal', 'hs-large'];
+
 export default function SortableCategory({
   category,
   board,
+  grouped,
   onOpenSettings,
   onAdd,
   onElementAlt,
@@ -38,7 +38,7 @@ export default function SortableCategory({
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: categoryDragId(category.id) });
 
-  const basis = categoryBasis(category, board);
+  const { aspect, heightRem } = resolveDisplay(category, board);
   const hasColor = board.colorfulLabels && !!category.color;
   const colorVar = hasColor
     ? `var(--label-${LABEL_COLORS[colorIndex(category.color)].key})`
@@ -47,7 +47,9 @@ export default function SortableCategory({
   const style: CSSProperties = {
     transform: CSS.Transform.toString(transform),
     transition,
-    '--cat-basis': `calc(${basis}% - var(--grid-gap))`,
+    ...(grouped
+      ? {}
+      : { '--cat-basis': `calc(${categoryBasis(category, board)}% - var(--grid-gap))` }),
     ...(colorVar ? { '--cat-color': colorVar } : {}),
     opacity: isDragging ? 0.5 : undefined,
     zIndex: isDragging ? 5 : undefined,
@@ -59,8 +61,10 @@ export default function SortableCategory({
       style={style}
       className={[
         'category',
-        category.bigger ? 'bigger' : '',
+        grouped ? 'grouped' : '',
         hasColor ? 'has-color' : '',
+        HEADER_SIZE_CLASS[category.headerSize ?? 1],
+        category.separatorRight ? 'sep-right' : '',
       ]
         .filter(Boolean)
         .join(' ')}
@@ -102,7 +106,12 @@ export default function SortableCategory({
             />
           ))}
         </SortableContext>
-        <button className="portrait add-tile" title="Add hero or item" onClick={onAdd}>
+        <button
+          className="portrait add-tile"
+          title="Add hero or item"
+          style={{ aspectRatio: aspect, height: `${heightRem}rem` }}
+          onClick={onAdd}
+        >
           +
         </button>
       </div>

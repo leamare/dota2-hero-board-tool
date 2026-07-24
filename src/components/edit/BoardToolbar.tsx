@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { useBoardStore } from '../../state/boardStore';
 import { COLUMN_OPTIONS } from '../../lib/constants';
-import { stylesForKind } from '../../lib/images';
+import { ITEM_STYLES, PORTRAIT_TYPES, SIZES } from '../../lib/images';
 import ShareModal from './ShareModal';
+import SaveControls from './SaveControls';
 
 export default function BoardToolbar() {
   const board = useBoardStore((s) => s.board);
@@ -40,14 +41,30 @@ export default function BoardToolbar() {
       </div>
 
       <div className="field row">
-        <label htmlFor="board-hero-style">Hero style</label>
+        <label htmlFor="board-type">Portraits</label>
         <select
-          id="board-hero-style"
+          id="board-type"
           className="select"
-          value={board.heroStyle}
-          onChange={(e) => patchBoard({ heroStyle: Number(e.target.value) })}
+          value={board.portraitType}
+          onChange={(e) => patchBoard({ portraitType: Number(e.target.value) })}
         >
-          {stylesForKind('hero').map((s) => (
+          {PORTRAIT_TYPES.map((t) => (
+            <option key={t.id} value={t.id}>
+              {t.label}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="field row">
+        <label htmlFor="board-size">Size</label>
+        <select
+          id="board-size"
+          className="select"
+          value={board.size}
+          onChange={(e) => patchBoard({ size: Number(e.target.value) })}
+        >
+          {SIZES.map((s) => (
             <option key={s.id} value={s.id}>
               {s.label}
             </option>
@@ -56,14 +73,14 @@ export default function BoardToolbar() {
       </div>
 
       <div className="field row">
-        <label htmlFor="board-item-style">Item style</label>
+        <label htmlFor="board-item">Items</label>
         <select
-          id="board-item-style"
+          id="board-item"
           className="select"
           value={board.itemStyle}
           onChange={(e) => patchBoard({ itemStyle: Number(e.target.value) })}
         >
-          {stylesForKind('item').map((s) => (
+          {ITEM_STYLES.map((s) => (
             <option key={s.id} value={s.id}>
               {s.label}
             </option>
@@ -114,6 +131,9 @@ export default function BoardToolbar() {
       >
         Clear
       </button>
+
+      <div className="sep" />
+      <SaveControls />
 
       <ShareModal open={shareOpen} onClose={() => setShareOpen(false)} />
     </div>

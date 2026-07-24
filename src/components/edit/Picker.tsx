@@ -1,98 +1,157 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Modal from '../ui/Modal';
-import { imageUrl } from '../../lib/images';
+import { heroImageUrl, itemImageUrl, portraitType } from '../../lib/images';
 import { useMetadata } from '../../state/MetadataProvider';
-import type { ElementKind } from '../../lib/images';
+import type { GridElement } from '../../types/board';
 import type { Hero, Item } from '../../types/metadata';
 
 interface Props {
   open: boolean;
   onClose: () => void;
-  onPick: (kind: ElementKind, refId: number) => void;
-  /** keep the picker open after a pick, for adding many at once */
+  onPick: (element: GridElement) => void;
+  /** portrait type of the target category, so previews match what's on the grid */
+  previewType?: number;
   keepOpen?: boolean;
 }
 
-const matches = (haystack: string, query: string): boolean => {
-  const words = query.toLowerCase().split(/\s+/).filter(Boolean);
-  return words.every((w) => haystack.includes(w));
-};
+type Tab = 'hero' | 'item' | 'special';
 
-export default function Picker({ open, onClose, onPick, keepOpen }: Props) {
+const matches = (haystack: string, query: string): boolean =>
+  query
+    .toLowerCase()
+    .split(/\s+/)
+    .filter(Boolean)
+    .every((w) => haystack.includes(w));
+
+export default function Picker({ open, onClose, onPick, previewType = 0, keepOpen }: Props) {
   const meta = useMetadata();
-  const [kind, setKind] = useState<ElementKind>('hero');
+  const [tab, setTab] = useState<Tab>('hero');
   const [query, setQuery] = useState('');
+  const [customTag, setCustomTag] = useState('');
+  const searchRef = useRef<HTMLInputElement>(null);
+
+  // auto-focus the search box every time the picker opens
+  useEffect(() => {
+    if (open) {
+      setQuery('');
+      const t = setTimeout(() => searchRef.current?.focus(), 30);
+      return () => clearTimeout(t);
+    }
+  }, [open, tab]);
 
   const heroes = useMemo(() => {
-    if (!meta || !query.trim()) return meta?.heroes ?? [];
+    if (!meta) return [];
+    if (!query.trim()) return meta.heroes;
     return meta.heroes.filter((h: Hero) =>
       matches([h.name, h.alt ?? '', h.tag, ...h.aliases].join(' ').toLowerCase(), query),
     );
   }, [meta, query]);
 
   const items = useMemo(() => {
-    if (!meta || !query.trim()) return meta?.items ?? [];
-    return meta.items.filter((i: Item) =>
-      matches(`${i.name} ${i.tag}`.toLowerCase(), query),
-    );
+    if (!meta) return [];
+    if (!query.trim()) return meta.items;
+    return meta.items.filter((i: Item) => matches(`${i.name} ${i.tag}`.toLowerCase(), query));
   }, [meta, query]);
 
-  const pick = (k: ElementKind, id: number) => {
-    onPick(k, id);
+  const pick = (element: GridElement) => {
+    onPick(element);
     if (!keepOpen) onClose();
   };
 
+  const previewAspect = portraitType(previewType).aspect;
+  const tileStyle = { aspectRatio: previewAspect };
+
   return (
-    <Modal open={open} onClose={onClose} title="Add to category" width="52rem">
+    <Modal open={open} onClose={onClose} title="Add to category" width="54rem">
       <div className="picker">
         <div className="picker-tabs">
-          <button
-            className={`btn small${kind === 'hero' ? ' primary' : ''}`}
-            onClick={() => setKind('hero')}
-          >
+          <button className={`btn small${tab === 'hero' ? ' primary' : ''}`} onClick={() => setTab('hero')}>
             Heroes
           </button>
-          <button
-            className={`btn small${kind === 'item' ? ' primary' : ''}`}
-            onClick={() => setKind('item')}
-          >
+          <button className={`btn small${tab === 'item' ? ' primary' : ''}`} onClick={() => setTab('item')}>
             Items
           </button>
-          <input
-            className="input picker-search"
-            type="search"
-            placeholder="Search…"
-            autoFocus
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
+          <button
+            className={`btn small${tab === 'special' ? ' primary' : ''}`}
+            onClick={() => setTab('special')}
+          >
+            Special
+          </button>
+          {tab !== 'special' && (
+            <input
+              ref={searchRef}
+              className="input picker-search"
+              type="search"
+              placeholder="Search…"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+          )}
         </div>
 
-        <div className="picker-grid">
-          {kind === 'hero'
-            ? heroes.map((h) => (
+        {tab === 'hero' && (
+          <div className="picker-grid">
+            {heroes.map((h) => (
+              <button
+                key={h.id}
+                className="picker-tile"
+                title={h.name}
+                onClick={() => pick({ kind: 'hero', refId: h.id })}
+              >
+                <img style={tileStyle} src={heroImageUrl(previewType, h.tag)} alt={h.name} loading="lazy" />
+                <span>{h.name}</span>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {tab === 'item' && (
+          <div className="picker-grid">
+            {items.map((i) => (
+              <button
+                key={i.id}
+                className="picker-tile item"
+                title={i.name}
+                onClick={() => pick({ kind: 'item', refId: i.id })}
+              >
+                <img style={tileStyle} className="contain" src={itemImageUrl(0, i.tag)} alt={i.name} loading="lazy" />
+                <span>{i.name}</span>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {tab === 'special' && (
+          <div className="picker-special">
+            <button className="btn" onClick={() => pick({ kind: 'empty' })}>
+              Add empty block
+            </button>
+            <div className="field">
+              <label>Custom icon tag</label>
+              <p className="muted">
+                Enter a courier tag for an icon not in the item list (advanced).
+              </p>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <input
+                  className="input"
+                  placeholder="e.g. seasonal_rank_1"
+                  value={customTag}
+                  onChange={(e) => setCustomTag(e.target.value)}
+                />
                 <button
-                  key={h.id}
-                  className="picker-tile"
-                  title={h.name}
-                  onClick={() => pick('hero', h.id)}
+                  className="btn primary"
+                  disabled={!customTag.trim()}
+                  onClick={() => {
+                    pick({ kind: 'custom', tag: customTag.trim() });
+                    setCustomTag('');
+                  }}
                 >
-                  <img src={imageUrl(0, h.tag)} alt={h.name} loading="lazy" />
-                  <span>{h.name}</span>
+                  Add
                 </button>
-              ))
-            : items.map((i) => (
-                <button
-                  key={i.id}
-                  className="picker-tile item"
-                  title={i.name}
-                  onClick={() => pick('item', i.id)}
-                >
-                  <img src={imageUrl(3, i.tag)} alt={i.name} loading="lazy" />
-                  <span>{i.name}</span>
-                </button>
-              ))}
-        </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </Modal>
   );
