@@ -65,17 +65,18 @@
  * shared boards keep meaning, but re-tuned for the dark spectral background.
  */
 :root {
-  --label-red: #db2828;
-  --label-orange: #f2711c;
-  --label-yellow: #e5c100;
-  --label-olive: #b5cc18;
-  --label-green: #21ba45;
-  --label-teal: #00b5ad;
-  --label-blue: #3b83f6;
-  --label-violet: #6435c9;
-  --label-purple: #a333c8;
-  --label-pink: #e03997;
-  --label-brown: #a5673f;
-  --label-grey: #767676;
-  --label-black: #1b1c1d;
+  /* toned-down label colours — muted so full-colour headers aren't harsh */
+  --label-red: #9d3b3b;
+  --label-orange: #a9662c;
+  --label-yellow: #a68f31;
+  --label-olive: #7c8a38;
+  --label-green: #3a824a;
+  --label-teal: #357f79;
+  --label-blue: #446b96;
+  --label-violet: #574a8c;
+  --label-purple: #774a8c;
+  --label-pink: #984f72;
+  --label-brown: #7c5640;
+  --label-grey: #63666a;
+  --label-black: #242424;
 }

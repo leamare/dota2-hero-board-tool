@@ -4,6 +4,17 @@
   gap: 1rem;
   margin-bottom: 1rem;
 }
+.view-head.centered {
+  justify-content: center;
+  position: relative;
+}
+.view-head.centered .board-name {
+  text-align: center;
+}
+.view-head.centered .view-actions {
+  position: absolute;
+  right: 0;
+}
 .view-actions {
   margin-left: auto;
   display: flex;
@@ -26,7 +37,7 @@
 .board {
   display: grid;
   grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr));
-  align-items: start;
+  align-items: stretch; /* categories in a row stretch to the tallest */
   gap: var(--grid-gap);
 }
 /* centre the portraits inside every category */
@@ -54,7 +65,7 @@
 }
 .category-group.horizontal {
   flex-direction: row;
-  align-items: start;
+  align-items: stretch;
 }
 .category-group.horizontal > .category {
   flex: 1 1 0;
@@ -98,12 +109,12 @@
   text-shadow: 0 0 0.4rem #000;
 }
 
-/* body keeps a colour tint in both states — darken just mixes in more black */
+/* darken on: a subtle dark tint. darken off: the full label colour. */
 .board.darken .category.has-color {
   background-color: color-mix(in srgb, var(--cat-color) 13%, var(--cat-bg));
 }
 .board:not(.darken) .category.has-color {
-  background-color: color-mix(in srgb, var(--cat-color) 42%, var(--cat-bg));
+  background-color: var(--cat-color);
 }
 
 /* vertical dashed separator overlaid on the right edge */
