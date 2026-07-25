@@ -29,7 +29,9 @@ export const useUiStore = create<UiStore>()(
       sidebarPinned: false,
       setOpen: (open) => set({ sidebarOpen: open }),
       toggleOpen: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),
-      setPinned: (pinned) => set({ sidebarPinned: pinned, sidebarOpen: pinned ? true : false }),
+      // pinning opens it; unpinning just drops the pin and leaves it open as a normal overlay
+      setPinned: (pinned) =>
+        set((s) => ({ sidebarPinned: pinned, sidebarOpen: pinned ? true : s.sidebarOpen })),
 
       uiScale: DEFAULT_SCALE,
       setUiScale: (scale) => set({ uiScale: nearestStep(scale) }),
