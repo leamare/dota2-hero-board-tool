@@ -19,12 +19,38 @@
   margin-left: auto;
   display: flex;
   gap: 0.5rem;
+  flex: 0 0 auto;
 }
 .board-name {
   font-weight: normal;
   font-family: sans-serif;
   font-size: 1.6rem;
   color: var(--text-block-caption-color);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 720px), (orientation: portrait) {
+  /* stack title above actions so a long name can't collide with the buttons */
+  .view-head,
+  .view-head.centered {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+  .view-head.centered .view-actions {
+    position: static;
+    justify-content: center;
+  }
+  .board-name {
+    white-space: normal;
+    text-align: center;
+  }
+  .view-actions {
+    justify-content: flex-end;
+  }
 }
 .board-empty {
   opacity: 0.4;

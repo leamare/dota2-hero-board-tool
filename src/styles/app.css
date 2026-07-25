@@ -73,21 +73,27 @@ button {
   background-color: var(--menu-hover);
 }
 
-/* the logo badge — a trapezoid the exact height of the header, no overhang */
+/*
+ * the logo badge — a trapezoid the exact height of the header, no overhang.
+ * proportions match the reference's border-trick geometry (border-top: hh,
+ * border-left/right: 0.27*hh, content: 1.4*hh) worked out as a clip-path:
+ * box width = the WIDE top edge (1.4 + 2*0.27 = 1.94 × header height); the
+ * bottom edge is narrower by exactly one side-border's width on each side.
+ */
 .app-header .gotomain {
   flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: calc(var(--hh) * 1.4);
+  width: calc(var(--hh) * 1.94);
   height: 100%;
   background-color: var(--big-button-color);
-  clip-path: polygon(0 0, 100% 0, 80% 100%, 20% 100%);
+  clip-path: polygon(0 0, 100% 0, 86.1% 100%, 13.9% 100%);
   transition: background-color 300ms linear;
 }
 .app-header .gotomain::after {
   content: '';
-  width: 60%;
+  width: 44%;
   height: 70%;
   background: url('/salogo.png') center / contain no-repeat;
 }
@@ -112,7 +118,7 @@ ul.menu {
 }
 ul.menu li {
   height: var(--hh);
-  min-width: 7rem;
+  width: 7rem;
   transform: skewX(-15deg);
   transition: all 200ms linear;
   position: relative;
@@ -124,16 +130,17 @@ ul.menu li a {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.75rem;
+  gap: 0.4rem;
   height: 100%;
   width: 100%;
-  padding: 0 1.4rem;
+  padding: 0 0.5rem;
   transform: skewX(15deg);
-  font-size: 1rem;
+  font-size: 0.85rem;
   text-transform: uppercase;
   text-shadow: -1px 1px 0.5rem #000;
   color: var(--menu-link);
   transition: color 200ms linear;
+  white-space: nowrap;
 }
 ul.menu li a:hover {
   color: var(--menu-link-active);
@@ -197,35 +204,40 @@ ul.menu li:has(> a.active):hover::after {
 }
 
 @media (max-width: 720px), (orientation: portrait) {
-  /* backlink pinned to the left corner */
-  .app-header .root-link {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 3rem;
-    height: var(--hh);
-    line-height: var(--hh);
-    z-index: 3;
-  }
-  /* logo centred in the bar, no longer flush against the backlink */
+  /*
+   * matches builds.spectral.gg's mobile header: hamburger pinned to the far
+   * left corner, the ❮ backlink right next to it, the logo centred in the
+   * bar, and the locale select in the far right corner.
+   */
   .app-header .gotomain {
     margin: 0 auto;
   }
   .header-links {
     flex: 0 0 auto;
   }
-  /* hamburger pinned to the right corner */
+  /* hamburger in the far left corner */
   .menu-toggle-button {
     display: flex;
     align-items: center;
     justify-content: center;
     position: absolute;
     top: 0;
-    right: 0;
+    left: 0;
     height: var(--hh);
     width: 3rem;
     z-index: 4;
     cursor: pointer;
+  }
+  /* backlink right next to the hamburger */
+  .app-header .root-link {
+    position: absolute;
+    top: 0;
+    left: 3rem;
+    width: 2.6rem;
+    height: var(--hh);
+    line-height: var(--hh);
+    font-size: calc(var(--hh) * 0.35);
+    z-index: 3;
   }
   .menu-toggle-button .burger {
     position: relative;
@@ -261,11 +273,11 @@ ul.menu li:has(> a.active):hover::after {
   .menu-toggle:checked ~ .menu-toggle-button .burger::after {
     transform: translateY(-0.48rem) rotate(-45deg);
   }
-  /* locale select tucked left of the hamburger */
+  /* locale select in the far right corner */
   .locale-select {
     position: absolute;
     top: 0;
-    right: 3rem;
+    right: 0;
     height: var(--hh);
     margin: 0;
     width: 4.2rem;
@@ -319,20 +331,22 @@ ul.menu li:has(> a.active):hover::after {
   border: none;
   background: var(--sidebar-trigger);
   color: #000;
-  font-size: 2rem;
+  font-size: 1.1rem;
   font-weight: bold;
   line-height: 1;
-  width: 2.6rem;
+  width: 1.1rem;
   padding: 3rem 0;
   border-radius: 0.5rem 0 0 0.5rem;
   cursor: pointer;
-  opacity: 0.9;
+  opacity: 0.75;
   box-shadow: -0.2rem 0 0.6rem #0006;
   transition: all 200ms ease;
+  touch-action: pan-y;
 }
 .sidebar-tab:hover {
   opacity: 1;
-  width: 2.9rem;
+  width: 2.6rem;
+  font-size: 1.8rem;
 }
 .sidebar-tab.open {
   right: 23rem;
@@ -435,27 +449,22 @@ ul.menu li:has(> a.active):hover::after {
   filter: brightness(1.1);
   box-shadow: 0 0 0.6rem var(--sidebar-trigger);
 }
-.sidebar-grid-reorder {
-  display: flex;
-  flex-direction: column;
+.sidebar-grid-drag {
   flex: 0 0 auto;
-}
-.sidebar-grid-reorder button {
   border: none;
   background: transparent;
   color: var(--menu-link);
-  cursor: pointer;
-  font-size: 0.55rem;
+  cursor: grab;
+  font-size: 1rem;
   line-height: 1;
-  padding: 0.25rem 0.4rem;
+  padding: 0 0.5rem;
+  touch-action: none;
 }
-.sidebar-grid-reorder button:hover:not(:disabled) {
+.sidebar-grid-drag:hover {
   color: var(--menu-link-active);
-  background: var(--menu-hover);
 }
-.sidebar-grid-reorder button:disabled {
-  opacity: 0.25;
-  cursor: default;
+.sidebar-grid-drag:active {
+  cursor: grabbing;
 }
 
 .sidebar-grid-name {
