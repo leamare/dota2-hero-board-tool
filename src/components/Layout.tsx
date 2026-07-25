@@ -27,7 +27,11 @@ const MenuIcon = ({ name }: { name: string }) => (
 );
 
 export default function Layout() {
-  const pinned = useUiStore((s) => s.sidebarPinned) && !useIsMobile();
+  const sidebarPinned = useUiStore((s) => s.sidebarPinned);
+  const toggleSidebar = useUiStore((s) => s.toggleOpen);
+  const uiScale = useUiStore((s) => s.uiScale);
+  const isMobile = useIsMobile();
+  const pinned = sidebarPinned && !isMobile;
   const { t, locale, setLocale } = useI18n();
   return (
     <div className={`app-shell${pinned ? ' sb-pinned' : ''}`}>
@@ -51,6 +55,8 @@ export default function Layout() {
           </ul>
         </nav>
         <select
+          id="locale-select"
+          name="locale"
           className="locale-select"
           value={locale}
           onChange={(e) => setLocale(e.target.value as LocaleCode)}
@@ -65,9 +71,18 @@ export default function Layout() {
         </select>
       </header>
 
+      {!pinned && (
+        <div className="subheader-bar">
+          <button className="subheader-toggle" onClick={toggleSidebar}>
+            <MenuIcon name="stack" />
+            {t('sidebar.title')}
+          </button>
+        </div>
+      )}
+
       <Sidebar />
 
-      <main className="app-main">
+      <main className="app-main" style={{ zoom: uiScale }}>
         <Outlet />
       </main>
 

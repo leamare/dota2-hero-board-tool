@@ -4,6 +4,9 @@
  */
 
 :root {
+  /* shared layout measurements */
+  --header-height: 4rem;
+
   /*
    * Base palette. The spectral-main hues were run through OKLCH with the
    * chroma zeroed out — same perceptual lightness, neutral dark grey. The
