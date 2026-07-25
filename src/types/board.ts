@@ -53,8 +53,6 @@ export interface Category {
   linkGroup?: string;
   /** orientation of the link group this category belongs to */
   linkOrient?: 'v' | 'h';
-  /** element indices with a dashed divider drawn before them (between portraits) */
-  dividers?: number[];
   /** force this category to start on a new row */
   newRow?: boolean;
   elements: GridElement[];

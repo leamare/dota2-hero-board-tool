@@ -44,7 +44,6 @@ export default function EditableBoard() {
   const [altTarget, setAltTarget] = useState<{ catId: string; index: number } | null>(null);
   const [pendingLink, setPendingLink] = useState<{ catId: string; orient: 'v' | 'h' } | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
-  const toggleDivider = useBoardStore((s) => s.toggleDivider);
 
   const handleLink = (catId: string, orient: 'v' | 'h') => {
     if (pendingLink) {
@@ -146,7 +145,6 @@ export default function EditableBoard() {
                 onAdd={() => setPickerCat(cat.id)}
                 onElementAlt={(index) => setAltTarget({ catId: cat.id, index })}
                 onLink={(orient) => handleLink(cat.id, orient)}
-                onToggleDivider={(index) => toggleDivider(cat.id, index)}
               />
             );
             return (

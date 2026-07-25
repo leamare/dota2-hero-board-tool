@@ -25,7 +25,6 @@ const sample: Board = {
       size: 1,
       linkGroup: 'g0',
       linkOrient: 'v',
-      dividers: [2, 3],
       elements: [
         { kind: 'hero', refId: 1 },
         { kind: 'hero', refId: 5, alticon: 'persona1' },
@@ -61,7 +60,6 @@ const normalize = (b: Board) => ({
     size: undefined,
     linkGroup: undefined,
     linkOrient: undefined,
-    dividers: undefined,
     newRow: !!c.newRow,
     ...c,
   })),

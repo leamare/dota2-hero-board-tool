@@ -1,8 +1,6 @@
-import { Fragment } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
 import type { Board, Category } from '../../types/board';
 import { colorIndex, LABEL_COLORS } from '../../lib/constants';
-import { resolveDisplay } from '../../lib/board';
 import CategoryLabel from './CategoryLabel';
 import ElementPortrait from './ElementPortrait';
 
@@ -67,15 +65,10 @@ export default function CategoryCard({
       <div className={`cat-body${category.elements.length || bodyExtra ? '' : ' empty'}`}>
         {category.elements.length === 0 && !bodyExtra && <span>empty</span>}
         {category.elements.map((el, i) => (
-          <Fragment key={i}>
-            {category.dividers?.includes(i) && (
-              <div className="portrait-divider" style={{ height: `${resolveDisplay(category, board).heightRem}rem` }} />
-            )}
-            <div className="portrait-slot">
-              <ElementPortrait element={el} category={category} board={board} />
-              {renderElementOverlay?.(i)}
-            </div>
-          </Fragment>
+          <div className="portrait-slot" key={i}>
+            <ElementPortrait element={el} category={category} board={board} />
+            {renderElementOverlay?.(i)}
+          </div>
         ))}
         {bodyExtra}
       </div>

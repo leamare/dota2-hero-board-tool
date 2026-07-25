@@ -19,7 +19,6 @@ interface BoardStore {
   reorderCategories: (ids: string[]) => void;
   linkCategories: (aId: string, bId: string, orient: 'v' | 'h') => void;
   unlinkCategory: (id: string) => void;
-  toggleDivider: (id: string, index: number) => void;
 
   addElement: (catId: string, element: GridElement) => void;
   removeElement: (catId: string, index: number) => void;
@@ -116,19 +115,6 @@ export const useBoardStore = create<BoardStore>()(
           }
           return { board: { ...s.board, categories: cats } };
         }),
-
-      toggleDivider: (id, index) =>
-        set((s) => ({
-          board: {
-            ...s.board,
-            categories: mapCategory(s.board, id, (c) => {
-              const set = new Set(c.dividers ?? []);
-              if (set.has(index)) set.delete(index);
-              else set.add(index);
-              return { ...c, dividers: [...set].sort((a, b) => a - b) };
-            }),
-          },
-        })),
 
       addElement: (catId, element) =>
         set((s) => ({
