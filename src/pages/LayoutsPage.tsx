@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import GridIcon from '../components/GridIcon';
+import { DndContext, PointerSensor, closestCenter, useSensor, useSensors } from '@dnd-kit/core';
+import type { DragEndEvent } from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import LayoutRow from '../components/LayoutRow';
 import Modal from '../components/ui/Modal';
 import QRCode from '../components/ui/QRCode';
 import QrScanner from '../components/ui/QrScanner';
@@ -27,6 +30,13 @@ export default function LayoutsPage() {
   const setBoard = useBoardStore((s) => s.setBoard);
   const { layouts, save, overwrite, remove, rename, importLayouts, reorder } = useLayoutsStore();
   const fileRef = useRef<HTMLInputElement>(null);
+  const dndSensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
+  const handleDragEnd = ({ active, over }: DragEndEvent) => {
+    if (!over || active.id === over.id) return;
+    const from = layouts.findIndex((l) => l.id === active.id);
+    const to = layouts.findIndex((l) => l.id === over.id);
+    if (from >= 0 && to >= 0) reorder(from, to);
+  };
 
   const [shareOpen, setShareOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
@@ -114,55 +124,46 @@ export default function LayoutsPage() {
       {layouts.length === 0 ? (
         <p className="board-empty">No saved grids yet. Save the current one to get started.</p>
       ) : (
-        <ul className="layouts-list">
-          {layouts.map((l, i) => (
-            <li key={l.id} className="layout-row">
-              <span className="sidebar-grid-reorder">
-                <button title="Move up" disabled={i === 0} onClick={() => reorder(i, i - 1)}>
-                  ▲
-                </button>
-                <button
-                  title="Move down"
-                  disabled={i === layouts.length - 1}
-                  onClick={() => reorder(i, i + 1)}
-                >
-                  ▼
-                </button>
-              </span>
-              <span className="layout-name">
-                <GridIcon tag={l.board.icon} />
-                {l.name}
-              </span>
-              <span className="layout-meta">{l.board.categories.length} categories</span>
-              <span className="layout-actions">
-                <button className="btn small primary" onClick={() => load(l)}>
-                  Load
-                </button>
-                <button className="btn small" onClick={() => overwrite(l.id, board)}>
-                  Update
-                </button>
-                <button
-                  className="btn small"
-                  onClick={() => {
-                    const n = prompt('Rename to:', l.name);
-                    if (n?.trim()) rename(l.id, n.trim());
-                  }}
-                >
-                  Rename
-                </button>
-                <button className="btn small" onClick={() => download(`${l.name}.json`, l)}>
-                  Export
-                </button>
-                <button
-                  className="btn small danger"
-                  onClick={() => confirm(`Delete "${l.name}"?`) && remove(l.id)}
-                >
-                  Delete
-                </button>
-              </span>
-            </li>
-          ))}
-        </ul>
+        <DndContext sensors={dndSensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext items={layouts.map((l) => l.id)} strategy={verticalListSortingStrategy}>
+            <ul className="layouts-list">
+              {layouts.map((l) => (
+                <LayoutRow
+                  key={l.id}
+                  layout={l}
+                  actions={
+                    <>
+                      <button className="btn small primary" onClick={() => load(l)}>
+                        Load
+                      </button>
+                      <button className="btn small" onClick={() => overwrite(l.id, board)}>
+                        Update
+                      </button>
+                      <button
+                        className="btn small"
+                        onClick={() => {
+                          const n = prompt('Rename to:', l.name);
+                          if (n?.trim()) rename(l.id, n.trim());
+                        }}
+                      >
+                        Rename
+                      </button>
+                      <button className="btn small" onClick={() => download(`${l.name}.json`, l)}>
+                        Export
+                      </button>
+                      <button
+                        className="btn small danger"
+                        onClick={() => confirm(`Delete "${l.name}"?`) && remove(l.id)}
+                      >
+                        Delete
+                      </button>
+                    </>
+                  }
+                />
+              ))}
+            </ul>
+          </SortableContext>
+        </DndContext>
       )}
 
       <Modal open={shareOpen} onClose={() => setShareOpen(false)} title="Share all grids" width="40rem">

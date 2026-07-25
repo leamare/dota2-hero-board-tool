@@ -1,5 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { DndContext, PointerSensor, closestCenter, useSensor, useSensors } from '@dnd-kit/core';
+import type { DragEndEvent } from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useBoardStore } from '../state/boardStore';
 import { useLayoutsStore } from '../state/layoutsStore';
 import { useUiStore, UI_SCALE_STEPS } from '../state/uiStore';
@@ -9,7 +12,7 @@ import { ITEM_STYLES, PORTRAIT_TYPES, SIZES, imageUrl } from '../lib/images';
 import { emptyBoard } from '../lib/board';
 import { useIsMobile } from '../lib/useIsMobile';
 import { useT } from '../lib/i18n';
-import GridIcon from './GridIcon';
+import SortableLayoutRow from './SortableLayoutRow';
 import BoardIconModal from './edit/BoardIconModal';
 import ShareModal from './edit/ShareModal';
 import NameDialog from './ui/NameDialog';
@@ -37,6 +40,13 @@ export default function Sidebar() {
 
   const { layouts, save, overwrite, remove, reorder } = useLayoutsStore();
   const current = layouts.find((l) => l.id === currentLayoutId) ?? null;
+  const dndSensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
+  const handleLayoutDragEnd = ({ active, over }: DragEndEvent) => {
+    if (!over || active.id === over.id) return;
+    const from = layouts.findIndex((l) => l.id === active.id);
+    const to = layouts.findIndex((l) => l.id === over.id);
+    if (from >= 0 && to >= 0) reorder(from, to);
+  };
 
   const [iconModal, setIconModal] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
@@ -94,6 +104,51 @@ export default function Sidebar() {
     if (!pinned) setOpen(false);
   };
 
+  // swipe gesture: swipe left from the right edge to open, swipe right on the
+  // panel (or the edge, once open) to close. ignored while pinned.
+  const asideRef = useRef<HTMLElement>(null);
+  const touch = useRef<{ x: number; y: number; edge: boolean } | null>(null);
+
+  const onTouchStart = useCallback(
+    (e: TouchEvent) => {
+      const t = e.touches[0];
+      if (!t) return;
+      const edge = window.innerWidth - t.clientX < 28;
+      const inSidebar = !!asideRef.current?.contains(e.target as Node);
+      if (!edge && !inSidebar) {
+        touch.current = null;
+        return;
+      }
+      touch.current = { x: t.clientX, y: t.clientY, edge };
+    },
+    [],
+  );
+
+  const onTouchEnd = useCallback(
+    (e: TouchEvent) => {
+      const start = touch.current;
+      touch.current = null;
+      if (!start || pinned) return;
+      const t = e.changedTouches[0];
+      if (!t) return;
+      const dx = t.clientX - start.x;
+      const dy = t.clientY - start.y;
+      if (Math.abs(dx) < 50 || Math.abs(dx) < Math.abs(dy)) return;
+      if (dx < 0 && start.edge) setOpen(true);
+      else if (dx > 0) setOpen(false);
+    },
+    [pinned, setOpen],
+  );
+
+  useEffect(() => {
+    window.addEventListener('touchstart', onTouchStart, { passive: true });
+    window.addEventListener('touchend', onTouchEnd, { passive: true });
+    return () => {
+      window.removeEventListener('touchstart', onTouchStart);
+      window.removeEventListener('touchend', onTouchEnd);
+    };
+  }, [onTouchStart, onTouchEnd]);
+
   return (
     <>
       <button
@@ -105,7 +160,7 @@ export default function Sidebar() {
         {open ? '›' : '‹'}
       </button>
 
-      <aside className={`sidebar${open ? ' open' : ''}`}>
+      <aside ref={asideRef} className={`sidebar${open ? ' open' : ''}`}>
         <div className="sidebar-head">
           <strong>{t('sidebar.title')}</strong>
           {!isMobile && (
@@ -273,40 +328,29 @@ export default function Sidebar() {
               ＋ {t('common.newGrid')}
             </button>
           </div>
-          <ul className="sidebar-grids">
-            {layouts.length === 0 && <li className="muted">{t('sidebar.noGrids')}</li>}
-            {layouts.map((l, i) => (
-              <li key={l.id} className={l.id === currentLayoutId ? 'active' : undefined}>
-                <span className="sidebar-grid-reorder">
-                  <button
-                    title="Move up"
-                    disabled={i === 0}
-                    onClick={() => reorder(i, i - 1)}
-                  >
-                    ▲
-                  </button>
-                  <button
-                    title="Move down"
-                    disabled={i === layouts.length - 1}
-                    onClick={() => reorder(i, i + 1)}
-                  >
-                    ▼
-                  </button>
-                </span>
-                <button className="sidebar-grid-name" onClick={() => loadLayout(l.id)}>
-                  <GridIcon tag={l.board.icon} />
-                  {l.name}
-                </button>
-                <button
-                  className="sidebar-grid-del"
-                  title="Delete"
-                  onClick={() => confirm(`Delete "${l.name}"?`) && remove(l.id)}
-                >
-                  ✕
-                </button>
-              </li>
-            ))}
-          </ul>
+          {layouts.length === 0 ? (
+            <p className="muted">{t('sidebar.noGrids')}</p>
+          ) : (
+            <DndContext
+              sensors={dndSensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleLayoutDragEnd}
+            >
+              <SortableContext items={layouts.map((l) => l.id)} strategy={verticalListSortingStrategy}>
+                <ul className="sidebar-grids">
+                  {layouts.map((l) => (
+                    <SortableLayoutRow
+                      key={l.id}
+                      layout={l}
+                      active={l.id === currentLayoutId}
+                      onLoad={() => loadLayout(l.id)}
+                      onDelete={() => confirm(`Delete "${l.name}"?`) && remove(l.id)}
+                    />
+                  ))}
+                </ul>
+              </SortableContext>
+            </DndContext>
+          )}
         </div>
       </aside>
 
