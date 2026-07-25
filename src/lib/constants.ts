@@ -89,3 +89,6 @@ export const FACET_ICONS = [
   'spectre', 'speed', 'spinning', 'spirit', 'strength', 'summons', 'sun', 'teleport', 'tower', 'tree',
   'twin_hearts', 'vision', 'vortex_in', 'vortex_out', 'web', 'whoopee_cushion', 'wolf', 'xp',
 ];
+
+/** Fallback facet icon used wherever a grid has none set. */
+export const DEFAULT_GRID_ICON = 'item';

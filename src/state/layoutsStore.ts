@@ -17,6 +17,8 @@ interface LayoutsStore {
   overwrite: (id: string, board: Board) => void;
   rename: (id: string, name: string) => void;
   remove: (id: string) => void;
+  /** move the layout at `from` to sit at `to` in the saved list */
+  reorder: (from: number, to: number) => void;
   /** merge imported layouts (from a JSON file) */
   importLayouts: (incoming: SavedLayout[]) => void;
 }
@@ -48,6 +50,15 @@ export const useLayoutsStore = create<LayoutsStore>()(
         })),
 
       remove: (id) => set((s) => ({ layouts: s.layouts.filter((l) => l.id !== id) })),
+
+      reorder: (from, to) =>
+        set((s) => {
+          const layouts = [...s.layouts];
+          const [moved] = layouts.splice(from, 1);
+          if (!moved) return s;
+          layouts.splice(to, 0, moved);
+          return { layouts };
+        }),
 
       importLayouts: (incoming) =>
         set((s) => ({

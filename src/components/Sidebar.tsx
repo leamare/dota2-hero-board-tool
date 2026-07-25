@@ -2,9 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useBoardStore } from '../state/boardStore';
 import { useLayoutsStore } from '../state/layoutsStore';
-import { useUiStore } from '../state/uiStore';
+import { useUiStore, UI_SCALE_STEPS } from '../state/uiStore';
 import { useToast } from '../state/ToastProvider';
-import { COLUMN_OPTIONS } from '../lib/constants';
+import { COLUMN_OPTIONS, DEFAULT_GRID_ICON } from '../lib/constants';
 import { ITEM_STYLES, PORTRAIT_TYPES, SIZES, imageUrl } from '../lib/images';
 import { emptyBoard } from '../lib/board';
 import { useIsMobile } from '../lib/useIsMobile';
@@ -21,7 +21,8 @@ export default function Sidebar() {
   const toast = useToast();
   const t = useT();
 
-  const { sidebarOpen, sidebarPinned, setOpen, toggleOpen, setPinned } = useUiStore();
+  const { sidebarOpen, sidebarPinned, setOpen, toggleOpen, setPinned, uiScale, bumpUiScale } =
+    useUiStore();
   const isMobile = useIsMobile();
   // on mobile the sidebar is always a plain overlay; pinning only affects desktop
   const pinned = sidebarPinned && !isMobile;
@@ -34,7 +35,7 @@ export default function Sidebar() {
   const currentLayoutId = useBoardStore((s) => s.currentLayoutId);
   const setCurrentLayoutId = useBoardStore((s) => s.setCurrentLayoutId);
 
-  const { layouts, save, overwrite, remove } = useLayoutsStore();
+  const { layouts, save, overwrite, remove, reorder } = useLayoutsStore();
   const current = layouts.find((l) => l.id === currentLayoutId) ?? null;
 
   const [iconModal, setIconModal] = useState(false);
@@ -123,11 +124,7 @@ export default function Sidebar() {
           <h3>{t('sidebar.currentGrid')}</h3>
           <div className="field row">
             <button className="btn icon-btn" title="Grid icon" onClick={() => setIconModal(true)}>
-              {board.icon ? (
-                <img src={imageUrl('facets', board.icon)} alt="" />
-              ) : (
-                <span className="muted">icon</span>
-              )}
+              <img src={imageUrl('facets', board.icon || DEFAULT_GRID_ICON)} alt="" />
             </button>
             <input
               className="input"
@@ -155,6 +152,31 @@ export default function Sidebar() {
 
         <div className="sidebar-section">
           <h3>{t('sidebar.display')}</h3>
+          <div className="field row">
+            <label>{t('sidebar.uiScale')}</label>
+            <span className="ui-scale">
+              <button
+                type="button"
+                className="ui-scale-btn"
+                disabled={uiScale <= UI_SCALE_STEPS[0]}
+                onClick={() => bumpUiScale(-1)}
+                aria-label={t('sidebar.uiScaleDown')}
+              >
+                −
+              </button>
+              <span className="ui-scale-aa" aria-hidden="true">Aa</span>
+              <button
+                type="button"
+                className="ui-scale-btn"
+                disabled={uiScale >= UI_SCALE_STEPS[UI_SCALE_STEPS.length - 1]}
+                onClick={() => bumpUiScale(1)}
+                aria-label={t('sidebar.uiScaleUp')}
+              >
+                +
+              </button>
+              <span className="ui-scale-value">{Math.round(uiScale * 100)}%</span>
+            </span>
+          </div>
           <div className="field row">
             <label>{t('sidebar.columns')}</label>
             <select
@@ -253,8 +275,24 @@ export default function Sidebar() {
           </div>
           <ul className="sidebar-grids">
             {layouts.length === 0 && <li className="muted">{t('sidebar.noGrids')}</li>}
-            {layouts.map((l) => (
+            {layouts.map((l, i) => (
               <li key={l.id} className={l.id === currentLayoutId ? 'active' : undefined}>
+                <span className="sidebar-grid-reorder">
+                  <button
+                    title="Move up"
+                    disabled={i === 0}
+                    onClick={() => reorder(i, i - 1)}
+                  >
+                    ▲
+                  </button>
+                  <button
+                    title="Move down"
+                    disabled={i === layouts.length - 1}
+                    onClick={() => reorder(i, i + 1)}
+                  >
+                    ▼
+                  </button>
+                </span>
                 <button className="sidebar-grid-name" onClick={() => loadLayout(l.id)}>
                   <GridIcon tag={l.board.icon} />
                   {l.name}

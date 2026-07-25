@@ -25,7 +25,7 @@ export default function LayoutsPage() {
   const [params, setParams] = useSearchParams();
   const board = useBoardStore((s) => s.board);
   const setBoard = useBoardStore((s) => s.setBoard);
-  const { layouts, save, overwrite, remove, rename, importLayouts } = useLayoutsStore();
+  const { layouts, save, overwrite, remove, rename, importLayouts, reorder } = useLayoutsStore();
   const fileRef = useRef<HTMLInputElement>(null);
 
   const [shareOpen, setShareOpen] = useState(false);
@@ -115,8 +115,20 @@ export default function LayoutsPage() {
         <p className="board-empty">No saved grids yet. Save the current one to get started.</p>
       ) : (
         <ul className="layouts-list">
-          {layouts.map((l) => (
+          {layouts.map((l, i) => (
             <li key={l.id} className="layout-row">
+              <span className="sidebar-grid-reorder">
+                <button title="Move up" disabled={i === 0} onClick={() => reorder(i, i - 1)}>
+                  ▲
+                </button>
+                <button
+                  title="Move down"
+                  disabled={i === layouts.length - 1}
+                  onClick={() => reorder(i, i + 1)}
+                >
+                  ▼
+                </button>
+              </span>
               <span className="layout-name">
                 <GridIcon tag={l.board.icon} />
                 {l.name}
