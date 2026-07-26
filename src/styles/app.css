@@ -69,16 +69,26 @@ button {
   height: var(--hh);
   display: flex;
   align-items: stretch;
+  /* the logo badge starts 1H in; the backlink lives behind it (absolute) */
+  padding-left: var(--hh);
 }
 
-/* ❮ back to the parent site — flush against the logo badge, no gap */
+/*
+ * ❮ back to the parent site. Absolutely positioned (4.5rem wide, 2rem glyph,
+ * matching the reference) so the logo badge overlaps its right edge — the
+ * backlink box tucks behind the badge just like builds.spectral.gg.
+ */
 .app-header .root-link {
-  flex: 0 0 auto;
-  width: calc(var(--hh) * 0.9);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: calc(var(--hh) * 1.125);
+  height: var(--hh);
   line-height: var(--hh);
-  font-size: calc(var(--hh) * 0.4);
+  font-size: calc(var(--hh) * 0.5);
   text-align: center;
   color: var(--menu-link);
+  z-index: 1;
   transition: all 200ms linear;
 }
 .app-header .root-link::after {
@@ -107,13 +117,15 @@ button {
   height: calc(var(--hh) * 1.25);
   background-color: var(--big-button-color);
   clip-path: polygon(0 0, 100% 0, 86.1% 100%, 13.9% 100%);
-  z-index: 2;
+  z-index: 3; /* sits above the backlink */
   transition: background-color 300ms linear;
 }
 .app-header .gotomain::after {
   content: '';
-  width: 60%;
-  height: 100%;
+  /* slightly overflow the badge so the trapezoid clips the logo like the
+     reference's cover-sized image — makes the logo read bigger */
+  width: 66%;
+  height: 108%;
   background: url('/salogo.png') center / contain no-repeat;
 }
 .app-header .gotomain:hover {
@@ -139,7 +151,7 @@ ul.menu {
 }
 ul.menu li {
   height: var(--hh);
-  width: 8.5rem;
+  width: 9.5rem;
   transform: skewX(-15deg);
   transition: all 200ms linear;
   position: relative;
@@ -232,6 +244,9 @@ ul.menu li:has(> a.active):hover::after {
    * left corner, the ❮ backlink right next to it, the logo centred in the
    * bar, and the locale select in the far right corner.
    */
+  .app-header {
+    padding-left: 0; /* the desktop backlink-overlap padding doesn't apply here */
+  }
   /* logo centred and clipped to the bar — no overhang on mobile */
   .app-header .gotomain {
     margin: 0 auto;
