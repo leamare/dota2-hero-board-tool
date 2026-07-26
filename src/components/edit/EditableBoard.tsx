@@ -192,8 +192,19 @@ export default function EditableBoard() {
     if (id.startsWith('cat:')) {
       const cat = board.categories.find((c) => c.id === id.slice(4));
       if (!cat) return null;
+      // the board-level classes carry the colour rules, so the dragged card
+      // shows the same colours as it does in place
+      const boardClasses = [
+        'board',
+        'drag-overlay-card',
+        board.centered ? 'centered' : '',
+        board.darkenedBg ? 'darken' : '',
+        board.colorfulLabels ? 'full-labels' : '',
+      ]
+        .filter(Boolean)
+        .join(' ');
       return (
-        <div className="drag-overlay-card">
+        <div className={boardClasses}>
           <CategoryCard category={cat} board={board} />
         </div>
       );
