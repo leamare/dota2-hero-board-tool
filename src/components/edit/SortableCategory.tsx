@@ -1,12 +1,14 @@
+import { useState } from 'react';
 import { useSortable, SortableContext, rectSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import type { CSSProperties } from 'react';
-import type { Board, Category } from '../../types/board';
+import type { Board, Category, GridElement } from '../../types/board';
 import { resolveDisplay } from '../../lib/board';
 import { colorIndex, LABEL_COLORS } from '../../lib/constants';
 import CategoryLabel from '../board/CategoryLabel';
 import SortableElement, { elementDragId } from './SortableElement';
 import { useBoardStore } from '../../state/boardStore';
+import { PALETTE_MIME } from '../HeroPalette';
 
 interface Props {
   category: Category;
@@ -40,6 +42,27 @@ export default function SortableCategory({
 }: Props) {
   const removeCategory = useBoardStore((s) => s.removeCategory);
   const removeElement = useBoardStore((s) => s.removeElement);
+  const addElement = useBoardStore((s) => s.addElement);
+  const [dropActive, setDropActive] = useState(false);
+
+  // accept icons dragged in from the sidebar palette
+  const onDragOver = (e: React.DragEvent) => {
+    if (!e.dataTransfer.types.includes(PALETTE_MIME)) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+    if (!dropActive) setDropActive(true);
+  };
+  const onDrop = (e: React.DragEvent) => {
+    const raw = e.dataTransfer.getData(PALETTE_MIME);
+    setDropActive(false);
+    if (!raw) return;
+    e.preventDefault();
+    try {
+      addElement(category.id, JSON.parse(raw) as GridElement);
+    } catch {
+      /* malformed payload — ignore */
+    }
+  };
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: categoryDragId(category.id), animateLayoutChanges: () => false });
@@ -69,10 +92,14 @@ export default function SortableCategory({
         grouped ? 'grouped' : '',
         hasColor ? 'has-color' : '',
         linkPending ? 'link-pending' : '',
+        dropActive ? 'drop-active' : '',
         HEADER_SIZE_CLASS[category.headerSize ?? 1],
       ]
         .filter(Boolean)
         .join(' ')}
+      onDragOver={onDragOver}
+      onDragLeave={() => setDropActive(false)}
+      onDrop={onDrop}
     >
       <div className="cat-head">
         <button className="drag-handle" title="Drag to reorder" {...attributes} {...listeners}>

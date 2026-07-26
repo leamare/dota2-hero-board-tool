@@ -49,6 +49,7 @@ const en: Dict = {
   'sidebar.colorfulLabels': 'Colourful labels',
   'sidebar.centered': 'Centered',
   'sidebar.darken': 'Darken',
+  'sidebar.palette': 'Heroes & items',
   'sidebar.savedGrids': 'Saved grids',
   'sidebar.noGrids': 'No saved grids yet.',
 
@@ -100,6 +101,7 @@ const ru: Dict = {
   'sidebar.colorfulLabels': 'Цветные заголовки',
   'sidebar.centered': 'По центру',
   'sidebar.darken': 'Затемнить',
+  'sidebar.palette': 'Герои и предметы',
   'sidebar.savedGrids': 'Сохранённые сетки',
   'sidebar.noGrids': 'Пока нет сохранённых сеток.',
 
@@ -151,6 +153,7 @@ const zh: Dict = {
   'sidebar.colorfulLabels': '彩色标题',
   'sidebar.centered': '居中',
   'sidebar.darken': '变暗',
+  'sidebar.palette': '英雄和物品',
   'sidebar.savedGrids': '已保存网格',
   'sidebar.noGrids': '还没有保存的网格。',
 
@@ -202,6 +205,7 @@ const uk: Dict = {
   'sidebar.colorfulLabels': 'Кольорові заголовки',
   'sidebar.centered': 'По центру',
   'sidebar.darken': 'Затемнити',
+  'sidebar.palette': 'Герої та предмети',
   'sidebar.savedGrids': 'Збережені сітки',
   'sidebar.noGrids': 'Поки немає збережених сіток.',
 
@@ -253,6 +257,7 @@ const pt: Dict = {
   'sidebar.colorfulLabels': 'Rótulos coloridos',
   'sidebar.centered': 'Centralizado',
   'sidebar.darken': 'Escurecer',
+  'sidebar.palette': 'Heróis e itens',
   'sidebar.savedGrids': 'Grades salvas',
   'sidebar.noGrids': 'Nenhuma grade salva ainda.',
 
