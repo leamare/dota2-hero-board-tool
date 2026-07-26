@@ -10,6 +10,22 @@ html {
   interpolate-size: allow-keywords;
 }
 
+/*
+ * Root font-size scales with the viewport, exactly like builds.spectral.gg
+ * (nerds-hero-builds-server). Every rem in the app tracks this, so the whole
+ * UI grows/shrinks with the screen instead of being pinned to a fixed 16px.
+ */
+@media screen and (orientation: landscape), screen and (min-width: 769px) {
+  html {
+    font-size: max(11px, min(0.785vmax, 17px));
+  }
+}
+@media screen and (max-width: 768px) and (orientation: portrait) {
+  html {
+    font-size: max(2.5vw, 13px);
+  }
+}
+
 body {
   background-color: var(--main-bg);
   color: var(--main-text-color);
@@ -74,27 +90,30 @@ button {
 }
 
 /*
- * the logo badge — a trapezoid the exact height of the header, no overhang.
- * proportions match the reference's border-trick geometry (border-top: hh,
- * border-left/right: 0.27*hh, content: 1.4*hh) worked out as a clip-path:
- * box width = the WIDE top edge (1.4 + 2*0.27 = 1.94 × header height); the
- * bottom edge is narrower by exactly one side-border's width on each side.
+ * the logo badge — a trapezoid that overhangs the header bar, matching the
+ * reference's border-trick exactly: header is 4rem, the badge is 5rem tall
+ * (border-top: 5rem) so it protrudes 1rem below the bar; its content width is
+ * 7rem with 1.35rem transparent side borders, giving a top edge of 9.7rem and
+ * a bottom edge of 7rem. Expressed relative to the header height H = 4rem:
+ *   height 1.25H, top-edge width 2.425H, bottom edge inset 1.35/9.7 = 13.9%.
  */
 .app-header .gotomain {
   flex: 0 0 auto;
+  align-self: flex-start; /* top-aligned so it overhangs at the bottom */
   display: flex;
   align-items: center;
   justify-content: center;
-  width: calc(var(--hh) * 1.94);
-  height: 100%;
+  width: calc(var(--hh) * 2.425);
+  height: calc(var(--hh) * 1.25);
   background-color: var(--big-button-color);
   clip-path: polygon(0 0, 100% 0, 86.1% 100%, 13.9% 100%);
+  z-index: 2;
   transition: background-color 300ms linear;
 }
 .app-header .gotomain::after {
   content: '';
-  width: 44%;
-  height: 70%;
+  width: 54%;
+  height: 82%;
   background: url('/salogo.png') center / contain no-repeat;
 }
 .app-header .gotomain:hover {
@@ -331,22 +350,26 @@ ul.menu li:has(> a.active):hover::after {
   border: none;
   background: var(--sidebar-trigger);
   color: #000;
-  font-size: 1.1rem;
+  font-size: 1.3rem;
   font-weight: bold;
   line-height: 1;
+  /* fixed height so hover only changes the WIDTH, never the height */
   width: 1.1rem;
-  padding: 3rem 0;
+  height: 7rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
   border-radius: 0.5rem 0 0 0.5rem;
   cursor: pointer;
   opacity: 0.75;
   box-shadow: -0.2rem 0 0.6rem #0006;
-  transition: all 200ms ease;
+  transition: width 200ms ease, opacity 200ms ease;
   touch-action: pan-y;
 }
 .sidebar-tab:hover {
   opacity: 1;
   width: 2.6rem;
-  font-size: 1.8rem;
 }
 .sidebar-tab.open {
   right: 23rem;
