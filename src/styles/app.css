@@ -11,18 +11,19 @@ html {
 }
 
 /*
- * Root font-size scales with the viewport, exactly like builds.spectral.gg
- * (nerds-hero-builds-server). Every rem in the app tracks this, so the whole
- * UI grows/shrinks with the screen instead of being pinned to a fixed 16px.
+ * Root font-size scales with the viewport (same shape as builds.spectral.gg,
+ * bumped ~1.3x so the app reads at a comfortable default) and is multiplied by
+ * --ui-scale from the in-app UI-scale control. Every rem tracks this, so the
+ * WHOLE UI — header included — grows/shrinks together.
  */
 @media screen and (orientation: landscape), screen and (min-width: 769px) {
   html {
-    font-size: max(11px, min(0.785vmax, 17px));
+    font-size: calc(max(14px, min(1.02vmax, 22px)) * var(--ui-scale, 1));
   }
 }
 @media screen and (max-width: 768px) and (orientation: portrait) {
   html {
-    font-size: max(2.5vw, 13px);
+    font-size: calc(max(17px, min(3.25vw, 26px)) * var(--ui-scale, 1));
   }
 }
 
@@ -65,7 +66,9 @@ button {
   --hh: var(--header-height); /* local alias, drives every measurement below */
   background-color: var(--header-bg);
   position: relative;
-  z-index: 50;
+  /* above the sidebar scrim (70) so the overhanging logo stays lit when the
+     sidebar dims the page */
+  z-index: 72;
   height: var(--hh);
   display: flex;
   align-items: stretch;
@@ -621,8 +624,10 @@ ul.menu li:has(> a.active):hover::after {
 .subheader-bar {
   background: var(--sidebar-widget-bg);
   display: flex;
+  align-items: center;
   justify-content: flex-end;
-  padding: 0.35rem 0.75rem;
+  gap: 1rem;
+  padding: 0.3rem 0.75rem;
 }
 .subheader-toggle {
   display: inline-flex;

@@ -1,8 +1,8 @@
-import type { ReactElement } from 'react';
+import { useEffect, type ReactElement } from 'react';
 import { NavLink, Outlet, Link } from 'react-router-dom';
 import { PARENT_URL, SECTION_HOME } from '../lib/config';
 import Sidebar from './Sidebar';
-import { useUiStore } from '../state/uiStore';
+import { useUiStore, UI_SCALE_STEPS } from '../state/uiStore';
 import { useIsMobile } from '../lib/useIsMobile';
 import { useI18n, LOCALES, type LocaleCode } from '../lib/i18n';
 
@@ -30,9 +30,16 @@ export default function Layout() {
   const sidebarPinned = useUiStore((s) => s.sidebarPinned);
   const toggleSidebar = useUiStore((s) => s.toggleOpen);
   const uiScale = useUiStore((s) => s.uiScale);
+  const bumpUiScale = useUiStore((s) => s.bumpUiScale);
   const isMobile = useIsMobile();
   const pinned = sidebarPinned && !isMobile;
   const { t, locale, setLocale } = useI18n();
+
+  // UI scale multiplies the root font-size, so every rem in the app scales
+  useEffect(() => {
+    document.documentElement.style.setProperty('--ui-scale', String(uiScale));
+  }, [uiScale]);
+
   return (
     <div className={`app-shell${pinned ? ' sb-pinned' : ''}`}>
       <header className="app-header">
@@ -71,18 +78,40 @@ export default function Layout() {
         </select>
       </header>
 
-      {!pinned && (
-        <div className="subheader-bar">
+      <div className="subheader-bar">
+        <span className="ui-scale" title={t('sidebar.uiScale')}>
+          <button
+            type="button"
+            className="ui-scale-btn"
+            disabled={uiScale <= UI_SCALE_STEPS[0]}
+            onClick={() => bumpUiScale(-1)}
+            aria-label={t('sidebar.uiScaleDown')}
+          >
+            −
+          </button>
+          <span className="ui-scale-aa" aria-hidden="true">Aa</span>
+          <button
+            type="button"
+            className="ui-scale-btn"
+            disabled={uiScale >= UI_SCALE_STEPS[UI_SCALE_STEPS.length - 1]}
+            onClick={() => bumpUiScale(1)}
+            aria-label={t('sidebar.uiScaleUp')}
+          >
+            +
+          </button>
+          <span className="ui-scale-value">{Math.round(uiScale * 100)}%</span>
+        </span>
+        {!pinned && (
           <button className="subheader-toggle" onClick={toggleSidebar}>
             <MenuIcon name="stack" />
             {t('sidebar.title')}
           </button>
-        </div>
-      )}
+        )}
+      </div>
 
       <Sidebar />
 
-      <main className="app-main" style={{ zoom: uiScale }}>
+      <main className="app-main">
         <Outlet />
       </main>
 

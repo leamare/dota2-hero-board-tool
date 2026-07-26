@@ -5,7 +5,7 @@ import type { DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useBoardStore } from '../state/boardStore';
 import { useLayoutsStore } from '../state/layoutsStore';
-import { useUiStore, UI_SCALE_STEPS } from '../state/uiStore';
+import { useUiStore } from '../state/uiStore';
 import { useToast } from '../state/ToastProvider';
 import { COLUMN_OPTIONS, DEFAULT_GRID_ICON } from '../lib/constants';
 import { ITEM_STYLES, PORTRAIT_TYPES, SIZES, imageUrl } from '../lib/images';
@@ -13,6 +13,7 @@ import { emptyBoard } from '../lib/board';
 import { useIsMobile } from '../lib/useIsMobile';
 import { useT } from '../lib/i18n';
 import SortableLayoutRow from './SortableLayoutRow';
+import HeroPalette from './HeroPalette';
 import BoardIconModal from './edit/BoardIconModal';
 import ShareModal from './edit/ShareModal';
 import NameDialog from './ui/NameDialog';
@@ -24,8 +25,7 @@ export default function Sidebar() {
   const toast = useToast();
   const t = useT();
 
-  const { sidebarOpen, sidebarPinned, setOpen, toggleOpen, setPinned, uiScale, bumpUiScale } =
-    useUiStore();
+  const { sidebarOpen, sidebarPinned, setOpen, toggleOpen, setPinned } = useUiStore();
   const isMobile = useIsMobile();
   // on mobile the sidebar is always a plain overlay; pinning only affects desktop
   const pinned = sidebarPinned && !isMobile;
@@ -255,31 +255,6 @@ export default function Sidebar() {
         <div className="sidebar-section">
           <h3>{t('sidebar.display')}</h3>
           <div className="field row">
-            <label>{t('sidebar.uiScale')}</label>
-            <span className="ui-scale">
-              <button
-                type="button"
-                className="ui-scale-btn"
-                disabled={uiScale <= UI_SCALE_STEPS[0]}
-                onClick={() => bumpUiScale(-1)}
-                aria-label={t('sidebar.uiScaleDown')}
-              >
-                −
-              </button>
-              <span className="ui-scale-aa" aria-hidden="true">Aa</span>
-              <button
-                type="button"
-                className="ui-scale-btn"
-                disabled={uiScale >= UI_SCALE_STEPS[UI_SCALE_STEPS.length - 1]}
-                onClick={() => bumpUiScale(1)}
-                aria-label={t('sidebar.uiScaleUp')}
-              >
-                +
-              </button>
-              <span className="ui-scale-value">{Math.round(uiScale * 100)}%</span>
-            </span>
-          </div>
-          <div className="field row">
             <label>{t('sidebar.columns')}</label>
             <select
               className="select"
@@ -366,6 +341,11 @@ export default function Sidebar() {
           >
             {t('common.clear')}
           </button>
+        </div>
+
+        <div className="sidebar-section">
+          <h3>{t('sidebar.palette')}</h3>
+          <HeroPalette />
         </div>
 
         <div className="sidebar-section">
