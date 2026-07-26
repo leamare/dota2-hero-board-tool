@@ -104,50 +104,88 @@ export default function Sidebar() {
     if (!pinned) setOpen(false);
   };
 
-  // swipe gesture: swipe left from the right edge to open, swipe right on the
-  // panel (or the edge, once open) to close. ignored while pinned.
+  // swipe gesture: swipe in from the right edge to open, swipe the panel out to
+  // close. the sidebar tracks the finger live so you see it move. pinned = off.
   const asideRef = useRef<HTMLElement>(null);
-  const touch = useRef<{ x: number; y: number; edge: boolean } | null>(null);
+  const touch = useRef<{
+    startX: number;
+    startY: number;
+    mode: 'open' | 'close';
+    dragging: boolean;
+  } | null>(null);
+
+  const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n));
 
   const onTouchStart = useCallback(
     (e: TouchEvent) => {
+      touch.current = null;
+      if (pinned) return;
       const t = e.touches[0];
       if (!t) return;
-      const edge = window.innerWidth - t.clientX < 28;
+      const fromEdge = window.innerWidth - t.clientX < 28;
       const inSidebar = !!asideRef.current?.contains(e.target as Node);
-      if (!edge && !inSidebar) {
-        touch.current = null;
+      const currentlyOpen = asideRef.current?.classList.contains('open');
+      if (currentlyOpen && inSidebar) {
+        touch.current = { startX: t.clientX, startY: t.clientY, mode: 'close', dragging: false };
+      } else if (!currentlyOpen && fromEdge) {
+        touch.current = { startX: t.clientX, startY: t.clientY, mode: 'open', dragging: false };
+      }
+    },
+    [pinned],
+  );
+
+  const onTouchMove = useCallback((e: TouchEvent) => {
+    const s = touch.current;
+    const aside = asideRef.current;
+    if (!s || !aside) return;
+    const t = e.touches[0];
+    if (!t) return;
+    const dx = t.clientX - s.startX;
+    const dy = t.clientY - s.startY;
+    if (!s.dragging) {
+      if (Math.abs(dx) < 8) return;
+      if (Math.abs(dy) > Math.abs(dx)) {
+        touch.current = null; // vertical scroll — bail out
         return;
       }
-      touch.current = { x: t.clientX, y: t.clientY, edge };
-    },
-    [],
-  );
+      s.dragging = true;
+      aside.style.transition = 'none';
+    }
+    const w = aside.offsetWidth;
+    const offset = s.mode === 'open' ? clamp(w + dx, 0, w) : clamp(dx, 0, w);
+    aside.style.transform = `translateX(${offset}px)`;
+  }, []);
 
   const onTouchEnd = useCallback(
     (e: TouchEvent) => {
-      const start = touch.current;
+      const s = touch.current;
       touch.current = null;
-      if (!start || pinned) return;
+      const aside = asideRef.current;
+      if (aside) {
+        aside.style.transition = '';
+        aside.style.transform = '';
+      }
+      if (!s || !s.dragging || pinned || !aside) return;
       const t = e.changedTouches[0];
       if (!t) return;
-      const dx = t.clientX - start.x;
-      const dy = t.clientY - start.y;
-      if (Math.abs(dx) < 50 || Math.abs(dx) < Math.abs(dy)) return;
-      if (dx < 0 && start.edge) setOpen(true);
-      else if (dx > 0) setOpen(false);
+      const dx = t.clientX - s.startX;
+      const w = aside.offsetWidth;
+      if (s.mode === 'open') setOpen(-dx > w * 0.35);
+      else setOpen(!(dx > w * 0.35));
     },
     [pinned, setOpen],
   );
 
   useEffect(() => {
     window.addEventListener('touchstart', onTouchStart, { passive: true });
+    window.addEventListener('touchmove', onTouchMove, { passive: true });
     window.addEventListener('touchend', onTouchEnd, { passive: true });
     return () => {
       window.removeEventListener('touchstart', onTouchStart);
+      window.removeEventListener('touchmove', onTouchMove);
       window.removeEventListener('touchend', onTouchEnd);
     };
-  }, [onTouchStart, onTouchEnd]);
+  }, [onTouchStart, onTouchMove, onTouchEnd]);
 
   return (
     <>
