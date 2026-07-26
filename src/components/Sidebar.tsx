@@ -107,6 +107,7 @@ export default function Sidebar() {
   // swipe gesture: swipe in from the right edge to open, swipe the panel out to
   // close. the sidebar tracks the finger live so you see it move. pinned = off.
   const asideRef = useRef<HTMLElement>(null);
+  const tabRef = useRef<HTMLButtonElement>(null);
   const touch = useRef<{
     startX: number;
     startY: number;
@@ -150,10 +151,13 @@ export default function Sidebar() {
       }
       s.dragging = true;
       aside.style.transition = 'none';
+      if (tabRef.current) tabRef.current.style.transition = 'none';
     }
     const w = aside.offsetWidth;
     const offset = s.mode === 'open' ? clamp(w + dx, 0, w) : clamp(dx, 0, w);
     aside.style.transform = `translateX(${offset}px)`;
+    // glue the toggle tab to the sidebar's left edge as it moves
+    if (tabRef.current) tabRef.current.style.transform = `translateX(${offset - w}px)`;
   }, []);
 
   const onTouchEnd = useCallback(
@@ -164,6 +168,10 @@ export default function Sidebar() {
       if (aside) {
         aside.style.transition = '';
         aside.style.transform = '';
+      }
+      if (tabRef.current) {
+        tabRef.current.style.transition = '';
+        tabRef.current.style.transform = '';
       }
       if (!s || !s.dragging || pinned || !aside) return;
       const t = e.changedTouches[0];
@@ -190,6 +198,7 @@ export default function Sidebar() {
   return (
     <>
       <button
+        ref={tabRef}
         className={`sidebar-tab${open ? ' open' : ''}`}
         onClick={toggleOpen}
         title="Grids & settings"

@@ -133,7 +133,9 @@ ul.menu {
   align-items: stretch;
   font-size: 0;
   line-height: var(--hh);
-  margin-left: 0.75rem;
+  /* pull left so the first skewed item tucks against the logo's slant, like
+     the reference — otherwise the badge's inset bottom edge leaves a gap */
+  margin-left: -0.6rem;
 }
 ul.menu li {
   height: var(--hh);
