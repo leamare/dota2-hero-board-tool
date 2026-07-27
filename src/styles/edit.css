@@ -50,31 +50,6 @@
   box-shadow: 0 0 0 0.15rem var(--sidebar-trigger), 0 0 0.8rem var(--sidebar-trigger);
 }
 
-/* insertion bar showing where a dragged category will land */
-.category.drop-before,
-.category.drop-after {
-  position: relative;
-}
-.category.drop-before::before,
-.category.drop-after::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 0.3rem;
-  background: var(--sidebar-trigger);
-  box-shadow: 0 0 0.6rem var(--sidebar-trigger);
-  border-radius: 0.3rem;
-  z-index: 5;
-  pointer-events: none;
-}
-.category.drop-before::before {
-  left: -0.35rem;
-}
-.category.drop-after::after {
-  right: -0.35rem;
-}
-
 /* ========================================== EDIT CONTROLS */
 
 .cat-controls {
