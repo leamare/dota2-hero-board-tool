@@ -44,6 +44,9 @@ export default function EditableBoard() {
   const [altTarget, setAltTarget] = useState<{ catId: string; index: number } | null>(null);
   const [pendingLink, setPendingLink] = useState<{ catId: string; orient: 'v' | 'h' } | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
+  // size of the dragged node, captured at lift-off, so the overlay matches the
+  // source cell instead of collapsing to its natural (squished/stretched) size
+  const [activeSize, setActiveSize] = useState<{ w: number; h: number } | null>(null);
 
   const handleLink = (catId: string, orient: 'v' | 'h') => {
     if (pendingLink) {
@@ -64,10 +67,15 @@ export default function EditableBoard() {
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
   );
 
-  const handleDragStart = ({ active }: DragStartEvent) => setActiveId(String(active.id));
+  const handleDragStart = ({ active }: DragStartEvent) => {
+    setActiveId(String(active.id));
+    const r = active.rect.current.initial;
+    setActiveSize(r ? { w: r.width, h: r.height } : null);
+  };
 
   const handleDragEnd = ({ active, over }: DragEndEvent) => {
     setActiveId(null);
+    setActiveSize(null);
     if (!over || active.id === over.id) return;
     const aId = String(active.id);
     const overId = String(over.id);
@@ -110,7 +118,10 @@ export default function EditableBoard() {
       collisionDetection={closestCenter}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
-      onDragCancel={() => setActiveId(null)}
+      onDragCancel={() => {
+        setActiveId(null);
+        setActiveSize(null);
+      }}
     >
       <div
         className={[
@@ -204,7 +215,10 @@ export default function EditableBoard() {
         .filter(Boolean)
         .join(' ');
       return (
-        <div className={boardClasses}>
+        <div
+          className={boardClasses}
+          style={activeSize ? { width: activeSize.w } : undefined}
+        >
           <CategoryCard category={cat} board={board} />
         </div>
       );

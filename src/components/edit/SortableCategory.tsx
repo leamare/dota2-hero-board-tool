@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useSortable, SortableContext, rectSortingStrategy } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
 import type { CSSProperties } from 'react';
 import type { Board, Category, GridElement } from '../../types/board';
 import { resolveDisplay } from '../../lib/board';
@@ -64,8 +63,10 @@ export default function SortableCategory({
     }
   };
 
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({ id: categoryDragId(category.id), animateLayoutChanges: () => false });
+  const { attributes, listeners, setNodeRef, isDragging } = useSortable({
+    id: categoryDragId(category.id),
+    animateLayoutChanges: () => false,
+  });
 
   const { aspect, heightRem } = resolveDisplay(category, board);
   const hasColor = !!category.color;
@@ -76,9 +77,10 @@ export default function SortableCategory({
 
   const style: CSSProperties = {
     ...cellStyle,
-    // the DragOverlay shows the dragged card; the source just dims and holds its place
-    transform: isDragging ? undefined : CSS.Transform.toString(transform),
-    transition,
+    // no sortable transform: the board is a variable-span CSS grid, so live
+    // sibling shifting overlaps/hides cards. the DragOverlay shows the dragged
+    // card following the cursor; the source just dims and holds its place, and
+    // the drop lands via collision detection.
     ...(colorVar ? { '--cat-color': colorVar } : {}),
     opacity: isDragging ? 0.35 : undefined,
   } as CSSProperties;
