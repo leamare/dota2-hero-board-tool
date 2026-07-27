@@ -1,4 +1,4 @@
-import { Fragment, useCallback, useState } from 'react';
+import { Fragment, useCallback, useRef, useState } from 'react';
 import {
   DndContext,
   DragOverlay,
@@ -53,6 +53,9 @@ export default function EditableBoard() {
   // size of the dragged node, captured at lift-off, so the overlay matches the
   // source cell instead of collapsing to its natural (squished/stretched) size
   const [activeSize, setActiveSize] = useState<{ w: number; h: number } | null>(null);
+  // the dragged card's starting rectangle, so bringing its ghost back over that
+  // spot resets the preview to the original order (drop-in-place = no-op)
+  const startRect = useRef<{ left: number; top: number; right: number; bottom: number } | null>(null);
 
   const handleLink = (catId: string, orient: 'v' | 'h') => {
     if (pendingLink) {
@@ -73,7 +76,10 @@ export default function EditableBoard() {
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
   );
 
-  // Collision tuned for the variable-height grid:
+  // Collision tuned for the variable-height, wrapping grid:
+  //  - Exclude the dragged card itself. Droppables are measured live (Always),
+  //    so the dragged card's rect tracks its ghost under the cursor; if it
+  //    stayed a candidate it would always win and nothing else could target.
   //  - When dragging a category, only categories are valid targets. Otherwise
   //    the element droppables inside a populated card win pointerWithin (their
   //    centres are closer), so hovering a card's body wouldn't reorder — only
@@ -83,9 +89,11 @@ export default function EditableBoard() {
   //  - closestCenter is the fallback for the gaps between cards.
   const collisionDetection: CollisionDetection = useCallback((args) => {
     const draggingCategory = String(args.active.id).startsWith('cat:');
-    const containers = draggingCategory
-      ? args.droppableContainers.filter((c) => String(c.id).startsWith('cat:'))
-      : args.droppableContainers;
+    const containers = args.droppableContainers.filter((c) => {
+      const cid = String(c.id);
+      if (cid === String(args.active.id)) return false;
+      return draggingCategory ? cid.startsWith('cat:') : true;
+    });
     const filtered = { ...args, droppableContainers: containers };
     const hits = pointerWithin(filtered);
     return hits.length ? hits : closestCenter(filtered);
@@ -94,20 +102,39 @@ export default function EditableBoard() {
   const handleDragStart = ({ active }: DragStartEvent) => {
     setActiveId(String(active.id));
     setOverId(null);
-    const r = active.rect.current.initial;
-    setActiveSize(r ? { w: r.width, h: r.height } : null);
+    setActiveSize(null);
+    startRect.current = null;
   };
 
   // Sticky target: only advance to a real, different droppable. Never reset to
-  // null — in the gaps between cards (and on the frame the ghost re-renders)
-  // `over` briefly goes null, and snapping the preview back to the original
-  // order there is exactly the flicker. Keep the last target until a new one.
+  // null in the gaps between cards — `over` briefly goes null there and on the
+  // frame the ghost re-renders, and snapping the preview back to the original
+  // order would flicker. Two exceptions reset to the original order on purpose:
+  // dragging the ghost back over the card's own starting spot (drop-in-place).
   const handleDragOver = ({ active, over }: DragOverEvent) => {
-    if (!over) return; // transient null over a gap → keep the last target
-    const id = String(over.id);
-    // hovering the dragged card's own slot is a deliberate "back to start" —
-    // reset so the original order previews and a drop there is a no-op
-    setOverId(id === String(active.id) ? null : id);
+    // capture the start rect/size lazily: with Always measuring the initial
+    // rect isn't ready in onDragStart, but it is by the first onDragOver
+    const init = active.rect.current.initial;
+    if (!startRect.current && init) {
+      startRect.current = {
+        left: init.left,
+        top: init.top,
+        right: init.left + init.width,
+        bottom: init.top + init.height,
+      };
+      setActiveSize({ w: init.width, h: init.height });
+    }
+    const cur = active.rect.current.translated;
+    const s = startRect.current;
+    if (cur && s) {
+      const cx = cur.left + cur.width / 2;
+      const cy = cur.top + cur.height / 2;
+      if (cx >= s.left && cx <= s.right && cy >= s.top && cy <= s.bottom) {
+        setOverId(null); // back over the start → preview original, drop is a no-op
+        return;
+      }
+    }
+    if (over) setOverId(String(over.id));
   };
 
   const handleDragEnd = ({ active }: DragEndEvent) => {
@@ -170,7 +197,7 @@ export default function EditableBoard() {
     <DndContext
       sensors={sensors}
       collisionDetection={collisionDetection}
-      measuring={{ droppable: { strategy: MeasuringStrategy.BeforeDragging } }}
+      measuring={{ droppable: { strategy: MeasuringStrategy.Always } }}
       onDragStart={handleDragStart}
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
