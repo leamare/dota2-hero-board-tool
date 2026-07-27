@@ -18,12 +18,12 @@ html {
  */
 @media screen and (orientation: landscape), screen and (min-width: 769px) {
   html {
-    font-size: calc(max(14px, min(1.02vmax, 22px)) * var(--ui-scale, 1));
+    font-size: calc(max(13px, min(0.92vmax, 20px)) * var(--ui-scale, 1) * 0.75);
   }
 }
 @media screen and (max-width: 768px) and (orientation: portrait) {
   html {
-    font-size: calc(max(17px, min(3.25vw, 26px)) * var(--ui-scale, 1));
+    font-size: calc(max(15px, min(2.93vw, 23px)) * var(--ui-scale, 1) * 0.75);
   }
 }
 
