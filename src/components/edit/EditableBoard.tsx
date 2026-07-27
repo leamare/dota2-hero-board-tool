@@ -119,18 +119,19 @@ export default function EditableBoard() {
     }
   };
 
-  // live drop-location preview: while dragging a category, render the list in
-  // the order it would land in. the browser re-lays the variable-span grid
-  // natively, so the dragged card shows a ghost gap exactly where it'll go —
-  // no rectSortingStrategy transforms (which broke on the non-uniform grid).
-  const displayCategories = (() => {
-    const cats = board.categories;
+  // Drop-location preview: keep the DOM (and therefore every droppable rect)
+  // fixed while dragging, and just mark the target cell with an insertion bar.
+  // Reordering the DOM live would move the rects, so closestCenter re-collides
+  // against the shifted layout and oscillates several times a second.
+  const dropTarget = (() => {
     if (!activeId?.startsWith('cat:') || !overId?.startsWith('cat:') || activeId === overId)
-      return cats;
+      return null;
+    const cats = board.categories;
     const from = cats.findIndex((c) => categoryDragId(c.id) === activeId);
     const to = cats.findIndex((c) => categoryDragId(c.id) === overId);
-    if (from < 0 || to < 0) return cats;
-    return arrayMove(cats, from, to);
+    if (from < 0 || to < 0) return null;
+    // dragging forward lands the card after the target, backward lands before
+    return { id: overId.slice(4), side: from < to ? ('after' as const) : ('before' as const) };
   })();
 
   return (
@@ -158,10 +159,10 @@ export default function EditableBoard() {
         style={{ '--cols': board.columns } as CSSProperties}
       >
         <SortableContext
-          items={displayCategories.map((c) => categoryDragId(c.id))}
+          items={board.categories.map((c) => categoryDragId(c.id))}
           strategy={rectSortingStrategy}
         >
-          {groupCategories(displayCategories).map((unit) => {
+          {groupCategories(board.categories).map((unit) => {
             const first = unit.categories[0];
             const span = unitSpan(unit, board);
             const cell: CSSProperties = {
@@ -174,6 +175,7 @@ export default function EditableBoard() {
                 board={board}
                 grouped={grouped}
                 cellStyle={cs}
+                dropSide={dropTarget?.id === cat.id ? dropTarget.side : undefined}
                 linkPending={pendingLink?.catId === cat.id}
                 onOpenSettings={() => setSettingsCat(cat.id)}
                 onAdd={() => setPickerCat(cat.id)}

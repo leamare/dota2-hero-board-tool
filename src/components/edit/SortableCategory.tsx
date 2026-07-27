@@ -14,6 +14,8 @@ interface Props {
   board: Board;
   grouped?: boolean;
   cellStyle?: CSSProperties;
+  /** show an insertion bar on this edge when a dragged category will land here */
+  dropSide?: 'before' | 'after';
   linkPending?: boolean;
   onOpenSettings: () => void;
   onAdd: () => void;
@@ -33,6 +35,7 @@ export default function SortableCategory({
   board,
   grouped,
   cellStyle,
+  dropSide,
   linkPending,
   onOpenSettings,
   onAdd,
@@ -95,6 +98,7 @@ export default function SortableCategory({
         hasColor ? 'has-color' : '',
         linkPending ? 'link-pending' : '',
         dropActive ? 'drop-active' : '',
+        dropSide ? `drop-${dropSide}` : '',
         HEADER_SIZE_CLASS[category.headerSize ?? 1],
       ]
         .filter(Boolean)
