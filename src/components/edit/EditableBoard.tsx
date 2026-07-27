@@ -73,45 +73,64 @@ export default function EditableBoard() {
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
   );
 
-  // Cards vary a lot in height, so closestCenter (distance to each card's
-  // centre) mis-targets when hovering a tall card's header — the centre is far
-  // below, closer to a neighbour. Prefer pointerWithin: the card the cursor is
-  // literally inside. Fall back to closestCenter only in the gaps between cards.
+  // Collision tuned for the variable-height grid:
+  //  - When dragging a category, only categories are valid targets. Otherwise
+  //    the element droppables inside a populated card win pointerWithin (their
+  //    centres are closer), so hovering a card's body wouldn't reorder — only
+  //    its header would. Filtering them out makes the whole card a target.
+  //  - pointerWithin (the card the cursor is inside) beats closestCenter, which
+  //    measures distance to each card's centre and mis-targets tall cards.
+  //  - closestCenter is the fallback for the gaps between cards.
   const collisionDetection: CollisionDetection = useCallback((args) => {
-    const hits = pointerWithin(args);
-    return hits.length ? hits : closestCenter(args);
+    const draggingCategory = String(args.active.id).startsWith('cat:');
+    const containers = draggingCategory
+      ? args.droppableContainers.filter((c) => String(c.id).startsWith('cat:'))
+      : args.droppableContainers;
+    const filtered = { ...args, droppableContainers: containers };
+    const hits = pointerWithin(filtered);
+    return hits.length ? hits : closestCenter(filtered);
   }, []);
 
   const handleDragStart = ({ active }: DragStartEvent) => {
     setActiveId(String(active.id));
+    setOverId(null);
     const r = active.rect.current.initial;
     setActiveSize(r ? { w: r.width, h: r.height } : null);
   };
 
-  const handleDragOver = ({ over }: DragOverEvent) =>
-    setOverId(over ? String(over.id) : null);
+  // Sticky target: only advance to a real, different droppable. Never reset to
+  // null — in the gaps between cards (and on the frame the ghost re-renders)
+  // `over` briefly goes null, and snapping the preview back to the original
+  // order there is exactly the flicker. Keep the last target until a new one.
+  const handleDragOver = ({ active, over }: DragOverEvent) => {
+    if (!over) return; // transient null over a gap → keep the last target
+    const id = String(over.id);
+    // hovering the dragged card's own slot is a deliberate "back to start" —
+    // reset so the original order previews and a drop there is a no-op
+    setOverId(id === String(active.id) ? null : id);
+  };
 
-  const handleDragEnd = ({ active, over }: DragEndEvent) => {
+  const handleDragEnd = ({ active }: DragEndEvent) => {
+    const aId = String(active.id);
+    const target = overId; // the sticky preview target — drop matches what's shown
     setActiveId(null);
     setOverId(null);
     setActiveSize(null);
-    if (!over || active.id === over.id) return;
-    const aId = String(active.id);
-    const overId = String(over.id);
+    if (!target || target === aId) return;
 
     // reorder categories
-    if (aId.startsWith('cat:') && overId.startsWith('cat:')) {
+    if (aId.startsWith('cat:') && target.startsWith('cat:')) {
       const ids = board.categories.map((c) => c.id);
       const from = ids.indexOf(aId.slice(4));
-      const to = ids.indexOf(overId.slice(4));
-      if (from >= 0 && to >= 0) reorderCategories(arrayMove(ids, from, to));
+      const to = ids.indexOf(target.slice(4));
+      if (from >= 0 && to >= 0 && from !== to) reorderCategories(arrayMove(ids, from, to));
       return;
     }
 
     // move elements
     const src = parseElId(aId);
     if (!src) return;
-    const dst = parseElId(overId);
+    const dst = parseElId(target);
     if (dst) {
       if (src.catId === dst.catId) {
         const cat = board.categories.find((c) => c.id === src.catId);
@@ -121,12 +140,12 @@ export default function EditableBoard() {
       } else {
         moveElement(src.catId, src.index, dst.catId, dst.index);
       }
-    } else if (overId.startsWith('cat:')) {
+    } else if (target.startsWith('cat:')) {
       // dropped onto a category's empty space → append there
-      const toCat = overId.slice(4);
+      const toCat = target.slice(4);
       if (toCat !== src.catId) {
-        const target = board.categories.find((c) => c.id === toCat);
-        moveElement(src.catId, src.index, toCat, target?.elements.length ?? 0);
+        const toCategory = board.categories.find((c) => c.id === toCat);
+        moveElement(src.catId, src.index, toCat, toCategory?.elements.length ?? 0);
       }
     }
   };
