@@ -1,12 +1,14 @@
-import { Fragment, useState } from 'react';
+import { Fragment, useCallback, useState } from 'react';
 import {
   DndContext,
   DragOverlay,
   MeasuringStrategy,
   PointerSensor,
   closestCenter,
+  pointerWithin,
   useSensor,
   useSensors,
+  type CollisionDetection,
   type DragEndEvent,
   type DragOverEvent,
   type DragStartEvent,
@@ -70,6 +72,15 @@ export default function EditableBoard() {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
   );
+
+  // Cards vary a lot in height, so closestCenter (distance to each card's
+  // centre) mis-targets when hovering a tall card's header — the centre is far
+  // below, closer to a neighbour. Prefer pointerWithin: the card the cursor is
+  // literally inside. Fall back to closestCenter only in the gaps between cards.
+  const collisionDetection: CollisionDetection = useCallback((args) => {
+    const hits = pointerWithin(args);
+    return hits.length ? hits : closestCenter(args);
+  }, []);
 
   const handleDragStart = ({ active }: DragStartEvent) => {
     setActiveId(String(active.id));
@@ -139,7 +150,7 @@ export default function EditableBoard() {
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={closestCenter}
+      collisionDetection={collisionDetection}
       measuring={{ droppable: { strategy: MeasuringStrategy.BeforeDragging } }}
       onDragStart={handleDragStart}
       onDragOver={handleDragOver}
