@@ -7,6 +7,7 @@ import {
   useSensor,
   useSensors,
   type DragEndEvent,
+  type DragOverEvent,
   type DragStartEvent,
 } from '@dnd-kit/core';
 import { SortableContext, arrayMove, rectSortingStrategy } from '@dnd-kit/sortable';
@@ -44,6 +45,8 @@ export default function EditableBoard() {
   const [altTarget, setAltTarget] = useState<{ catId: string; index: number } | null>(null);
   const [pendingLink, setPendingLink] = useState<{ catId: string; orient: 'v' | 'h' } | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
+  // the category currently under the cursor, for the live drop-location preview
+  const [overId, setOverId] = useState<string | null>(null);
   // size of the dragged node, captured at lift-off, so the overlay matches the
   // source cell instead of collapsing to its natural (squished/stretched) size
   const [activeSize, setActiveSize] = useState<{ w: number; h: number } | null>(null);
@@ -73,8 +76,12 @@ export default function EditableBoard() {
     setActiveSize(r ? { w: r.width, h: r.height } : null);
   };
 
+  const handleDragOver = ({ over }: DragOverEvent) =>
+    setOverId(over ? String(over.id) : null);
+
   const handleDragEnd = ({ active, over }: DragEndEvent) => {
     setActiveId(null);
+    setOverId(null);
     setActiveSize(null);
     if (!over || active.id === over.id) return;
     const aId = String(active.id);
@@ -112,14 +119,30 @@ export default function EditableBoard() {
     }
   };
 
+  // live drop-location preview: while dragging a category, render the list in
+  // the order it would land in. the browser re-lays the variable-span grid
+  // natively, so the dragged card shows a ghost gap exactly where it'll go —
+  // no rectSortingStrategy transforms (which broke on the non-uniform grid).
+  const displayCategories = (() => {
+    const cats = board.categories;
+    if (!activeId?.startsWith('cat:') || !overId?.startsWith('cat:') || activeId === overId)
+      return cats;
+    const from = cats.findIndex((c) => categoryDragId(c.id) === activeId);
+    const to = cats.findIndex((c) => categoryDragId(c.id) === overId);
+    if (from < 0 || to < 0) return cats;
+    return arrayMove(cats, from, to);
+  })();
+
   return (
     <DndContext
       sensors={sensors}
       collisionDetection={closestCenter}
       onDragStart={handleDragStart}
+      onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
       onDragCancel={() => {
         setActiveId(null);
+        setOverId(null);
         setActiveSize(null);
       }}
     >
@@ -135,10 +158,10 @@ export default function EditableBoard() {
         style={{ '--cols': board.columns } as CSSProperties}
       >
         <SortableContext
-          items={board.categories.map((c) => categoryDragId(c.id))}
+          items={displayCategories.map((c) => categoryDragId(c.id))}
           strategy={rectSortingStrategy}
         >
-          {groupCategories(board.categories).map((unit) => {
+          {groupCategories(displayCategories).map((unit) => {
             const first = unit.categories[0];
             const span = unitSpan(unit, board);
             const cell: CSSProperties = {
