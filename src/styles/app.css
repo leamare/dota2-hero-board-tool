@@ -85,11 +85,14 @@ button {
   position: absolute;
   top: 0;
   left: 0;
-  width: calc(var(--hh) * 1.125);
+  /* extends past the logo's left edge so its right side is fully hidden behind
+     the badge (no peeking edge); left padding keeps the ❮ glyph in place */
+  width: calc(var(--hh) * 1.6);
   height: var(--hh);
   line-height: var(--hh);
   font-size: calc(var(--hh) * 0.5);
-  text-align: center;
+  text-align: left;
+  padding-left: calc(var(--hh) * 0.32);
   color: var(--menu-link);
   z-index: 1;
   transition: all 200ms linear;
@@ -154,7 +157,7 @@ ul.menu {
 }
 ul.menu li {
   height: var(--hh);
-  width: 9.5rem;
+  width: 10.4rem;
   transform: skewX(-15deg);
   transition: all 200ms linear;
   position: relative;
