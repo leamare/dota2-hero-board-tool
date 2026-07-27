@@ -24,7 +24,10 @@ const matches = (haystack: string, query: string): boolean =>
 const setDrag = (e: React.DragEvent, el: GridElement) => {
   e.dataTransfer.setData(PALETTE_MIME, JSON.stringify(el));
   e.dataTransfer.effectAllowed = 'copy';
+  // let the drag reach categories behind the sidebar's dimmer scrim
+  document.body.classList.add('palette-dragging');
 };
+const endDrag = () => document.body.classList.remove('palette-dragging');
 
 /**
  * The shared hero/item browser: Heroes / Items tabs, a search box and a grid of
@@ -71,6 +74,7 @@ export default function PickerGrid({ onPick, previewType = 0, draggable, autoFoc
       title={label}
       draggable={draggable}
       onDragStart={draggable ? (e) => setDrag(e, el) : undefined}
+      onDragEnd={draggable ? endDrag : undefined}
       onClick={onPick ? () => onPick(el) : undefined}
     >
       <img

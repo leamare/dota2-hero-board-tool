@@ -433,6 +433,11 @@ ul.menu li:has(> a.active):hover::after {
   background: #0007;
   z-index: 70;
 }
+/* while dragging a hero/item out of the sidebar, let the drop pass through the
+   dimmer to the categories underneath */
+body.palette-dragging .sidebar-scrim {
+  pointer-events: none;
+}
 
 .sidebar-head {
   display: flex;
