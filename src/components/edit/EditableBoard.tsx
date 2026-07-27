@@ -1,4 +1,4 @@
-import { Fragment, useCallback, useRef, useState } from 'react';
+import { Fragment, useCallback, useState } from 'react';
 import {
   DndContext,
   DragOverlay,
@@ -33,6 +33,34 @@ function parseElId(id: string): { catId: string; index: number } | null {
   return { catId: rest.slice(0, sep), index: Number(rest.slice(sep + 1)) };
 }
 
+/**
+ * Reorder categories by dragging `activeCatId` onto `targetCatId`, respecting
+ * linked groups as atomic units:
+ *  - dragging within the same chain reorders its members (intra-chain);
+ *  - otherwise whole render units move, so a linked chain travels together and
+ *    its members never get split or reordered by dragging some other category.
+ * Returns the same array reference when nothing changes.
+ */
+function reorderByUnit(cats: Category[], activeCatId: string, targetCatId: string): Category[] {
+  const units = groupCategories(cats);
+  const au = units.findIndex((u) => u.categories.some((c) => c.id === activeCatId));
+  const tu = units.findIndex((u) => u.categories.some((c) => c.id === targetCatId));
+  if (au < 0 || tu < 0) return cats;
+
+  if (au === tu) {
+    // same unit → reorder members within the chain
+    const members = units[au].categories;
+    const from = members.findIndex((c) => c.id === activeCatId);
+    const to = members.findIndex((c) => c.id === targetCatId);
+    if (from < 0 || to < 0 || from === to) return cats;
+    const next = units.slice();
+    next[au] = { ...units[au], categories: arrayMove(members, from, to) };
+    return next.flatMap((u) => u.categories);
+  }
+
+  return arrayMove(units, au, tu).flatMap((u) => u.categories);
+}
+
 export default function EditableBoard() {
   const board = useBoardStore((s) => s.board);
   const addElement = useBoardStore((s) => s.addElement);
@@ -53,9 +81,6 @@ export default function EditableBoard() {
   // size of the dragged node, captured at lift-off, so the overlay matches the
   // source cell instead of collapsing to its natural (squished/stretched) size
   const [activeSize, setActiveSize] = useState<{ w: number; h: number } | null>(null);
-  // the dragged card's starting rectangle, so bringing its ghost back over that
-  // spot resets the preview to the original order (drop-in-place = no-op)
-  const startRect = useRef<{ left: number; top: number; right: number; bottom: number } | null>(null);
 
   const handleLink = (catId: string, orient: 'v' | 'h') => {
     if (pendingLink) {
@@ -76,10 +101,7 @@ export default function EditableBoard() {
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
   );
 
-  // Collision tuned for the variable-height, wrapping grid:
-  //  - Exclude the dragged card itself. Droppables are measured live (Always),
-  //    so the dragged card's rect tracks its ghost under the cursor; if it
-  //    stayed a candidate it would always win and nothing else could target.
+  // Collision tuned for the variable-height grid:
   //  - When dragging a category, only categories are valid targets. Otherwise
   //    the element droppables inside a populated card win pointerWithin (their
   //    centres are closer), so hovering a card's body wouldn't reorder — only
@@ -89,11 +111,9 @@ export default function EditableBoard() {
   //  - closestCenter is the fallback for the gaps between cards.
   const collisionDetection: CollisionDetection = useCallback((args) => {
     const draggingCategory = String(args.active.id).startsWith('cat:');
-    const containers = args.droppableContainers.filter((c) => {
-      const cid = String(c.id);
-      if (cid === String(args.active.id)) return false;
-      return draggingCategory ? cid.startsWith('cat:') : true;
-    });
+    const containers = draggingCategory
+      ? args.droppableContainers.filter((c) => String(c.id).startsWith('cat:'))
+      : args.droppableContainers;
     const filtered = { ...args, droppableContainers: containers };
     const hits = pointerWithin(filtered);
     return hits.length ? hits : closestCenter(filtered);
@@ -102,39 +122,20 @@ export default function EditableBoard() {
   const handleDragStart = ({ active }: DragStartEvent) => {
     setActiveId(String(active.id));
     setOverId(null);
-    setActiveSize(null);
-    startRect.current = null;
+    const r = active.rect.current.initial;
+    setActiveSize(r ? { w: r.width, h: r.height } : null);
   };
 
   // Sticky target: only advance to a real, different droppable. Never reset to
-  // null in the gaps between cards — `over` briefly goes null there and on the
-  // frame the ghost re-renders, and snapping the preview back to the original
-  // order would flicker. Two exceptions reset to the original order on purpose:
-  // dragging the ghost back over the card's own starting spot (drop-in-place).
+  // null — in the gaps between cards (and on the frame the ghost re-renders)
+  // `over` briefly goes null, and snapping the preview back to the original
+  // order there is exactly the flicker. Keep the last target until a new one.
   const handleDragOver = ({ active, over }: DragOverEvent) => {
-    // capture the start rect/size lazily: with Always measuring the initial
-    // rect isn't ready in onDragStart, but it is by the first onDragOver
-    const init = active.rect.current.initial;
-    if (!startRect.current && init) {
-      startRect.current = {
-        left: init.left,
-        top: init.top,
-        right: init.left + init.width,
-        bottom: init.top + init.height,
-      };
-      setActiveSize({ w: init.width, h: init.height });
-    }
-    const cur = active.rect.current.translated;
-    const s = startRect.current;
-    if (cur && s) {
-      const cx = cur.left + cur.width / 2;
-      const cy = cur.top + cur.height / 2;
-      if (cx >= s.left && cx <= s.right && cy >= s.top && cy <= s.bottom) {
-        setOverId(null); // back over the start → preview original, drop is a no-op
-        return;
-      }
-    }
-    if (over) setOverId(String(over.id));
+    if (!over) return; // transient null over a gap → keep the last target
+    const id = String(over.id);
+    // hovering the dragged card's own slot is a deliberate "back to start" —
+    // reset so the original order previews and a drop there is a no-op
+    setOverId(id === String(active.id) ? null : id);
   };
 
   const handleDragEnd = ({ active }: DragEndEvent) => {
@@ -145,12 +146,10 @@ export default function EditableBoard() {
     setActiveSize(null);
     if (!target || target === aId) return;
 
-    // reorder categories
+    // reorder categories (unit-aware, so linked chains stay intact)
     if (aId.startsWith('cat:') && target.startsWith('cat:')) {
-      const ids = board.categories.map((c) => c.id);
-      const from = ids.indexOf(aId.slice(4));
-      const to = ids.indexOf(target.slice(4));
-      if (from >= 0 && to >= 0 && from !== to) reorderCategories(arrayMove(ids, from, to));
+      const next = reorderByUnit(board.categories, aId.slice(4), target.slice(4));
+      if (next !== board.categories) reorderCategories(next.map((c) => c.id));
       return;
     }
 
@@ -187,17 +186,14 @@ export default function EditableBoard() {
     const cats = board.categories;
     if (!activeId?.startsWith('cat:') || !overId?.startsWith('cat:') || activeId === overId)
       return cats;
-    const from = cats.findIndex((c) => categoryDragId(c.id) === activeId);
-    const to = cats.findIndex((c) => categoryDragId(c.id) === overId);
-    if (from < 0 || to < 0) return cats;
-    return arrayMove(cats, from, to);
+    return reorderByUnit(cats, activeId.slice(4), overId.slice(4));
   })();
 
   return (
     <DndContext
       sensors={sensors}
       collisionDetection={collisionDetection}
-      measuring={{ droppable: { strategy: MeasuringStrategy.Always } }}
+      measuring={{ droppable: { strategy: MeasuringStrategy.BeforeDragging } }}
       onDragStart={handleDragStart}
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
