@@ -18,12 +18,12 @@ html {
  */
 @media screen and (orientation: landscape), screen and (min-width: 769px) {
   html {
-    font-size: calc(max(13px, min(0.92vmax, 20px)) * var(--ui-scale, 1) * 0.75);
+    font-size: calc(max(13px, min(0.92vmax, 20px)) * var(--ui-scale, 1) * 0.85);
   }
 }
 @media screen and (max-width: 768px) and (orientation: portrait) {
   html {
-    font-size: calc(max(15px, min(2.93vw, 23px)) * var(--ui-scale, 1) * 0.75);
+    font-size: calc(max(15px, min(2.93vw, 23px)) * var(--ui-scale, 1) * 0.85);
   }
 }
 
@@ -85,14 +85,13 @@ button {
   position: absolute;
   top: 0;
   left: 0;
-  /* extends past the logo's left edge so its right side is fully hidden behind
-     the badge (no peeking edge); left padding keeps the ❮ glyph in place */
-  width: calc(var(--hh) * 1.6);
+  width: calc(var(--hh) * 1.4);
   height: var(--hh);
   line-height: var(--hh);
   font-size: calc(var(--hh) * 0.5);
   text-align: left;
-  padding-left: calc(var(--hh) * 0.32);
+  padding-right: calc(var(--hh) * 0.25);
+  text-align: center;
   color: var(--menu-link);
   z-index: 1;
   transition: all 200ms linear;
