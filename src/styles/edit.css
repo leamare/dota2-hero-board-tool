@@ -251,6 +251,7 @@
   height: auto;
   border-radius: var(--portrait-radius);
   object-fit: cover;
+  background: transparent; /* transparent icons (icon type, items) show through */
 }
 .picker-tile img.contain {
   object-fit: contain;

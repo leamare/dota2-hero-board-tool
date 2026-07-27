@@ -45,7 +45,9 @@ export default function ElementPortrait({ element, category, board }: Props) {
       style={style}
       title={title}
     >
-      {url && <img src={url} alt={title ?? ''} loading="lazy" />}
+      {/* eager + async: board portraits are few and shared across view/edit, so
+          they resolve instantly from cache instead of re-fetching on route change */}
+      {url && <img src={url} alt={title ?? ''} decoding="async" />}
     </div>
   );
 }
