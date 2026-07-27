@@ -16,9 +16,9 @@ export interface PortraitType {
 }
 
 export const PORTRAIT_TYPES: PortraitType[] = [
-  { id: 0, key: 'horizontal', label: 'Horizontal', folder: 'portraits_lg', aspect: 256 / 144 },
-  { id: 1, key: 'vertical', label: 'Vertical', folder: 'portraits_vert_lg', aspect: 235 / 272 },
-  { id: 2, key: 'icon', label: 'Icon', folder: 'icons', aspect: 1 },
+  { id: 0, key: 'horizontal', label: 'Horizontal portraits', folder: 'portraits_lg', aspect: 256 / 144 },
+  { id: 1, key: 'vertical', label: 'Vertical portraits', folder: 'portraits_vert_lg', aspect: 235 / 272 },
+  { id: 2, key: 'icon', label: 'Mini icons', folder: 'icons', aspect: 1 },
 ];
 
 /** Item image *source* — the box shape still comes from the category portrait type. */
@@ -30,8 +30,8 @@ export interface ItemStyle {
 }
 
 export const ITEM_STYLES: ItemStyle[] = [
-  { id: 0, key: 'items', label: 'Item icon', folder: 'items' },
-  { id: 1, key: 'profile_badges', label: 'Profile badge', folder: 'profile_badges' },
+  { id: 0, key: 'items', label: 'Inventory', folder: 'items' },
+  { id: 1, key: 'profile_badges', label: 'Profile Badges', folder: 'profile_badges' },
 ];
 
 /** Portrait size scale — box height in rem. */

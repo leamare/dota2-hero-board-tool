@@ -393,7 +393,8 @@ ul.menu li:has(> a.active):hover::after {
   cursor: pointer;
   opacity: 0.75;
   box-shadow: -0.2rem 0 0.6rem #0006;
-  transition: width 200ms ease, opacity 200ms ease;
+  /* animate `right` too so the tab slides with the sidebar on open AND close */
+  transition: width 200ms ease, opacity 200ms ease, right 200ms ease;
   touch-action: pan-y;
 }
 .sidebar-tab:hover {
@@ -441,6 +442,47 @@ ul.menu li:has(> a.active):hover::after {
   margin-bottom: 1rem;
   padding-bottom: 0.6rem;
   border-bottom: 0.1rem solid var(--cat-outline);
+}
+
+.sidebar-tabs {
+  display: flex;
+  gap: 0.35rem;
+  margin-bottom: 1rem;
+}
+.sidebar-tab-btn {
+  flex: 1;
+  padding: 0.5rem 0.6rem;
+  background: var(--menu-hover);
+  border: none;
+  color: var(--menu-link);
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all 120ms linear;
+}
+.sidebar-tab-btn:hover {
+  color: var(--menu-link-active);
+}
+.sidebar-tab-btn.active {
+  background: var(--menu-selected);
+  color: var(--menu-link-active);
+}
+/* the Heroes tab hosts the shared picker; let it size to content, the sidebar scrolls */
+.sidebar-heroes .picker {
+  height: auto;
+}
+.sidebar-heroes .picker-tabs {
+  flex-wrap: wrap;
+}
+.sidebar-heroes .picker-search {
+  min-width: 0;
+  flex: 1 1 6rem;
+}
+.sidebar-heroes .picker-grid {
+  grid-template-columns: repeat(auto-fill, minmax(4.5rem, 1fr));
+  overflow: visible;
 }
 
 /* pinned: keep the sidebar in flow and push the page content left */

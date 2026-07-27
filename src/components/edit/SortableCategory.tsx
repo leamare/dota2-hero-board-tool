@@ -8,7 +8,7 @@ import { colorIndex, LABEL_COLORS } from '../../lib/constants';
 import CategoryLabel from '../board/CategoryLabel';
 import SortableElement, { elementDragId } from './SortableElement';
 import { useBoardStore } from '../../state/boardStore';
-import { PALETTE_MIME } from '../HeroPalette';
+import { PALETTE_MIME } from '../../lib/dnd';
 
 interface Props {
   category: Category;

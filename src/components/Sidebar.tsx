@@ -13,7 +13,7 @@ import { emptyBoard } from '../lib/board';
 import { useIsMobile } from '../lib/useIsMobile';
 import { useT } from '../lib/i18n';
 import SortableLayoutRow from './SortableLayoutRow';
-import HeroPalette from './HeroPalette';
+import PickerGrid from './edit/PickerGrid';
 import BoardIconModal from './edit/BoardIconModal';
 import ShareModal from './edit/ShareModal';
 import NameDialog from './ui/NameDialog';
@@ -48,6 +48,7 @@ export default function Sidebar() {
     if (from >= 0 && to >= 0) reorder(from, to);
   };
 
+  const [tab, setTab] = useState<'settings' | 'heroes'>('settings');
   const [iconModal, setIconModal] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [saveAsOpen, setSaveAsOpen] = useState(false);
@@ -222,7 +223,28 @@ export default function Sidebar() {
           )}
         </div>
 
-        <div className="sidebar-section">
+        <div className="sidebar-tabs">
+          <button
+            className={`sidebar-tab-btn${tab === 'settings' ? ' active' : ''}`}
+            onClick={() => setTab('settings')}
+          >
+            {t('sidebar.tabSettings')}
+          </button>
+          <button
+            className={`sidebar-tab-btn${tab === 'heroes' ? ' active' : ''}`}
+            onClick={() => setTab('heroes')}
+          >
+            {t('sidebar.tabHeroes')}
+          </button>
+        </div>
+
+        {tab === 'heroes' && (
+          <div className="sidebar-heroes">
+            <PickerGrid draggable autoFocus />
+          </div>
+        )}
+
+        <div className="sidebar-section" hidden={tab !== 'settings'}>
           <h3>{t('sidebar.currentGrid')}</h3>
           <div className="field row">
             <button className="btn icon-btn" title="Grid icon" onClick={() => setIconModal(true)}>
@@ -252,7 +274,7 @@ export default function Sidebar() {
           </label>
         </div>
 
-        <div className="sidebar-section">
+        <div className="sidebar-section" hidden={tab !== 'settings'}>
           <h3>{t('sidebar.display')}</h3>
           <div className="field row">
             <label>{t('sidebar.columns')}</label>
@@ -343,12 +365,7 @@ export default function Sidebar() {
           </button>
         </div>
 
-        <div className="sidebar-section">
-          <h3>{t('sidebar.palette')}</h3>
-          <HeroPalette />
-        </div>
-
-        <div className="sidebar-section">
+        <div className="sidebar-section" hidden={tab !== 'settings'}>
           <h3>{t('sidebar.savedGrids')}</h3>
           <div className="sidebar-actions">
             <button className="btn small primary" onClick={newGrid}>

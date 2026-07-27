@@ -178,7 +178,7 @@ export default function CategorySettingsModal({ categoryId, onClose }: Props) {
           </div>
 
           <div className="field">
-            <label>Portraits</label>
+            <label>Heroes type</label>
             <select
               className="select"
               value={category.portraitType ?? ''}
@@ -218,7 +218,7 @@ export default function CategorySettingsModal({ categoryId, onClose }: Props) {
           </div>
 
           <div className="field">
-            <label>Items</label>
+            <label>Items type</label>
             <select
               className="select"
               value={category.itemStyle ?? ''}
