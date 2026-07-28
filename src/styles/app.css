@@ -491,7 +491,8 @@ body.palette-dragging .sidebar-scrim {
 
 /* pinned: keep the sidebar in flow and push the page content left */
 .app-shell.sb-pinned .app-main,
-.app-shell.sb-pinned .app-footer {
+.app-shell.sb-pinned .app-footer,
+.app-shell.sb-pinned .subheader-bar {
   margin-right: 23rem;
 }
 .app-shell.sb-pinned .sidebar-scrim {
