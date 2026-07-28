@@ -7,6 +7,7 @@ import { resolveDisplay } from '../../lib/board';
 import { colorIndex, LABEL_COLORS } from '../../lib/constants';
 import CategoryLabel from '../board/CategoryLabel';
 import ChainConnectors from '../board/ChainConnectors';
+import ElementPortrait from '../board/ElementPortrait';
 import SortableElement, { elementDragId } from './SortableElement';
 import { useBoardStore } from '../../state/boardStore';
 import { PALETTE_MIME } from '../../lib/dnd';
@@ -145,19 +146,34 @@ export default function SortableCategory({
 
       <div className={`cat-body${category.elements.length ? '' : ' empty'}`}>
         <SortableContext
-          items={category.elements.map((_, i) => elementDragId(category.id, i))}
+          items={category.elements
+            .map((el, i) => (el.kind === 'break' ? null : elementDragId(category.id, i)))
+            .filter((x): x is string => x !== null)}
           strategy={rectSortingStrategy}
         >
-          {category.elements.map((_, i) => (
-            <SortableElement
-              key={elementDragId(category.id, i)}
-              category={category}
-              board={board}
-              index={i}
-              onRemove={() => removeElement(category.id, i)}
-              onAlt={() => onElementAlt(i)}
-            />
-          ))}
+          {category.elements.map((el, i) =>
+            el.kind === 'break' ? (
+              // a break is a fixed divider — not sortable/droppable, so it never
+              // interferes with dragging portraits past it
+              <div className="portrait-slot break-slot" key={`break-${i}`}>
+                <ElementPortrait element={el} category={category} board={board} />
+                <button
+                  className="portrait-remove"
+                  title="Remove"
+                  onClick={() => removeElement(category.id, i)}
+                />
+              </div>
+            ) : (
+              <SortableElement
+                key={elementDragId(category.id, i)}
+                category={category}
+                board={board}
+                index={i}
+                onRemove={() => removeElement(category.id, i)}
+                onAlt={() => onElementAlt(i)}
+              />
+            ),
+          )}
         </SortableContext>
         <button
           className="portrait add-tile"
