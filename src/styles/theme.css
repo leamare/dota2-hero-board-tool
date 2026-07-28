@@ -56,6 +56,7 @@
   --cat-bg: #121212;                     /* #10132e */
   --cat-outline: #202020;                /* #1c2255 */
   --cat-outline-hover: #383838;          /* #3a3f8a */
+  --break-line: #a0a0a0;                 /* in-category row-break divider */
   --cat-head-bg: #060606;                /* #05081c */
   --portrait-radius: 0.2rem;
   --separator-color: #4a4a4a;            /* #4b5591 */

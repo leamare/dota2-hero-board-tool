@@ -244,7 +244,7 @@
 .portrait-break {
   width: 100%;
   height: 0;
-  border-top: 0.2rem solid var(--cat-outline);
+  border-top: 0.2rem solid var(--break-line);
   margin: 0.5rem 0;
 }
 .board.edit .portrait-break {
