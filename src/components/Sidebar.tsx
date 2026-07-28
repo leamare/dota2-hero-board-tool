@@ -11,6 +11,7 @@ import { COLUMN_OPTIONS, DEFAULT_GRID_ICON } from '../lib/constants';
 import { ITEM_STYLES, PORTRAIT_TYPES, SIZES, imageUrl } from '../lib/images';
 import { emptyBoard } from '../lib/board';
 import { useIsMobile } from '../lib/useIsMobile';
+import { useMaxColumns } from '../lib/maxColumns';
 import { useT } from '../lib/i18n';
 import SortableLayoutRow from './SortableLayoutRow';
 import PickerGrid from './edit/PickerGrid';
@@ -24,6 +25,7 @@ export default function Sidebar() {
   const navigate = useNavigate();
   const toast = useToast();
   const t = useT();
+  const maxColumns = useMaxColumns();
 
   const { sidebarOpen, sidebarPinned, setOpen, toggleOpen, setPinned } = useUiStore();
   const isMobile = useIsMobile();
@@ -290,6 +292,9 @@ export default function Sidebar() {
               ))}
             </select>
           </div>
+          {maxColumns < board.columns && (
+            <p className="field-hint">{t('sidebar.columnsCapped').replace('{n}', String(maxColumns))}</p>
+          )}
           <div className="field row">
             <label>{t('sidebar.portraits')}</label>
             <select

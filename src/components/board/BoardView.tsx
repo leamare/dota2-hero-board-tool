@@ -1,6 +1,7 @@
 import type { CSSProperties } from 'react';
 import type { Board } from '../../types/board';
 import { boardLayout, chainLinks } from '../../lib/layout';
+import { useMaxColumns } from '../../lib/maxColumns';
 import CategoryCard from './CategoryCard';
 import { useT } from '../../lib/i18n';
 
@@ -11,7 +12,8 @@ import { useT } from '../../lib/i18n';
  */
 export default function BoardView({ board }: { board: Board }) {
   const t = useT();
-  const layout = boardLayout(board);
+  const cols = Math.min(board.columns, useMaxColumns());
+  const layout = boardLayout(board, cols);
   const links = chainLinks(board.categories, layout);
   const byId = new Map(board.categories.map((c) => [c.id, c]));
 
@@ -25,7 +27,7 @@ export default function BoardView({ board }: { board: Board }) {
       ]
         .filter(Boolean)
         .join(' ')}
-      style={{ '--cols': board.columns } as CSSProperties}
+      style={{ '--cols': cols } as CSSProperties}
     >
       {layout.map((p) => {
         const category = byId.get(p.id);

@@ -1,9 +1,10 @@
-import { useEffect, type ReactElement } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type ReactElement } from 'react';
 import { NavLink, Outlet, Link } from 'react-router-dom';
 import { PARENT_URL, SECTION_HOME } from '../lib/config';
 import Sidebar from './Sidebar';
 import { useUiStore, UI_SCALE_STEPS } from '../state/uiStore';
 import { useIsMobile } from '../lib/useIsMobile';
+import { MaxColumnsContext, fitColumns } from '../lib/maxColumns';
 import { useI18n, LOCALES, type LocaleCode } from '../lib/i18n';
 
 const MENU = [
@@ -40,7 +41,26 @@ export default function Layout() {
     document.documentElement.style.setProperty('--ui-scale', String(uiScale));
   }, [uiScale]);
 
+  // how many full categories fit across the board area, so the board can cap
+  // its column count to what actually fits (recompute on resize/scale/pin)
+  const mainRef = useRef<HTMLElement>(null);
+  const [maxCols, setMaxCols] = useState(6);
+  useLayoutEffect(() => {
+    const el = mainRef.current;
+    if (!el) return;
+    const recompute = () => setMaxCols(fitColumns(el));
+    recompute();
+    const ro = new ResizeObserver(recompute);
+    ro.observe(el);
+    window.addEventListener('resize', recompute);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', recompute);
+    };
+  }, [uiScale, pinned]);
+
   return (
+    <MaxColumnsContext.Provider value={maxCols}>
     <div className={`app-shell${pinned ? ' sb-pinned' : ''}`}>
       <header className="app-header">
         <a className="root-link" href={PARENT_URL} title="To main site" />
@@ -111,7 +131,7 @@ export default function Layout() {
 
       <Sidebar />
 
-      <main className="app-main">
+      <main className="app-main" ref={mainRef}>
         <Outlet />
       </main>
 
@@ -119,5 +139,6 @@ export default function Layout() {
         <a href={PARENT_URL}>spectral.gg</a> — Dota 2 Hero Grid Tool
       </footer>
     </div>
+    </MaxColumnsContext.Provider>
   );
 }

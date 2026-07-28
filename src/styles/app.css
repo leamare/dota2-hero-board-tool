@@ -514,6 +514,12 @@ body.palette-dragging .sidebar-scrim {
 .sidebar-section {
   margin-bottom: 1.5rem;
 }
+.field-hint {
+  font-size: 0.72rem;
+  color: var(--menu-link);
+  opacity: 0.8;
+  margin: -0.15rem 0 0.4rem;
+}
 .sidebar-section h3 {
   font-size: 0.85rem;
   text-transform: uppercase;

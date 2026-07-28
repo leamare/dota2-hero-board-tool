@@ -212,9 +212,13 @@ export function chainLinks(
   return res;
 }
 
-/** Convenience: layout using the board's own column count and wideness. */
-export function boardLayout(board: Board): Placement[] {
-  return computeLayout(board.categories, board.columns, (c) =>
+/**
+ * Convenience: layout using the board's wideness and a column count (defaults
+ * to the board's own, but callers pass the fitted count so a narrow screen
+ * uses fewer columns).
+ */
+export function boardLayout(board: Board, columns = board.columns): Placement[] {
+  return computeLayout(board.categories, columns, (c) =>
     c.hGroup || c.vGroup ? 1 : categorySpan(c, board),
   );
 }

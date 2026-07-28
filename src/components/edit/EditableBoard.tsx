@@ -23,6 +23,7 @@ import ElementPortrait from '../board/ElementPortrait';
 import { useBoardStore } from '../../state/boardStore';
 import { resolveDisplay } from '../../lib/board';
 import { boardLayout, chainLinks } from '../../lib/layout';
+import { useMaxColumns } from '../../lib/maxColumns';
 import type { CSSProperties } from 'react';
 
 /** Parse an element drag id "el:<catId>:<index>". */
@@ -166,8 +167,9 @@ export default function EditableBoard() {
     if (from < 0 || to < 0) return cats;
     return arrayMove(cats, from, to);
   })();
+  const cols = Math.min(board.columns, useMaxColumns());
   const displayById = new Map(displayCategories.map((c) => [c.id, c]));
-  const displayLayout = boardLayout({ ...board, categories: displayCategories });
+  const displayLayout = boardLayout({ ...board, categories: displayCategories }, cols);
   const displayLinks = chainLinks(displayCategories, displayLayout);
 
   return (
@@ -194,7 +196,7 @@ export default function EditableBoard() {
         ]
           .filter(Boolean)
           .join(' ')}
-        style={{ '--cols': board.columns } as CSSProperties}
+        style={{ '--cols': cols } as CSSProperties}
       >
         <SortableContext
           items={displayCategories.map((c) => categoryDragId(c.id))}
@@ -256,6 +258,7 @@ export default function EditableBoard() {
       // shows the same colours as it does in place
       const boardClasses = [
         'board',
+        'edit',
         'drag-overlay-card',
         board.centered ? 'centered' : '',
         board.darkenedBg ? 'darken' : '',
