@@ -67,6 +67,16 @@ export const PRESET_NAMES: { value: number; label: string }[] = [
   { value: 31, label: 'Mid Game' },
   { value: 32, label: 'Late Game' },
   { value: 33, label: 'Situational' },
+  { value: 34, label: 'Support' },
+  { value: 35, label: 'Hard Support' },
+  { value: 36, label: 'S Tier' },
+  { value: 37, label: 'A Tier' },
+  { value: 38, label: 'B Tier' },
+  { value: 39, label: 'C Tier' },
+  { value: 40, label: 'D Tier' },
+  { value: 41, label: 'E Tier' },
+  { value: 42, label: 'F Tier' },
+  { value: 43, label: 'Shit Tier' },
 ];
 
 export const presetLabel = (value: number): string =>
