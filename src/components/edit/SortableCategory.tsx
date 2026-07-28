@@ -2,9 +2,11 @@ import { useState } from 'react';
 import { useSortable, SortableContext, rectSortingStrategy } from '@dnd-kit/sortable';
 import type { CSSProperties } from 'react';
 import type { Board, Category, GridElement } from '../../types/board';
+import type { ChainSides } from '../../lib/layout';
 import { resolveDisplay } from '../../lib/board';
 import { colorIndex, LABEL_COLORS } from '../../lib/constants';
 import CategoryLabel from '../board/CategoryLabel';
+import ChainConnectors from '../board/ChainConnectors';
 import SortableElement, { elementDragId } from './SortableElement';
 import { useBoardStore } from '../../state/boardStore';
 import { PALETTE_MIME } from '../../lib/dnd';
@@ -14,6 +16,7 @@ interface Props {
   board: Board;
   grouped?: boolean;
   cellStyle?: CSSProperties;
+  chain?: ChainSides;
   linkPending?: boolean;
   onOpenSettings: () => void;
   onAdd: () => void;
@@ -33,6 +36,7 @@ export default function SortableCategory({
   board,
   grouped,
   cellStyle,
+  chain,
   linkPending,
   onOpenSettings,
   onAdd,
@@ -164,6 +168,7 @@ export default function SortableCategory({
           +
         </button>
       </div>
+      <ChainConnectors chain={chain} />
     </div>
   );
 }

@@ -29,6 +29,7 @@ const sample: Board = {
         { kind: 'hero', refId: 1 },
         { kind: 'hero', refId: 5, alticon: 'persona1' },
         { kind: 'item', refId: 116 },
+        { kind: 'break' },
         { kind: 'empty' },
         { kind: 'custom', tag: 'seasonal_rank_1' },
       ],

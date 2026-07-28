@@ -1,6 +1,6 @@
 import { COURIER_BASE } from './config';
 
-export type ElementKind = 'hero' | 'item' | 'empty' | 'custom';
+export type ElementKind = 'hero' | 'item' | 'empty' | 'custom' | 'break';
 
 /**
  * Hero portrait *type* — the shape of the box. Size is a separate axis.

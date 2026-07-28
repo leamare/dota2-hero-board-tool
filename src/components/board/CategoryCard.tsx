@@ -1,7 +1,9 @@
 import type { CSSProperties, ReactNode } from 'react';
 import type { Board, Category } from '../../types/board';
+import type { ChainSides } from '../../lib/layout';
 import { colorIndex, LABEL_COLORS } from '../../lib/constants';
 import CategoryLabel from './CategoryLabel';
+import ChainConnectors from './ChainConnectors';
 import ElementPortrait from './ElementPortrait';
 
 interface Props {
@@ -11,6 +13,8 @@ interface Props {
   grouped?: boolean;
   /** grid-cell style supplied by the board layout */
   style?: CSSProperties;
+  /** sides that connect to a linked partner */
+  chain?: ChainSides;
   headerControls?: ReactNode;
   dragHandle?: ReactNode;
   renderElementOverlay?: (index: number) => ReactNode;
@@ -27,6 +31,7 @@ export default function CategoryCard({
   board,
   grouped,
   style: cellStyle,
+  chain,
   headerControls,
   dragHandle,
   renderElementOverlay,
@@ -65,13 +70,14 @@ export default function CategoryCard({
       <div className={`cat-body${category.elements.length || bodyExtra ? '' : ' empty'}`}>
         {category.elements.length === 0 && !bodyExtra && <span>empty</span>}
         {category.elements.map((el, i) => (
-          <div className="portrait-slot" key={i}>
+          <div className={`portrait-slot${el.kind === 'break' ? ' break-slot' : ''}`} key={i}>
             <ElementPortrait element={el} category={category} board={board} />
             {renderElementOverlay?.(i)}
           </div>
         ))}
         {bodyExtra}
       </div>
+      <ChainConnectors chain={chain} />
     </div>
   );
 }

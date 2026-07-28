@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react';
 import type { Board } from '../../types/board';
-import { boardLayout } from '../../lib/layout';
+import { boardLayout, chainLinks } from '../../lib/layout';
 import CategoryCard from './CategoryCard';
 import { useT } from '../../lib/i18n';
 
@@ -12,6 +12,7 @@ import { useT } from '../../lib/i18n';
 export default function BoardView({ board }: { board: Board }) {
   const t = useT();
   const layout = boardLayout(board);
+  const links = chainLinks(board.categories, layout);
   const byId = new Map(board.categories.map((c) => [c.id, c]));
 
   return (
@@ -33,7 +34,15 @@ export default function BoardView({ board }: { board: Board }) {
           gridColumn: `${p.col + 1} / span ${p.colSpan}`,
           gridRow: p.row + 1,
         };
-        return <CategoryCard key={p.id} category={category} board={board} style={cell} />;
+        return (
+          <CategoryCard
+            key={p.id}
+            category={category}
+            board={board}
+            style={cell}
+            chain={links.get(p.id)}
+          />
+        );
       })}
       {board.categories.length === 0 && <div className="board-empty">{t('view.empty')}</div>}
     </div>

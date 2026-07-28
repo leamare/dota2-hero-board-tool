@@ -58,6 +58,7 @@ const en: Dict = {
   'picker.heroes': 'Heroes',
   'picker.items': 'Items',
   'picker.empty': 'Empty',
+  'picker.break': 'Break',
 
   'view.empty': 'This grid is empty. Switch to Edit to add categories.',
   'edit.addCategoryHint': 'Add a category to start building your grid.',
@@ -111,6 +112,7 @@ const ru: Dict = {
   'picker.heroes': 'Герои',
   'picker.items': 'Предметы',
   'picker.empty': 'Пусто',
+  'picker.break': 'Разрыв',
 
   'view.empty': 'Сетка пуста. Перейдите в Редактор, чтобы добавить категории.',
   'edit.addCategoryHint': 'Добавьте категорию, чтобы начать.',
@@ -164,6 +166,7 @@ const zh: Dict = {
   'picker.heroes': '英雄',
   'picker.items': '物品',
   'picker.empty': '空白',
+  'picker.break': '换行',
 
   'view.empty': '此网格为空。切换到编辑以添加类别。',
   'edit.addCategoryHint': '添加一个类别开始构建你的网格。',
@@ -217,6 +220,7 @@ const uk: Dict = {
   'picker.heroes': 'Герої',
   'picker.items': 'Предмети',
   'picker.empty': 'Порожньо',
+  'picker.break': 'Розрив',
 
   'view.empty': 'Сітка порожня. Перейдіть у Редактор, щоб додати категорії.',
   'edit.addCategoryHint': 'Додайте категорію, щоб почати.',
@@ -270,6 +274,7 @@ const pt: Dict = {
   'picker.heroes': 'Heróis',
   'picker.items': 'Itens',
   'picker.empty': 'Vazio',
+  'picker.break': 'Quebra',
 
   'view.empty': 'Esta grade está vazia. Vá para Editar para adicionar categorias.',
   'edit.addCategoryHint': 'Adicione uma categoria para começar.',

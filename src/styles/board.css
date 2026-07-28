@@ -230,6 +230,53 @@
   background-color: #ffffff0a;
   box-shadow: inset 0 0 0 0.08rem var(--cat-outline);
 }
+/* on the view board an empty slot is just blank space (keeps its size) */
+.board:not(.edit) .portrait.empty {
+  background-color: transparent;
+  box-shadow: none;
+}
+
+/* a break element forces the following portraits onto a new line */
+.portrait-slot.break-slot {
+  flex-basis: 100%;
+  width: 100%;
+}
+.portrait-break {
+  width: 100%;
+  height: 0;
+  border-top: 0.12rem solid var(--cat-outline);
+  margin: 0.15rem 0;
+  opacity: 0.6;
+}
+.board.edit .portrait-break {
+  height: 0.5rem;
+  border-top-style: dashed;
+  border-color: var(--cat-outline-hover);
+  opacity: 1;
+}
+
+/* connectors drawn in the grid gap toward a linked partner */
+.chain-conn {
+  position: absolute;
+  background: var(--cat-color, var(--sidebar-trigger));
+  z-index: 3;
+  pointer-events: none;
+  border-radius: 999px;
+}
+.chain-conn.chain-right {
+  right: calc(var(--grid-gap) * -1);
+  top: 50%;
+  transform: translateY(-50%);
+  width: var(--grid-gap);
+  height: 0.8rem;
+}
+.chain-conn.chain-down {
+  bottom: calc(var(--grid-gap) * -1);
+  left: 50%;
+  transform: translateX(-50%);
+  height: var(--grid-gap);
+  width: 0.8rem;
+}
 
 /* ========================================== MOBILE */
 

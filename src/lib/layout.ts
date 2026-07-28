@@ -182,6 +182,36 @@ export function computeLayout(
   return placements;
 }
 
+/** Which sides of a category touch a linked partner, for drawing connectors. */
+export interface ChainSides {
+  right?: boolean;
+  down?: boolean;
+}
+
+/**
+ * For each category, whether its immediate right / bottom neighbour is a member
+ * of the same chain (so a connector can be drawn in the gap between them).
+ */
+export function chainLinks(
+  categories: Category[],
+  placements: Placement[],
+): Map<string, ChainSides> {
+  const byId = new Map(categories.map((c) => [c.id, c]));
+  const at = new Map(placements.map((p) => [`${p.row},${p.col}`, p]));
+  const res = new Map<string, ChainSides>();
+  for (const p of placements) {
+    const c = byId.get(p.id);
+    if (!c) continue;
+    const right = at.get(`${p.row},${p.col + p.colSpan}`);
+    const down = at.get(`${p.row + 1},${p.col}`);
+    const sides: ChainSides = {};
+    if (right && c.hGroup && byId.get(right.id)?.hGroup === c.hGroup) sides.right = true;
+    if (down && c.vGroup && byId.get(down.id)?.vGroup === c.vGroup) sides.down = true;
+    if (sides.right || sides.down) res.set(p.id, sides);
+  }
+  return res;
+}
+
 /** Convenience: layout using the board's own column count and wideness. */
 export function boardLayout(board: Board): Placement[] {
   return computeLayout(board.categories, board.columns, (c) =>

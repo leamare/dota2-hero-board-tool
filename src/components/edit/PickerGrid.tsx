@@ -102,6 +102,15 @@ export default function PickerGrid({ onPick, previewType = 0, draggable, autoFoc
             ＋ {t('picker.empty')}
           </button>
         )}
+        {onPick && (
+          <button
+            className="btn small"
+            title="Add a line break (starts a new row inside the category)"
+            onClick={() => onPick({ kind: 'break' })}
+          >
+            ＋ {t('picker.break')}
+          </button>
+        )}
         <input
           ref={searchRef}
           className="input picker-search"

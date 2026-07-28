@@ -22,7 +22,7 @@ import CategoryCard from '../board/CategoryCard';
 import ElementPortrait from '../board/ElementPortrait';
 import { useBoardStore } from '../../state/boardStore';
 import { resolveDisplay } from '../../lib/board';
-import { boardLayout } from '../../lib/layout';
+import { boardLayout, chainLinks } from '../../lib/layout';
 import type { CSSProperties } from 'react';
 
 /** Parse an element drag id "el:<catId>:<index>". */
@@ -167,6 +167,8 @@ export default function EditableBoard() {
     return arrayMove(cats, from, to);
   })();
   const displayById = new Map(displayCategories.map((c) => [c.id, c]));
+  const displayLayout = boardLayout({ ...board, categories: displayCategories });
+  const displayLinks = chainLinks(displayCategories, displayLayout);
 
   return (
     <DndContext
@@ -185,6 +187,7 @@ export default function EditableBoard() {
       <div
         className={[
           'board',
+          'edit',
           board.centered ? 'centered' : '',
           board.darkenedBg ? 'darken' : '',
           board.colorfulLabels ? 'full-labels' : '',
@@ -197,7 +200,7 @@ export default function EditableBoard() {
           items={displayCategories.map((c) => categoryDragId(c.id))}
           strategy={rectSortingStrategy}
         >
-          {boardLayout({ ...board, categories: displayCategories }).map((p) => {
+          {displayLayout.map((p) => {
             const category = displayById.get(p.id);
             if (!category) return null;
             const cell: CSSProperties = {
@@ -210,6 +213,7 @@ export default function EditableBoard() {
                 category={category}
                 board={board}
                 cellStyle={cell}
+                chain={displayLinks.get(category.id)}
                 linkPending={pendingLink?.catId === category.id}
                 onOpenSettings={() => setSettingsCat(category.id)}
                 onAdd={() => setPickerCat(category.id)}

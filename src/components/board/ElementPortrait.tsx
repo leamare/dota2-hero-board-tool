@@ -21,6 +21,11 @@ export default function ElementPortrait({ element, category, board }: Props) {
 
   const style: CSSProperties = { aspectRatio: aspect, height: `${heightRem}rem` };
 
+  // a break forces the following portraits onto a new line inside the category
+  if (element.kind === 'break') {
+    return <div className="portrait-break" />;
+  }
+
   if (element.kind === 'empty') {
     return <div className="portrait empty" style={style} />;
   }

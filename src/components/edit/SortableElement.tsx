@@ -26,7 +26,7 @@ export default function SortableElement({ category, board, index, onRemove, onAl
   return (
     <div
       ref={setNodeRef}
-      className={`portrait-slot${isDragging ? ' dragging' : ''}`}
+      className={`portrait-slot${isDragging ? ' dragging' : ''}${el.kind === 'break' ? ' break-slot' : ''}`}
       style={{ transform: CSS.Transform.toString(transform), transition }}
       {...attributes}
       {...listeners}

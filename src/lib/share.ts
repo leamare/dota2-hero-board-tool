@@ -6,7 +6,12 @@ import type { ElementKind } from './images';
 
 const SHARE_VERSION = 6;
 
-const KIND_CODE: Record<ElementKind, number> = { hero: 0, item: 1, empty: 2, custom: 3 };
+const KIND_CODE: Record<Exclude<ElementKind, 'break'>, number> = {
+  hero: 0,
+  item: 1,
+  empty: 2,
+  custom: 3,
+};
 const KIND_BY_CODE: ElementKind[] = ['hero', 'item', 'empty', 'custom'];
 const ICON_KIND_CODE: Record<CategoryIconKind, number> = { hero: 0, item: 1, facet: 2, custom: 3 };
 const ICON_KIND_BY_CODE: CategoryIconKind[] = ['hero', 'item', 'facet', 'custom'];
@@ -34,6 +39,7 @@ const C_HGROUP = 128; // v6: horizontal chain index
 // element flag bits (kind in low 2 bits)
 const E_KIND_MASK = 3;
 const E_ALTICON = 4;
+const E_BREAK = 8; // a row break; payload-less like empty, its own kind on decode
 
 // colour keys in the same fixed order as LABEL_COLORS (see constants.ts).
 const COLOR_KEYS = [
@@ -44,8 +50,10 @@ const colorIndexOf = (key: string): number => Math.max(0, COLOR_KEYS.indexOf(key
 const colorKeyOf = (i: number): string => COLOR_KEYS[i] ?? '';
 
 function encodeElement(w: ByteWriter, el: GridElement): void {
-  let flags = KIND_CODE[el.kind];
+  // a break has no payload; store it as an empty slot tagged with E_BREAK
+  let flags = KIND_CODE[el.kind === 'break' ? 'empty' : el.kind];
   if (el.alticon) flags |= E_ALTICON;
+  if (el.kind === 'break') flags |= E_BREAK;
   w.u8(flags);
   if (el.kind === 'hero' || el.kind === 'item') w.varint(el.refId ?? 0);
   else if (el.kind === 'custom') w.string(el.tag ?? '');
@@ -135,7 +143,7 @@ export function encodeBoard(board: Board): string {
 
 function decodeElement(r: ByteReader): GridElement {
   const flags = r.u8();
-  const kind = KIND_BY_CODE[flags & E_KIND_MASK] ?? 'hero';
+  const kind: ElementKind = flags & E_BREAK ? 'break' : KIND_BY_CODE[flags & E_KIND_MASK] ?? 'hero';
   const el: GridElement = { kind };
   if (kind === 'hero' || kind === 'item') el.refId = r.varint();
   else if (kind === 'custom') el.tag = r.string();
