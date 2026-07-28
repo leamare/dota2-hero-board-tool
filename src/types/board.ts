@@ -49,10 +49,10 @@ export interface Category {
   itemStyle?: number;
   /** override the board's portrait size */
   size?: number;
-  /** id shared by linked categories that always render together */
-  linkGroup?: string;
-  /** orientation of the link group this category belongs to */
-  linkOrient?: 'v' | 'h';
+  /** id of the horizontal chain this category belongs to (adjacent columns) */
+  hGroup?: string;
+  /** id of the vertical chain this category belongs to (stacked rows) */
+  vGroup?: string;
   /** force this category to start on a new row */
   newRow?: boolean;
   elements: GridElement[];

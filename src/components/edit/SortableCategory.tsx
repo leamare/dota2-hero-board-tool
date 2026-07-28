@@ -70,7 +70,8 @@ export default function SortableCategory({
 
   const { aspect, heightRem } = resolveDisplay(category, board);
   const hasColor = !!category.color;
-  const linked = !!category.linkGroup;
+  const vLinked = !!category.vGroup;
+  const hLinked = !!category.hGroup;
   const colorVar = hasColor
     ? `var(--label-${LABEL_COLORS[colorIndex(category.color)].key})`
     : undefined;
@@ -112,21 +113,19 @@ export default function SortableCategory({
         </span>
         <span className="cat-controls">
           <button
-            className={`btn small${linkPending ? ' primary' : ''}${linked ? ' active' : ''}`}
-            title={linked ? 'Unlink' : 'Link vertically'}
+            className={`btn small${linkPending ? ' primary' : ''}${vLinked ? ' active' : ''}`}
+            title={vLinked ? 'Unlink vertically' : 'Link vertically'}
             onClick={() => onLink('v')}
           >
-            {linked ? '⛓' : '↕'}
+            ↕
           </button>
-          {!linked && (
-            <button
-              className={`btn small${linkPending ? ' primary' : ''}`}
-              title="Link horizontally"
-              onClick={() => onLink('h')}
-            >
-              ↔
-            </button>
-          )}
+          <button
+            className={`btn small${linkPending ? ' primary' : ''}${hLinked ? ' active' : ''}`}
+            title={hLinked ? 'Unlink horizontally' : 'Link horizontally'}
+            onClick={() => onLink('h')}
+          >
+            ↔
+          </button>
           <button className="btn small" title="Settings" onClick={onOpenSettings}>
             ⚙
           </button>

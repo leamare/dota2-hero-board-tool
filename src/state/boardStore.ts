@@ -18,7 +18,7 @@ interface BoardStore {
   patchCategory: (id: string, patch: Partial<Category>) => void;
   reorderCategories: (ids: string[]) => void;
   linkCategories: (aId: string, bId: string, orient: 'v' | 'h') => void;
-  unlinkCategory: (id: string) => void;
+  unlinkCategory: (id: string, orient: 'v' | 'h') => void;
 
   addElement: (catId: string, element: GridElement) => void;
   removeElement: (catId: string, index: number) => void;
@@ -81,38 +81,31 @@ export const useBoardStore = create<BoardStore>()(
       linkCategories: (aId, bId, orient) =>
         set((s) => {
           if (aId === bId) return s;
-          const b = s.board.categories.find((c) => c.id === bId);
+          const key = orient === 'h' ? 'hGroup' : 'vGroup';
           const a = s.board.categories.find((c) => c.id === aId);
+          const b = s.board.categories.find((c) => c.id === bId);
           if (!a || !b) return s;
-          // join b's existing group if orientations match, else start a new one
-          const group = b.linkGroup && b.linkOrient === orient ? b.linkGroup : genId();
-          // only reassign the two endpoints (and keep any current group members);
-          // do NOT reorder the array — groupCategories gathers members for layout.
+          // join b's existing chain on this axis, else start a new one
+          const existing = b[key];
+          const group = existing ?? genId();
           const cats = s.board.categories.map((c) => {
-            if (c.id === aId || c.id === bId || (b.linkGroup && c.linkGroup === b.linkGroup))
-              return { ...c, linkGroup: group, linkOrient: orient };
+            if (c.id === aId || c.id === bId || (existing && c[key] === existing))
+              return { ...c, [key]: group };
             return c;
           });
           return { board: { ...s.board, categories: cats } };
         }),
 
-      unlinkCategory: (id) =>
+      unlinkCategory: (id, orient) =>
         set((s) => {
+          const key = orient === 'h' ? 'hGroup' : 'vGroup';
           const cat = s.board.categories.find((c) => c.id === id);
-          if (!cat?.linkGroup) return s;
-          const group = cat.linkGroup;
-          let cats = s.board.categories.map((c) =>
-            c.id === id ? { ...c, linkGroup: undefined, linkOrient: undefined } : c,
-          );
-          // dissolve the group if only one member is left
-          const remaining = cats.filter((c) => c.linkGroup === group);
-          if (remaining.length === 1) {
-            cats = cats.map((c) =>
-              c.linkGroup === group
-                ? { ...c, linkGroup: undefined, linkOrient: undefined }
-                : c,
-            );
-          }
+          const group = cat?.[key];
+          if (!group) return s;
+          let cats = s.board.categories.map((c) => (c.id === id ? { ...c, [key]: undefined } : c));
+          // dissolve the chain if only one member is left
+          if (cats.filter((c) => c[key] === group).length === 1)
+            cats = cats.map((c) => (c[key] === group ? { ...c, [key]: undefined } : c));
           return { board: { ...s.board, categories: cats } };
         }),
 
@@ -187,7 +180,7 @@ export const useBoardStore = create<BoardStore>()(
     }),
     {
       name: 'hgt.board',
-      version: 4,
+      version: 5,
       migrate: (persisted, from) => {
         const state = persisted as { board?: Record<string, unknown> };
         if (!state?.board) return persisted as unknown as { board: Board };
@@ -249,6 +242,18 @@ export const useBoardStore = create<BoardStore>()(
             } else if (name.type === 'icon') {
               c.icon = { kind: 'facet', folder: name.iconFolder, tag: name.iconTag };
             }
+          }
+        }
+
+        // v4 -> v5: single linkGroup/linkOrient -> independent hGroup/vGroup
+        if (from < 5) {
+          for (const c of (b.categories ?? []) as Record<string, unknown>[]) {
+            if (c.linkGroup) {
+              if (c.linkOrient === 'h') c.hGroup = c.linkGroup;
+              else c.vGroup = c.linkGroup;
+            }
+            delete c.linkGroup;
+            delete c.linkOrient;
           }
         }
 

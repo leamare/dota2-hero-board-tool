@@ -97,39 +97,3 @@ export function categorySpan(category: Category, board: Board): number {
   return Math.min(board.columns, Math.max(1, Math.round((basis / 100) * board.columns)));
 }
 
-export interface RenderUnit {
-  categories: Category[];
-  /** 'v' stacked, 'h' side-by-side, null for a lone category */
-  orient: 'v' | 'h' | null;
-  key: string;
-}
-
-/**
- * Collapse linked categories into render units. Linked categories (sharing a
- * linkGroup) are gathered at the position of their first member and always
- * render together, stacked ('v') or side-by-side ('h').
- */
-export function groupCategories(categories: Category[]): RenderUnit[] {
-  const units: RenderUnit[] = [];
-  const done = new Set<string>();
-  for (const c of categories) {
-    if (done.has(c.id)) continue;
-    if (c.linkGroup) {
-      const members = categories.filter((x) => x.linkGroup === c.linkGroup);
-      members.forEach((m) => done.add(m.id));
-      units.push({ categories: members, orient: c.linkOrient ?? 'v', key: c.linkGroup });
-    } else {
-      units.push({ categories: [c], orient: null, key: c.id });
-    }
-  }
-  return units;
-}
-
-/** Grid column span for a render unit. */
-export function unitSpan(unit: RenderUnit, board: Board): number {
-  if (unit.orient === 'h') {
-    const total = unit.categories.reduce((s, c) => s + categorySpan(c, board), 0);
-    return Math.min(board.columns, Math.max(1, total));
-  }
-  return categorySpan(unit.categories[0], board);
-}

@@ -4,7 +4,7 @@ import { ByteReader, ByteWriter, fromBase64Url, toBase64Url } from './bytes';
 import type { CategoryIconKind } from '../types/board';
 import type { ElementKind } from './images';
 
-const SHARE_VERSION = 5;
+const SHARE_VERSION = 6;
 
 const KIND_CODE: Record<ElementKind, number> = { hero: 0, item: 1, empty: 2, custom: 3 };
 const KIND_BY_CODE: ElementKind[] = ['hero', 'item', 'empty', 'custom'];
@@ -23,11 +23,13 @@ const I_ICON_TYPE = 2;
 // category flag bits
 const C_PRESET = 1;
 const C_ICON = 2;
-const C_LINK = 4;
+const C_LINK = 4; // v5 only: single link group (+orient byte)
+const C_VGROUP = 4; // v6: vertical chain index (reuses bit 4)
 const C_NEWROW = 8;
 const C_PORTRAIT = 16;
 const C_ITEMSTYLE = 32;
 const C_SIZE = 64;
+const C_HGROUP = 128; // v6: horizontal chain index
 
 // element flag bits (kind in low 2 bits)
 const E_KIND_MASK = 3;
@@ -66,11 +68,17 @@ function encodeIcon(w: ByteWriter, icon: CategoryIcon): void {
   }
 }
 
-function encodeCategory(w: ByteWriter, c: Category, groupIndex: Map<string, number>): void {
+function encodeCategory(
+  w: ByteWriter,
+  c: Category,
+  vIndex: Map<string, number>,
+  hIndex: Map<string, number>,
+): void {
   let flags = 0;
   if (c.preset !== undefined) flags |= C_PRESET;
   if (c.icon) flags |= C_ICON;
-  if (c.linkGroup) flags |= C_LINK;
+  if (c.vGroup) flags |= C_VGROUP;
+  if (c.hGroup) flags |= C_HGROUP;
   if (c.newRow) flags |= C_NEWROW;
   if (c.portraitType !== undefined) flags |= C_PORTRAIT;
   if (c.itemStyle !== undefined) flags |= C_ITEMSTYLE;
@@ -84,10 +92,8 @@ function encodeCategory(w: ByteWriter, c: Category, groupIndex: Map<string, numb
   w.u8(colorIndexOf(c.color));
   w.u8(c.wideness);
   w.u8(c.headerSize ?? 1);
-  if (c.linkGroup) {
-    w.varint(groupIndex.get(c.linkGroup) ?? 0);
-    w.u8(c.linkOrient === 'h' ? 1 : 0);
-  }
+  if (c.vGroup) w.varint(vIndex.get(c.vGroup) ?? 0);
+  if (c.hGroup) w.varint(hIndex.get(c.hGroup) ?? 0);
   if (c.portraitType !== undefined) w.u8(c.portraitType);
   if (c.itemStyle !== undefined) w.u8(c.itemStyle);
   if (c.size !== undefined) w.u8(c.size);
@@ -113,14 +119,16 @@ export function encodeBoard(board: Board): string {
   w.string(board.name);
   w.string(board.icon ?? '');
 
-  // index distinct link groups as small ints
-  const groupIndex = new Map<string, number>();
+  // index distinct chain ids per axis as small ints
+  const vIndex = new Map<string, number>();
+  const hIndex = new Map<string, number>();
   for (const c of board.categories) {
-    if (c.linkGroup && !groupIndex.has(c.linkGroup)) groupIndex.set(c.linkGroup, groupIndex.size);
+    if (c.vGroup && !vIndex.has(c.vGroup)) vIndex.set(c.vGroup, vIndex.size);
+    if (c.hGroup && !hIndex.has(c.hGroup)) hIndex.set(c.hGroup, hIndex.size);
   }
 
   w.varint(board.categories.length);
-  for (const c of board.categories) encodeCategory(w, c, groupIndex);
+  for (const c of board.categories) encodeCategory(w, c, vIndex, hIndex);
 
   return toBase64Url(w.toUint8Array());
 }
@@ -148,7 +156,7 @@ function decodeIcon(r: ByteReader): CategoryIcon {
   return { kind, folder: r.string(), tag: r.string() };
 }
 
-function decodeCategory(r: ByteReader): Category {
+function decodeCategory(r: ByteReader, version: number): Category {
   const flags = r.varint();
 
   const cat: Category = { id: genId(), color: '', wideness: 0, elements: [] };
@@ -159,9 +167,14 @@ function decodeCategory(r: ByteReader): Category {
   cat.color = colorKeyOf(r.u8());
   cat.wideness = r.u8();
   cat.headerSize = r.u8();
-  if (flags & C_LINK) {
-    cat.linkGroup = `g${r.varint()}`;
-    cat.linkOrient = r.u8() === 1 ? 'h' : 'v';
+  if (version >= 6) {
+    if (flags & C_VGROUP) cat.vGroup = `v${r.varint()}`;
+    if (flags & C_HGROUP) cat.hGroup = `h${r.varint()}`;
+  } else if (flags & C_LINK) {
+    // v5: one link group + orientation byte → route to the matching axis
+    const g = r.varint();
+    if (r.u8() === 1) cat.hGroup = `h${g}`;
+    else cat.vGroup = `v${g}`;
   }
   if (flags & C_PORTRAIT) cat.portraitType = r.u8();
   if (flags & C_ITEMSTYLE) cat.itemStyle = r.u8();
@@ -177,7 +190,8 @@ function decodeCategory(r: ByteReader): Category {
 export function decodeBoard(str: string): Board {
   const r = new ByteReader(fromBase64Url(str.trim()));
   const version = r.u8();
-  if (version !== SHARE_VERSION) throw new Error(`unsupported share version ${version}`);
+  if (version !== SHARE_VERSION && version !== 5)
+    throw new Error(`unsupported share version ${version}`);
 
   const board = emptyBoard();
   const bflags = r.u8();
@@ -193,6 +207,6 @@ export function decodeBoard(str: string): Board {
 
   const count = r.varint();
   board.categories = [];
-  for (let i = 0; i < count; i++) board.categories.push(decodeCategory(r));
+  for (let i = 0; i < count; i++) board.categories.push(decodeCategory(r, version));
   return board;
 }

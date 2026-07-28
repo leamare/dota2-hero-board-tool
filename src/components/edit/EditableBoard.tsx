@@ -1,4 +1,4 @@
-import { Fragment, useCallback, useState } from 'react';
+import { useCallback, useState } from 'react';
 import {
   DndContext,
   DragOverlay,
@@ -21,8 +21,8 @@ import AltIconModal from './AltIconModal';
 import CategoryCard from '../board/CategoryCard';
 import ElementPortrait from '../board/ElementPortrait';
 import { useBoardStore } from '../../state/boardStore';
-import { groupCategories, resolveDisplay, unitSpan } from '../../lib/board';
-import type { Category } from '../../types/board';
+import { resolveDisplay } from '../../lib/board';
+import { boardLayout } from '../../lib/layout';
 import type { CSSProperties } from 'react';
 
 /** Parse an element drag id "el:<catId>:<index>". */
@@ -31,34 +31,6 @@ function parseElId(id: string): { catId: string; index: number } | null {
   const rest = id.slice(3);
   const sep = rest.lastIndexOf(':');
   return { catId: rest.slice(0, sep), index: Number(rest.slice(sep + 1)) };
-}
-
-/**
- * Reorder categories by dragging `activeCatId` onto `targetCatId`, respecting
- * linked groups as atomic units:
- *  - dragging within the same chain reorders its members (intra-chain);
- *  - otherwise whole render units move, so a linked chain travels together and
- *    its members never get split or reordered by dragging some other category.
- * Returns the same array reference when nothing changes.
- */
-function reorderByUnit(cats: Category[], activeCatId: string, targetCatId: string): Category[] {
-  const units = groupCategories(cats);
-  const au = units.findIndex((u) => u.categories.some((c) => c.id === activeCatId));
-  const tu = units.findIndex((u) => u.categories.some((c) => c.id === targetCatId));
-  if (au < 0 || tu < 0) return cats;
-
-  if (au === tu) {
-    // same unit → reorder members within the chain
-    const members = units[au].categories;
-    const from = members.findIndex((c) => c.id === activeCatId);
-    const to = members.findIndex((c) => c.id === targetCatId);
-    if (from < 0 || to < 0 || from === to) return cats;
-    const next = units.slice();
-    next[au] = { ...units[au], categories: arrayMove(members, from, to) };
-    return next.flatMap((u) => u.categories);
-  }
-
-  return arrayMove(units, au, tu).flatMap((u) => u.categories);
 }
 
 export default function EditableBoard() {
@@ -83,17 +55,18 @@ export default function EditableBoard() {
   const [activeSize, setActiveSize] = useState<{ w: number; h: number } | null>(null);
 
   const handleLink = (catId: string, orient: 'v' | 'h') => {
-    if (pendingLink) {
-      if (pendingLink.catId === catId) {
-        setPendingLink(null); // cancel
-      } else {
-        linkCategories(pendingLink.catId, catId, pendingLink.orient);
+    // second click of a pending link on the SAME axis completes/cancels it
+    if (pendingLink && pendingLink.orient === orient) {
+      if (pendingLink.catId === catId) setPendingLink(null); // cancel
+      else {
+        linkCategories(pendingLink.catId, catId, orient);
         setPendingLink(null);
       }
       return;
     }
     const cat = board.categories.find((c) => c.id === catId);
-    if (cat?.linkGroup) unlinkCategory(catId);
+    const linked = orient === 'h' ? cat?.hGroup : cat?.vGroup;
+    if (linked) unlinkCategory(catId, orient); // already in a chain on this axis → unlink
     else setPendingLink({ catId, orient });
   };
 
@@ -146,10 +119,12 @@ export default function EditableBoard() {
     setActiveSize(null);
     if (!target || target === aId) return;
 
-    // reorder categories (unit-aware, so linked chains stay intact)
+    // reorder categories: move in the base list, the layout engine re-places
     if (aId.startsWith('cat:') && target.startsWith('cat:')) {
-      const next = reorderByUnit(board.categories, aId.slice(4), target.slice(4));
-      if (next !== board.categories) reorderCategories(next.map((c) => c.id));
+      const ids = board.categories.map((c) => c.id);
+      const from = ids.indexOf(aId.slice(4));
+      const to = ids.indexOf(target.slice(4));
+      if (from >= 0 && to >= 0 && from !== to) reorderCategories(arrayMove(ids, from, to));
       return;
     }
 
@@ -186,8 +161,12 @@ export default function EditableBoard() {
     const cats = board.categories;
     if (!activeId?.startsWith('cat:') || !overId?.startsWith('cat:') || activeId === overId)
       return cats;
-    return reorderByUnit(cats, activeId.slice(4), overId.slice(4));
+    const from = cats.findIndex((c) => categoryDragId(c.id) === activeId);
+    const to = cats.findIndex((c) => categoryDragId(c.id) === overId);
+    if (from < 0 || to < 0) return cats;
+    return arrayMove(cats, from, to);
   })();
+  const displayById = new Map(displayCategories.map((c) => [c.id, c]));
 
   return (
     <DndContext
@@ -218,39 +197,25 @@ export default function EditableBoard() {
           items={displayCategories.map((c) => categoryDragId(c.id))}
           strategy={rectSortingStrategy}
         >
-          {groupCategories(displayCategories).map((unit) => {
-            const first = unit.categories[0];
-            const span = unitSpan(unit, board);
+          {boardLayout({ ...board, categories: displayCategories }).map((p) => {
+            const category = displayById.get(p.id);
+            if (!category) return null;
             const cell: CSSProperties = {
-              gridColumn: first.newRow ? `1 / span ${span}` : `span ${span}`,
+              gridColumn: `${p.col + 1} / span ${p.colSpan}`,
+              gridRow: p.row + 1,
             };
-            const renderCat = (cat: Category, grouped: boolean, cs?: CSSProperties) => (
-              <SortableCategory
-                key={cat.id}
-                category={cat}
-                board={board}
-                grouped={grouped}
-                cellStyle={cs}
-                linkPending={pendingLink?.catId === cat.id}
-                onOpenSettings={() => setSettingsCat(cat.id)}
-                onAdd={() => setPickerCat(cat.id)}
-                onElementAlt={(index) => setAltTarget({ catId: cat.id, index })}
-                onLink={(orient) => handleLink(cat.id, orient)}
-              />
-            );
             return (
-              <Fragment key={unit.key}>
-                {unit.orient === null ? (
-                  renderCat(first, false, cell)
-                ) : (
-                  <div
-                    className={`category-group ${unit.orient === 'h' ? 'horizontal' : ''}`}
-                    style={cell}
-                  >
-                    {unit.categories.map((c) => renderCat(c, true))}
-                  </div>
-                )}
-              </Fragment>
+              <SortableCategory
+                key={category.id}
+                category={category}
+                board={board}
+                cellStyle={cell}
+                linkPending={pendingLink?.catId === category.id}
+                onOpenSettings={() => setSettingsCat(category.id)}
+                onAdd={() => setPickerCat(category.id)}
+                onElementAlt={(index) => setAltTarget({ catId: category.id, index })}
+                onLink={(orient) => handleLink(category.id, orient)}
+              />
             );
           })}
         </SortableContext>
