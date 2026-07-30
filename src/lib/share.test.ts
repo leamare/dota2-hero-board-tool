@@ -122,6 +122,27 @@ describe('board share encoding', () => {
     expect(normalize(decodeBoard(encodeBoard(big)))).toEqual(normalize(big));
   });
 
+  it('round-trips canvas mode and category rects', () => {
+    const b: Board = {
+      ...sample,
+      canvas: true,
+      categories: sample.categories.map((c, i) => ({
+        ...c,
+        rect: { x: i * 33.3, y: 12.5, w: 33.3, h: 20.4 },
+      })),
+    };
+    const back = decodeBoard(encodeBoard(b));
+    expect(back.canvas).toBe(true);
+    expect(back.categories[0].rect).toEqual({ x: 0, y: 12.5, w: 33.3, h: 20.4 });
+    expect(back.categories[1].rect).toEqual({ x: 33.3, y: 12.5, w: 33.3, h: 20.4 });
+  });
+
+  it('leaves canvas fields unset for a plain grid', () => {
+    const back = decodeBoard(encodeBoard(sample));
+    expect(back.canvas).toBeUndefined();
+    expect(back.categories[0].rect).toBeUndefined();
+  });
+
   it('round-trips a description', () => {
     const b = { ...sample, description: 'Draft helper for pos 1\nsecond line' };
     expect(decodeBoard(encodeBoard(b)).description).toBe('Draft helper for pos 1\nsecond line');

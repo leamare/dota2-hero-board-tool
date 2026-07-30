@@ -308,6 +308,68 @@
   );
 }
 
+/* ========================================== CANVAS MODE */
+
+/* free placement: cards are absolutely positioned in percent-of-width units,
+   and the canvas scrolls when content sits past the right or bottom edge */
+.canvas-board {
+  display: block;
+  position: relative;
+  overflow: auto;
+  gap: 0;
+}
+.canvas-content {
+  position: relative;
+}
+.canvas-board .category {
+  position: absolute;
+  /* visible so the resize handles, which straddle the edges, stay clickable —
+     the body below does the clipping instead */
+  overflow: visible;
+}
+.canvas-board .cat-body {
+  /* the fitted portraits already fill the box; don't let them stretch it */
+  overflow: hidden;
+  flex: 1;
+}
+
+/* edit affordances */
+.canvas-card.selected {
+  outline: 0.12rem solid var(--sidebar-trigger);
+  outline-offset: 0.1rem;
+  z-index: 2;
+}
+.canvas-card.dragging {
+  opacity: 0.85;
+  z-index: 3;
+}
+.canvas-handle {
+  position: absolute;
+  width: 0.7rem;
+  height: 0.7rem;
+  background: var(--sidebar-trigger);
+  border-radius: 0.15rem;
+  opacity: 0;
+  transition: opacity 120ms linear;
+  z-index: 4;
+}
+.canvas-card:hover .canvas-handle,
+.canvas-card.selected .canvas-handle {
+  opacity: 0.9;
+}
+.canvas-handle.n { top: -0.35rem; left: 50%; margin-left: -0.35rem; cursor: ns-resize; }
+.canvas-handle.s { bottom: -0.35rem; left: 50%; margin-left: -0.35rem; cursor: ns-resize; }
+.canvas-handle.w { left: -0.35rem; top: 50%; margin-top: -0.35rem; cursor: ew-resize; }
+.canvas-handle.e { right: -0.35rem; top: 50%; margin-top: -0.35rem; cursor: ew-resize; }
+.canvas-handle.nw { top: -0.35rem; left: -0.35rem; cursor: nwse-resize; }
+.canvas-handle.ne { top: -0.35rem; right: -0.35rem; cursor: nesw-resize; }
+.canvas-handle.sw { bottom: -0.35rem; left: -0.35rem; cursor: nesw-resize; }
+.canvas-handle.se { bottom: -0.35rem; right: -0.35rem; cursor: nwse-resize; }
+
+.canvas-board .drag-handle {
+  cursor: move;
+}
+
 /* ========================================== IMAGE EXPORT */
 
 /* the stage is rendered for rasterizing only, parked off-screen */

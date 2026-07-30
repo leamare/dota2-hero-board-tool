@@ -37,6 +37,8 @@ export default function Sidebar() {
   const setBoard = useBoardStore((s) => s.setBoard);
   const patchBoard = useBoardStore((s) => s.patchBoard);
   const resetBoard = useBoardStore((s) => s.resetBoard);
+  const setCanvasMode = useBoardStore((s) => s.setCanvasMode);
+  const applyAutoLayout = useBoardStore((s) => s.applyAutoLayout);
   const currentLayoutId = useBoardStore((s) => s.currentLayoutId);
   const setCurrentLayoutId = useBoardStore((s) => s.setCurrentLayoutId);
 
@@ -379,6 +381,29 @@ export default function Sidebar() {
             />
             {t('sidebar.darken')}
           </label>
+          <label className="checkbox" title="Place categories freely, like the in-game grid">
+            <input
+              type="checkbox"
+              checked={!!board.canvas}
+              onChange={(e) => {
+                setCanvasMode(e.target.checked);
+                if (!e.target.checked) toast(t('sidebar.canvasConverted'));
+              }}
+            />
+            {t('sidebar.canvas')}
+          </label>
+          {board.canvas && (
+            <button
+              className="btn small"
+              style={{ marginTop: '0.5rem' }}
+              onClick={() => {
+                applyAutoLayout();
+                toast(t('sidebar.autoLayoutDone'));
+              }}
+            >
+              {t('sidebar.autoLayout')}
+            </button>
+          )}
           <button
             className="btn small danger"
             style={{ marginTop: '0.5rem' }}

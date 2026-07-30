@@ -11,6 +11,18 @@ export interface GridElement {
   alticon?: string | null;
 }
 
+/**
+ * A category's box on the free canvas. Every value is a percentage of the canvas
+ * *width* — including `y` and `h` — so a canvas grid keeps its proportions at any
+ * window size and shares faithfully. Values may exceed 100 (the canvas scrolls).
+ */
+export interface CanvasRect {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
 export type CategoryIconKind = 'hero' | 'item' | 'facet' | 'custom';
 
 /** An optional icon shown in a category header, independent of its text label. */
@@ -55,6 +67,8 @@ export interface Category {
   vGroup?: string;
   /** force this category to start on a new row */
   newRow?: boolean;
+  /** position and size on the free canvas; kept when canvas mode is turned off */
+  rect?: CanvasRect;
   elements: GridElement[];
 }
 
@@ -80,5 +94,7 @@ export interface Board {
   centered: boolean;
   /** darken the page background */
   darkenedBg: boolean;
+  /** free-placement mode: categories sit at their own rects instead of a grid */
+  canvas?: boolean;
   categories: Category[];
 }

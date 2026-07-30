@@ -11,9 +11,9 @@ import {
 import type { CategoryIconKind } from '../types/board';
 import type { ElementKind } from './images';
 
-const SHARE_VERSION = 8;
+const SHARE_VERSION = 9;
 /** Older versions this decoder still understands. */
-const LEGACY_VERSIONS = [5, 6, 7];
+const LEGACY_VERSIONS = [5, 6, 7, 8];
 
 const KIND_CODE: Record<Exclude<ElementKind, 'break'>, number> = {
   hero: 0,
@@ -29,6 +29,7 @@ const ICON_KIND_BY_CODE: CategoryIconKind[] = ['hero', 'item', 'facet', 'custom'
 const B_COLORFUL = 1;
 const B_CENTERED = 2;
 const B_DARKENED = 4;
+const B_CANVAS = 8;
 
 // icon flag bits
 const I_ALTICON = 1;
@@ -44,6 +45,7 @@ const C_PORTRAIT = 16;
 const C_ITEMSTYLE = 32;
 const C_SIZE = 64;
 const C_HGROUP = 128; // v6: horizontal chain index
+const C_RECT = 256; // v9: canvas rect (flags is a varint, so wider bits are fine)
 
 // element flag bits (kind in low 2 bits)
 const E_KIND_MASK = 3;
@@ -100,6 +102,7 @@ function encodeCategory(
   if (c.portraitType !== undefined) flags |= C_PORTRAIT;
   if (c.itemStyle !== undefined) flags |= C_ITEMSTYLE;
   if (c.size !== undefined) flags |= C_SIZE;
+  if (c.rect) flags |= C_RECT;
   w.varint(flags);
 
   if (c.preset !== undefined) w.varint(c.preset);
@@ -114,6 +117,11 @@ function encodeCategory(
   if (c.portraitType !== undefined) w.u8(c.portraitType);
   if (c.itemStyle !== undefined) w.u8(c.itemStyle);
   if (c.size !== undefined) w.u8(c.size);
+  if (c.rect) {
+    // tenths of a percent keeps it compact and is finer than anyone can drag
+    for (const v of [c.rect.x, c.rect.y, c.rect.w, c.rect.h])
+      w.varint(Math.max(0, Math.round(v * 10)));
+  }
 
   w.varint(c.elements.length);
   for (const el of c.elements) encodeElement(w, el);
@@ -128,6 +136,7 @@ export function encodeBoardBytes(board: Board): Uint8Array {
   if (board.colorfulLabels) bflags |= B_COLORFUL;
   if (board.centered) bflags |= B_CENTERED;
   if (board.darkenedBg) bflags |= B_DARKENED;
+  if (board.canvas) bflags |= B_CANVAS;
   w.u8(bflags);
   w.u8(board.columns);
   w.u8(board.portraitType);
@@ -203,6 +212,10 @@ function decodeCategory(r: ByteReader, version: number): Category {
   if (flags & C_PORTRAIT) cat.portraitType = r.u8();
   if (flags & C_ITEMSTYLE) cat.itemStyle = r.u8();
   if (flags & C_SIZE) cat.size = r.u8();
+  if (version >= 9 && flags & C_RECT) {
+    const [x, y, w, h] = [r.varint(), r.varint(), r.varint(), r.varint()];
+    cat.rect = { x: x / 10, y: y / 10, w: w / 10, h: h / 10 };
+  }
 
   const count = r.varint();
   for (let i = 0; i < count; i++) cat.elements.push(decodeElement(r));
@@ -222,6 +235,7 @@ export function decodeBoard(str: string): Board {
   board.colorfulLabels = !!(bflags & B_COLORFUL);
   board.centered = !!(bflags & B_CENTERED);
   board.darkenedBg = !!(bflags & B_DARKENED);
+  if (bflags & B_CANVAS) board.canvas = true;
   board.columns = r.u8();
   board.portraitType = r.u8();
   board.itemStyle = r.u8();

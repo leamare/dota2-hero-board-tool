@@ -1,7 +1,7 @@
 import { createContext, useContext } from 'react';
 
 /** Minimum comfortable width for a full category, in rem. */
-export const MIN_CATEGORY_REM = 24;
+export const MIN_CATEGORY_REM = 16;
 const GRID_GAP_REM = 0.6; // keep in sync with --grid-gap
 const MAIN_PADDING_REM = 1.25; // .app-main padding
 

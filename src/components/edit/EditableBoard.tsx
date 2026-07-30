@@ -17,6 +17,7 @@ import { SortableContext, arrayMove, rectSortingStrategy } from '@dnd-kit/sortab
 import SortableCategory, { categoryDragId } from './SortableCategory';
 import Picker from './Picker';
 import CategorySettingsModal from './CategorySettingsModal';
+import CanvasEditor from './CanvasEditor';
 import AltIconModal from './AltIconModal';
 import CategoryCard from '../board/CategoryCard';
 import ElementPortrait from '../board/ElementPortrait';
@@ -171,6 +172,30 @@ export default function EditableBoard() {
   const displayById = new Map(displayCategories.map((c) => [c.id, c]));
   const displayLayout = boardLayout({ ...board, categories: displayCategories }, cols);
   const displayLinks = chainLinks(displayCategories, displayLayout);
+
+  // canvas mode places cards freely, so the sortable grid doesn't apply
+  if (board.canvas) {
+    return (
+      <>
+        <CanvasEditor board={board} onOpenSettings={setSettingsCat} onAdd={setPickerCat} />
+        <Picker
+          open={pickerCat !== null}
+          keepOpen
+          previewType={
+            pickerCat
+              ? resolveDisplay(
+                  board.categories.find((c) => c.id === pickerCat) ?? board.categories[0],
+                  board,
+                ).type
+              : board.portraitType
+          }
+          onClose={() => setPickerCat(null)}
+          onPick={(el) => pickerCat && addElement(pickerCat, el)}
+        />
+        <CategorySettingsModal categoryId={settingsCat} onClose={() => setSettingsCat(null)} />
+      </>
+    );
+  }
 
   return (
     <DndContext

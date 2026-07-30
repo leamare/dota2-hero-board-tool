@@ -1,7 +1,8 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { Board, Category, GridElement } from '../types/board';
+import type { Board, CanvasRect, Category, GridElement } from '../types/board';
 import { emptyBoard, genId, newCategory } from '../lib/board';
+import { autoLayout, seedRects, toClassic } from '../lib/canvas';
 
 interface BoardStore {
   board: Board;
@@ -19,6 +20,12 @@ interface BoardStore {
   reorderCategories: (ids: string[]) => void;
   linkCategories: (aId: string, bId: string, orient: 'v' | 'h') => void;
   unlinkCategory: (id: string, orient: 'v' | 'h') => void;
+
+  /** free placement on (seeding rects from the current grid) or off (to classic) */
+  setCanvasMode: (on: boolean) => void;
+  setCategoryRect: (id: string, rect: CanvasRect) => void;
+  /** tidy the canvas: drop overlaps, fill the width, keep the arrangement */
+  applyAutoLayout: () => void;
 
   addElement: (catId: string, element: GridElement) => void;
   removeElement: (catId: string, index: number) => void;
@@ -107,6 +114,52 @@ export const useBoardStore = create<BoardStore>()(
           if (cats.filter((c) => c[key] === group).length === 1)
             cats = cats.map((c) => (c[key] === group ? { ...c, [key]: undefined } : c));
           return { board: { ...s.board, categories: cats } };
+        }),
+
+      setCanvasMode: (on) =>
+        set((s) => {
+          if (on) {
+            // seed from the current grid so nothing jumps on the way in, and
+            // keep any rects the user already arranged
+            const seeded = seedRects(s.board);
+            return {
+              board: {
+                ...s.board,
+                canvas: true,
+                categories: s.board.categories.map((c) => ({
+                  ...c,
+                  rect: c.rect ?? seeded.get(c.id),
+                })),
+              },
+            };
+          }
+          // leaving canvas mode tidies the arrangement, then folds it into the
+          // classic settings (order, columns, widths, sizes). rects are kept so
+          // switching back restores the layout.
+          const tidied = autoLayout(s.board.categories);
+          const withRects = {
+            ...s.board,
+            categories: s.board.categories.map((c) => ({ ...c, rect: tidied.get(c.id) ?? c.rect })),
+          };
+          const { columns, categories } = toClassic(withRects);
+          return { board: { ...withRects, canvas: false, columns, categories } };
+        }),
+
+      setCategoryRect: (id, rect) =>
+        set((s) => ({
+          board: { ...s.board, categories: mapCategory(s.board, id, (c) => ({ ...c, rect })) },
+        })),
+
+      applyAutoLayout: () =>
+        set((s) => {
+          const tidied = autoLayout(s.board.categories);
+          if (tidied.size === 0) return s;
+          return {
+            board: {
+              ...s.board,
+              categories: s.board.categories.map((c) => ({ ...c, rect: tidied.get(c.id) ?? c.rect })),
+            },
+          };
         }),
 
       addElement: (catId, element) =>

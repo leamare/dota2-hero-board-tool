@@ -15,6 +15,8 @@ interface Props {
   style?: CSSProperties;
   /** sides that connect to a linked partner */
   chain?: ChainSides;
+  /** fitted portrait height in px (canvas mode sizes portraits to the box) */
+  portraitPx?: number;
   headerControls?: ReactNode;
   dragHandle?: ReactNode;
   renderElementOverlay?: (index: number) => ReactNode;
@@ -32,6 +34,7 @@ export default function CategoryCard({
   grouped,
   style: cellStyle,
   chain,
+  portraitPx,
   headerControls,
   dragHandle,
   renderElementOverlay,
@@ -71,7 +74,7 @@ export default function CategoryCard({
         {category.elements.length === 0 && !bodyExtra && <span>empty</span>}
         {category.elements.map((el, i) => (
           <div className={`portrait-slot${el.kind === 'break' ? ' break-slot' : ''}`} key={i}>
-            <ElementPortrait element={el} category={category} board={board} />
+            <ElementPortrait element={el} category={category} board={board} sizePx={portraitPx} />
             {renderElementOverlay?.(i)}
           </div>
         ))}

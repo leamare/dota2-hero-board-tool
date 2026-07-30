@@ -8,18 +8,24 @@ interface Props {
   element: GridElement;
   category: Category;
   board: Board;
+  /** explicit portrait height in px — canvas mode fits portraits to the box */
+  sizePx?: number;
 }
 
 /**
  * One box on the grid. Every box in a category shares the same aspect and
- * height (from the category's portrait type + size); heroes fill the box,
- * items / custom icons are contained on a transparent background.
+ * height (from the category's portrait type + size, or a fitted px height on
+ * the canvas); heroes fill the box, items / custom icons are contained on a
+ * transparent background.
  */
-export default function ElementPortrait({ element, category, board }: Props) {
+export default function ElementPortrait({ element, category, board, sizePx }: Props) {
   const meta = useMetadata();
   const { aspect, heightRem, style: styleId } = resolveDisplay(category, board);
 
-  const style: CSSProperties = { aspectRatio: aspect, height: `${heightRem}rem` };
+  const style: CSSProperties = {
+    aspectRatio: aspect,
+    height: sizePx !== undefined ? `${sizePx}px` : `${heightRem}rem`,
+  };
 
   // a break forces the following portraits onto a new line inside the category
   if (element.kind === 'break') {
