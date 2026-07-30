@@ -72,19 +72,31 @@ export function isGameGrid(parsed: unknown): parsed is GameGridFile {
  * — e.g. a Spectre icon becomes `{S:spectre}` — and are turned back into icons
  * on the way in.
  */
-const ICON_LABEL = /^\{S:(.+)\}$/;
+const ICON_LABEL = /^\{S:([^}]+)\}\s*/;
 export const iconLabel = (tag: string): string => `{S:${tag}}`;
 
-/** A label for a category that the game can only store as plain text. */
-function gameLabel(cat: Category, heroTag: (id: number) => string, itemTag: (id: number) => string): string {
-  if (cat.preset !== undefined) return presetLabel(cat.preset);
-  if (cat.text?.trim()) return cat.text.trim();
+/** The `{S:tag}` marker for a category's icon, if it has one. */
+function iconMarker(
+  cat: Category,
+  heroTag: (id: number) => string,
+  itemTag: (id: number) => string,
+): string {
   const icon = cat.icon;
   if (!icon) return '';
   if (icon.kind === 'hero' && icon.refId != null) return iconLabel(heroTag(icon.refId));
   if (icon.kind === 'item' && icon.refId != null) return iconLabel(itemTag(icon.refId));
   if (icon.tag) return iconLabel(icon.tag);
   return '';
+}
+
+/**
+ * A label for a category that the game can only store as plain text. A category
+ * can have both an icon and a name, so the marker is prefixed to the text
+ * rather than replacing it, and both come back on import.
+ */
+function gameLabel(cat: Category, heroTag: (id: number) => string, itemTag: (id: number) => string): string {
+  const text = cat.preset !== undefined ? presetLabel(cat.preset) : (cat.text?.trim() ?? '');
+  return [iconMarker(cat, heroTag, itemTag), text].filter(Boolean).join(' ');
 }
 
 /**
@@ -98,13 +110,16 @@ export const setTagResolver = (fn: TagResolver | null): void => {
   tagResolver = fn;
 };
 
-/** Split a game category name into the label or icon it came from. */
+/** Split a game category name back into the icon and text it came from. */
 function readLabel(name: string): Pick<Category, 'text' | 'icon'> {
-  const match = ICON_LABEL.exec(name.trim());
-  if (!match) return { text: name ?? '' };
+  const trimmed = (name ?? '').trim();
+  const match = ICON_LABEL.exec(trimmed);
+  if (!match) return { text: trimmed };
   const icon = tagResolver?.(match[1]);
   // no metadata to resolve it against — keep the marker as text rather than lose it
-  return icon ? { icon } : { text: name };
+  if (!icon) return { text: trimmed };
+  const rest = trimmed.slice(match[0].length).trim();
+  return rest ? { icon, text: rest } : { icon };
 }
 
 export interface ToGameOptions {

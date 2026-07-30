@@ -246,6 +246,33 @@ describe('game hero_grid_config', () => {
     setTagResolver(null);
   });
 
+  it('keeps both the icon and the name of a category that has both', () => {
+    setTagResolver((tag) => (tag === 'spectre' ? { kind: 'hero', refId: 67 } : null));
+    const board = {
+      ...emptyBoard('Both'),
+      canvas: true,
+      categories: [
+        {
+          id: 'a',
+          text: 'Spectre best girl',
+          icon: { kind: 'hero' as const, refId: 67 },
+          color: '',
+          wideness: 0,
+          rect: { x: 0, y: 0, w: 50, h: 20 },
+          elements: [{ kind: 'hero' as const, refId: 1 }],
+        },
+      ],
+    };
+    const out = toGameGrid([{ id: 'l', name: 'Both', board }], { heroTag: () => 'spectre' });
+    expect(out.configs[0].categories[0].category_name).toBe('{S:spectre} Spectre best girl');
+
+    // and both survive the trip back
+    const back = fromGameGrid(out)[0].board.categories[0];
+    expect(back.icon).toEqual({ kind: 'hero', refId: 67 });
+    expect(back.text).toBe('Spectre best girl');
+    setTagResolver(null);
+  });
+
   it('writes a category icon as {S:tag}', () => {
     const board = {
       ...emptyBoard('Icons'),
