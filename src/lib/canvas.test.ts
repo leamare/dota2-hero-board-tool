@@ -38,13 +38,55 @@ describe('canvasBounds', () => {
 });
 
 describe('fitPortraits', () => {
-  it('fills the box and never exceeds either dimension', () => {
-    const h = fitPortraits({ boxW: 300, boxH: 100, aspect: 1, gap: 0, runs: [6] });
-    // 6 square portraits in 300x100: 6 across → 50px, limited by height 100
-    expect(h).toBeGreaterThan(0);
-    expect(h).toBeLessThanOrEqual(100);
-    const cols = Math.floor(300 / h);
-    expect(cols * Math.ceil(6 / cols) >= 6).toBe(true);
+  /** does everything actually fit, laid out the way flexbox would wrap it? */
+  const fitsInside = (opts: {
+    boxW: number;
+    boxH: number;
+    aspect: number;
+    gap: number;
+    runs: number[];
+    breakPx?: number;
+  }) => {
+    const h = fitPortraits(opts);
+    if (h === 0) return true;
+    const { boxW, boxH, aspect, gap, runs, breakPx = 0 } = opts;
+    const w = h * aspect;
+    // flexbox packs as many as the width allows, then wraps
+    const perRow = Math.max(1, Math.floor((boxW + gap) / (w + gap)));
+    const rows = runs.filter((n) => n > 0).reduce((s, n) => s + Math.ceil(n / perRow), 0);
+    const used = rows * h + (rows - 1) * gap + Math.max(0, runs.filter((n) => n > 0).length - 1) * breakPx;
+    return used <= boxH + 0.01 && w <= boxW + 0.01;
+  };
+
+  it('never overflows, whatever the box and count', () => {
+    const cases = [
+      { boxW: 300, boxH: 100, aspect: 1, gap: 4, runs: [6] },
+      { boxW: 300, boxH: 40, aspect: 16 / 9, runs: [24], gap: 3 }, // many in a short box
+      { boxW: 90, boxH: 400, aspect: 16 / 9, runs: [30], gap: 3 }, // narrow and tall
+      { boxW: 500, boxH: 120, aspect: 235 / 272, runs: [7, 5, 9], gap: 3, breakPx: 19 },
+      { boxW: 120, boxH: 60, aspect: 1, gap: 2, runs: [1] },
+      { boxW: 200, boxH: 55, aspect: 1, gap: 2, runs: [100] }, // absurd count → tiny portraits
+    ];
+    for (const c of cases) {
+      expect(fitPortraits(c)).toBeGreaterThan(0);
+      expect(fitsInside(c)).toBe(true);
+    }
+  });
+
+  it('wraps onto more rows rather than overflowing the width', () => {
+    // 12 wide portraits can't sit on one row in a 300px box
+    const h = fitPortraits({ boxW: 300, boxH: 200, aspect: 16 / 9, gap: 0, runs: [12] });
+    expect(h * (16 / 9)).toBeLessThanOrEqual(300);
+    const perRow = Math.floor(300 / (h * (16 / 9)));
+    expect(perRow).toBeLessThan(12);
+    expect(Math.ceil(12 / perRow) * h).toBeLessThanOrEqual(200 + 0.01);
+  });
+
+  it('shrinks portraits as the count grows in a fixed box', () => {
+    const few = fitPortraits({ boxW: 300, boxH: 100, aspect: 1, gap: 2, runs: [4] });
+    const many = fitPortraits({ boxW: 300, boxH: 100, aspect: 1, gap: 2, runs: [40] });
+    expect(many).toBeLessThan(few);
+    expect(many).toBeGreaterThan(0);
   });
 
   it('grows when the box grows', () => {
@@ -54,9 +96,10 @@ describe('fitPortraits', () => {
   });
 
   it('shrinks portraits when a row break forces extra rows', () => {
-    const one = fitPortraits({ boxW: 300, boxH: 100, aspect: 1, gap: 0, runs: [4] });
+    const one = fitPortraits({ boxW: 300, boxH: 100, aspect: 1, gap: 0, runs: [8] });
     const split = fitPortraits({ boxW: 300, boxH: 100, aspect: 1, gap: 0, runs: [4, 4] });
-    expect(split).toBeLessThan(one);
+    expect(split).toBeLessThanOrEqual(one);
+    expect(fitsInside({ boxW: 300, boxH: 100, aspect: 1, gap: 0, runs: [4, 4] })).toBe(true);
   });
 
   it('handles a degenerate box', () => {

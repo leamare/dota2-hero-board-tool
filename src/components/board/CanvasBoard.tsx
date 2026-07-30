@@ -1,8 +1,7 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
 import type { Board, CanvasRect, Category } from '../../types/board';
-import { canvasBounds, categoryAspect, elementRuns, fitPortraits } from '../../lib/canvas';
-import { resolveDisplay } from '../../lib/board';
+import { canvasBounds, cardInnerBox, categoryAspect, elementRuns, fitPortraits } from '../../lib/canvas';
 import CategoryCard from './CategoryCard';
 
 interface Props {
@@ -55,6 +54,7 @@ export default function CanvasBoard({ board, renderCard, width, onMeasure, child
 
   const bounds = canvasBounds(board.categories);
   const unit = measured / 100; // px per percent
+  const rootPx = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
   const pxHeight = bounds.h * unit;
 
   return (
@@ -82,19 +82,14 @@ export default function CanvasBoard({ board, renderCard, width, onMeasure, child
               height: rect.h * unit,
             };
 
-            // portraits fill the box unless the category pins its own size
-            const runs = elementRuns(category);
-            const portraitPx =
-              category.size !== undefined
-                ? resolveDisplay(category, board).heightRem *
-                  (parseFloat(getComputedStyle(document.documentElement).fontSize) || 16)
-                : fitPortraits({
-                    boxW: rect.w * unit - 12,
-                    boxH: rect.h * unit - 34,
-                    aspect: categoryAspect(category, board),
-                    gap: 3,
-                    runs,
-                  });
+            // portraits always shrink to fit the box — wrapping onto as many
+            // rows as needed — so a card never overflows whatever its size
+            const inner = cardInnerBox(category, rect.w * unit, rect.h * unit, rootPx);
+            const portraitPx = fitPortraits({
+              ...inner,
+              aspect: categoryAspect(category, board),
+              runs: elementRuns(category),
+            });
 
             if (renderCard) return renderCard({ category, rect, style, portraitPx });
             return (

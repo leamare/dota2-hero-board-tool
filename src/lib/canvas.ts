@@ -89,10 +89,17 @@ export function seedRects(board: Board): Map<string, CanvasRect> {
 }
 
 /**
- * Largest portrait height (px) that fits `count` boxes of the given aspect into
- * an inner box, trying every column count and keeping the best. `runs` are the
- * element counts between row breaks; the tightest run wins so a break never
- * overflows.
+ * Largest portrait height (px) at which *every* element still fits inside the
+ * box — wrapping onto as many rows as it takes, and shrinking as far as it has
+ * to. Never overflows.
+ *
+ * For each candidate number of portraits per row, the width constraint fixes a
+ * height, the wrapping fixes how many rows all the runs need together (a row
+ * break starts a new run), and the height constraint fixes another height. The
+ * smaller of the two fits; the best candidate wins.
+ *
+ * `runs` are the element counts between row breaks, and `breakPx` is the
+ * vertical space each divider itself occupies.
  */
 export function fitPortraits(opts: {
   boxW: number;
@@ -100,28 +107,30 @@ export function fitPortraits(opts: {
   aspect: number;
   gap: number;
   runs: number[];
+  breakPx?: number;
 }): number {
-  const { boxW, boxH, aspect, gap, runs } = opts;
+  const { boxW, boxH, aspect, gap, runs, breakPx = 0 } = opts;
   const counts = runs.filter((n) => n > 0);
   if (counts.length === 0 || boxW <= 0 || boxH <= 0) return 0;
 
-  // a break forces its own row, so the runs share the height between them
-  const totalRowsMin = counts.length;
-  let best = Infinity;
+  // dividers eat height before any portrait gets a share of it
+  const dividers = Math.max(0, counts.length - 1) * breakPx;
+  const usableH = boxH - dividers;
+  if (usableH <= 0) return 0;
 
-  for (const n of counts) {
-    const share = (boxH - gap * (totalRowsMin - 1)) / totalRowsMin;
-    let bestForRun = 0;
-    for (let c = 1; c <= n; c++) {
-      const rows = Math.ceil(n / c);
-      const byHeight = (share - gap * (rows - 1)) / rows;
-      const byWidth = (boxW - gap * (c - 1)) / (c * aspect);
-      const h = Math.min(byHeight, byWidth);
-      if (h > bestForRun) bestForRun = h;
-    }
-    best = Math.min(best, bestForRun);
+  const most = Math.max(...counts);
+  let best = 0;
+
+  for (let perRow = 1; perRow <= most; perRow++) {
+    const byWidth = (boxW - gap * (perRow - 1)) / (perRow * aspect);
+    if (byWidth <= 0) continue;
+    // every run wraps independently, so add up the rows they all need
+    const rows = counts.reduce((sum, n) => sum + Math.ceil(n / perRow), 0);
+    const byHeight = (usableH - gap * (rows - 1)) / rows;
+    const h = Math.min(byWidth, byHeight);
+    if (h > best) best = h;
   }
-  return Math.max(0, best === Infinity ? 0 : best);
+  return Math.max(0, best);
 }
 
 interface Band {
@@ -258,3 +267,29 @@ export function elementRuns(category: Category): number[] {
 /** Aspect used for a category's portraits (canvas cards need it too). */
 export const categoryAspect = (category: Category, board: Board): number =>
   portraitType(category.portraitType ?? board.portraitType).aspect;
+
+/* Card chrome, in rem, mirroring board.css so the fit knows the real space:
+   header min-heights per size step, body padding and the gap between boxes. */
+const HEADER_REM = [1.5, 2, 3, 4];
+const BODY_PAD_REM = 0.35;
+const GAP_REM = 0.2;
+const BREAK_REM = 1.2; // 0.2 border + 0.5 margin top and bottom
+
+/** Space available to portraits inside a card of the given px size. */
+export function cardInnerBox(
+  category: Category,
+  boxW: number,
+  boxH: number,
+  rootPx: number,
+): { boxW: number; boxH: number; gap: number; breakPx: number } {
+  const header = HEADER_REM[category.headerSize ?? 1] ?? 2;
+  // a couple of px of slack absorbs sub-pixel rounding of the rem paddings and
+  // borders, so the last row is never clipped by the body's overflow
+  const SLACK = 2;
+  return {
+    boxW: boxW - BODY_PAD_REM * 2 * rootPx - SLACK,
+    boxH: boxH - (header + BODY_PAD_REM * 2) * rootPx - SLACK,
+    gap: GAP_REM * rootPx,
+    breakPx: BREAK_REM * rootPx,
+  };
+}
