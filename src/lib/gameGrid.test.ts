@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { fromGameGrid, isGameGrid, toGameGrid, importStamp, GAME_CANVAS_UNITS } from './gameGrid';
+import {
+  BREAK_CATEGORY_NAME,
+  GAME_CANVAS_UNITS,
+  fromGameGrid,
+  importStamp,
+  isGameGrid,
+  toGameGrid,
+} from './gameGrid';
 import { parseImport } from './importAny';
 import { emptyBoard } from './board';
 import type { GameGridFile } from './gameGrid';
@@ -90,8 +97,12 @@ describe('game hero_grid_config', () => {
     const out = toGameGrid([{ id: 'l', name: 'Mixed', board }], {
       heroTag: (id) => (id === 5 ? 'crystal_maiden' : `h${id}`),
     });
-    expect(out.configs[0].categories[0].category_name).toBe('S:crystal_maiden');
-    expect(out.configs[0].categories[0].hero_ids).toEqual([1, 2]);
+    const cats = out.configs[0].categories;
+    expect(cats[0].category_name).toBe('S:crystal_maiden');
+    // the item and the blank are gone; the break starts a second block
+    expect(cats[0].hero_ids).toEqual([1]);
+    expect(cats[1].category_name).toBe(BREAK_CATEGORY_NAME);
+    expect(cats[1].hero_ids).toEqual([2]);
   });
 
   it('gives a classic grid positions on the way out', () => {
@@ -112,6 +123,77 @@ describe('game hero_grid_config', () => {
     expect(xs[1]).toBeGreaterThan(xs[0]);
     expect(xs[2]).toBeGreaterThan(xs[1]);
     out.configs[0].categories.forEach((c) => expect(c.width).toBeGreaterThan(0));
+  });
+
+  it('makes duplicate grid names unique, since the game keys grids by name', () => {
+    const grid = (name: string) => ({
+      id: name + Math.random(),
+      name,
+      board: { ...emptyBoard(name), canvas: true, categories: [] },
+    });
+    const out = toGameGrid([grid('Draft'), grid('Draft'), grid('Other'), grid('Draft')]);
+    expect(out.configs.map((c) => c.config_name)).toEqual([
+      'Draft',
+      'Draft (2)',
+      'Other',
+      'Draft (3)',
+    ]);
+  });
+
+  it('splits a category on a row break into stacked blocks', () => {
+    const board = {
+      ...emptyBoard('Breaks'),
+      canvas: true,
+      categories: [
+        {
+          id: 'a',
+          text: 'Cores',
+          color: '',
+          wideness: 0,
+          rect: { x: 10, y: 20, w: 40, h: 30 },
+          elements: [
+            { kind: 'hero' as const, refId: 1 },
+            { kind: 'hero' as const, refId: 2 },
+            { kind: 'break' as const },
+            { kind: 'hero' as const, refId: 3 },
+            { kind: 'hero' as const, refId: 4 },
+          ],
+        },
+      ],
+    };
+    const cats = toGameGrid([{ id: 'l', name: 'Breaks', board }]).configs[0].categories;
+    expect(cats).toHaveLength(2);
+
+    const [first, second] = cats;
+    expect(first.category_name).toBe('Cores');
+    expect(first.hero_ids).toEqual([1, 2]);
+    expect(second.category_name).toBe(BREAK_CATEGORY_NAME);
+    expect(second.hero_ids).toEqual([3, 4]);
+
+    // stacked inside the original box: same column, second below the first
+    expect(second.x_position).toBe(first.x_position);
+    expect(second.width).toBe(first.width);
+    expect(second.y_position).toBeCloseTo(first.y_position + first.height, 4);
+    // and together they still cover exactly the original height
+    expect(first.height + second.height).toBeCloseTo(30 / (100 / GAME_CANVAS_UNITS), 3);
+  });
+
+  it('leaves a category without breaks as a single block', () => {
+    const board = {
+      ...emptyBoard('Plain'),
+      canvas: true,
+      categories: [
+        {
+          id: 'a',
+          text: 'Cores',
+          color: '',
+          wideness: 0,
+          rect: { x: 0, y: 0, w: 50, h: 20 },
+          elements: [{ kind: 'hero' as const, refId: 1 }],
+        },
+      ],
+    };
+    expect(toGameGrid([{ id: 'l', name: 'Plain', board }]).configs[0].categories).toHaveLength(1);
   });
 
   it('is picked up by the unified importer', () => {

@@ -76,30 +76,78 @@ export interface ToGameOptions {
   itemTag?: (id: number) => string;
 }
 
-/** Convert saved grids into the game's config file. */
+/** Name the game gives the continuation of a category split by a row break. */
+export const BREAK_CATEGORY_NAME = '------';
+
+/** Hero ids per block, split on row breaks (blocks with no heroes are dropped). */
+function heroBlocks(cat: Category): number[][] {
+  const blocks: number[][] = [[]];
+  for (const el of cat.elements) {
+    if (el.kind === 'break') blocks.push([]);
+    // only heroes exist in the game format; items and blanks are dropped
+    else if (el.kind === 'hero' && el.refId != null) blocks[blocks.length - 1].push(el.refId);
+  }
+  const kept = blocks.filter((b) => b.length > 0);
+  return kept.length ? kept : [[]];
+}
+
+/**
+ * Convert saved grids into the game's config file.
+ *
+ * The game has no row breaks, so a category containing one is written as
+ * several stacked boxes: the first keeps the label, the rest are named
+ * `------` and hold what followed each break. This only applies on the way out
+ * to the game — the canvas conversion leaves breaks alone.
+ */
 export function toGameGrid(layouts: SavedLayout[], opts: ToGameOptions = {}): GameGridFile {
   const heroTag = opts.heroTag ?? ((id) => String(id));
   const itemTag = opts.itemTag ?? ((id) => String(id));
+
+  // the game keys grids by name, so duplicates would shadow each other
+  const usedNames = new Set<string>();
+  const uniqueName = (want: string): string => {
+    const base = want || 'Grid';
+    if (!usedNames.has(base)) {
+      usedNames.add(base);
+      return base;
+    }
+    for (let n = 2; ; n++) {
+      const candidate = `${base} (${n})`;
+      if (!usedNames.has(candidate)) {
+        usedNames.add(candidate);
+        return candidate;
+      }
+    }
+  };
 
   const configs = layouts.map((l) => {
     const board = l.board;
     // the game grid is a canvas, so a classic grid needs positions first
     const seeded = board.canvas ? null : seedRects(board);
-    const categories: GameCategory[] = board.categories.map((cat) => {
+    const categories: GameCategory[] = [];
+
+    for (const cat of board.categories) {
       const rect = cat.rect ?? seeded?.get(cat.id) ?? { x: 0, y: 0, w: 100 / 3, h: 20 };
-      return {
-        category_name: gameLabel(cat, heroTag, itemTag),
-        x_position: +(rect.x / PCT_PER_UNIT).toFixed(6),
-        y_position: +(rect.y / PCT_PER_UNIT).toFixed(6),
-        width: +(rect.w / PCT_PER_UNIT).toFixed(6),
-        height: +(rect.h / PCT_PER_UNIT).toFixed(6),
-        // only heroes exist in the game format; items and blanks are dropped
-        hero_ids: cat.elements
-          .filter((e) => e.kind === 'hero' && e.refId != null)
-          .map((e) => e.refId as number),
-      };
-    });
-    return { config_name: l.name || board.name || 'Grid', categories };
+      const blocks = heroBlocks(cat);
+      const total = blocks.reduce((s, b) => s + b.length, 0) || 1;
+      let y = rect.y;
+
+      blocks.forEach((heroes, i) => {
+        // each block takes the share of the height its heroes need
+        const share = i === blocks.length - 1 ? rect.y + rect.h - y : (heroes.length / total) * rect.h;
+        categories.push({
+          category_name: i === 0 ? gameLabel(cat, heroTag, itemTag) : BREAK_CATEGORY_NAME,
+          x_position: +(rect.x / PCT_PER_UNIT).toFixed(6),
+          y_position: +(y / PCT_PER_UNIT).toFixed(6),
+          width: +(rect.w / PCT_PER_UNIT).toFixed(6),
+          height: +(share / PCT_PER_UNIT).toFixed(6),
+          hero_ids: heroes,
+        });
+        y += share;
+      });
+    }
+
+    return { config_name: uniqueName(l.name || board.name || 'Grid'), categories };
   });
 
   return { version: 3, configs };
