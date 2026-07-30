@@ -2,18 +2,20 @@ import { useMemo, useState } from 'react';
 import Modal from '../ui/Modal';
 import QRCode from '../ui/QRCode';
 import { buildShareUrl } from '../../lib/shareUrl';
+import { downloadJson, downloadText, gridCode } from '../../lib/gridFile';
 import { useBoardStore } from '../../state/boardStore';
 
 export default function ShareModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const board = useBoardStore((s) => s.board);
   const url = useMemo(() => (open ? buildShareUrl(board) : ''), [open, board]);
-  const [copied, setCopied] = useState(false);
+  const code = useMemo(() => (open ? gridCode(board) : ''), [open, board]);
+  const [copied, setCopied] = useState<'link' | 'code' | null>(null);
 
-  const copy = async () => {
+  const copy = async (what: 'link' | 'code') => {
     try {
-      await navigator.clipboard.writeText(url);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
+      await navigator.clipboard.writeText(what === 'link' ? url : code);
+      setCopied(what);
+      setTimeout(() => setCopied(null), 1500);
     } catch {
       /* clipboard blocked — user can still select the text */
     }
@@ -33,11 +35,26 @@ export default function ShareModal({ open, onClose }: { open: boolean; onClose: 
             rows={4}
             onFocus={(e) => e.target.select()}
           />
-          <div style={{ marginTop: '0.75rem', display: 'flex', gap: '0.5rem' }}>
-            <button className="btn primary" onClick={copy}>
-              {copied ? 'Copied!' : 'Copy link'}
+          <div style={{ marginTop: '0.75rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <button className="btn primary" onClick={() => copy('link')}>
+              {copied === 'link' ? 'Copied!' : 'Copy link'}
+            </button>
+            <button className="btn" title="Just the grid code, without the link" onClick={() => copy('code')}>
+              {copied === 'code' ? 'Copied!' : 'Copy code'}
             </button>
             <span className="muted" style={{ alignSelf: 'center' }}>{url.length} characters</span>
+          </div>
+          <div className="share-files">
+            <span className="muted">Save a copy:</span>
+            <button className="btn small" onClick={() => downloadText(board.name, code)}>
+              .txt (code)
+            </button>
+            <button
+              className="btn small"
+              onClick={() => downloadJson(board.name, { name: board.name, board })}
+            >
+              .json
+            </button>
           </div>
         </div>
         {open && <QRCode text={url} />}

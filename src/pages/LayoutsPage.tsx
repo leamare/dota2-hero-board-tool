@@ -10,17 +10,9 @@ import QrScanner from '../components/ui/QrScanner';
 import { useBoardStore } from '../state/boardStore';
 import { useLayoutsStore, type SavedLayout } from '../state/layoutsStore';
 import { useToast } from '../state/ToastProvider';
-import { decodeLayouts, layoutsShareUrl } from '../lib/layoutsShare';
-
-function download(name: string, data: unknown) {
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = name;
-  a.click();
-  URL.revokeObjectURL(url);
-}
+import { encodeLayouts, layoutsShareUrl } from '../lib/layoutsShare';
+import { parseImport } from '../lib/importAny';
+import { downloadJson, downloadText, gridCode } from '../lib/gridFile';
 
 export default function LayoutsPage() {
   const navigate = useNavigate();
@@ -50,7 +42,7 @@ export default function LayoutsPage() {
     const code = params.get('l');
     if (!code) return;
     try {
-      const incoming = decodeLayouts(code);
+      const incoming = parseImport(code);
       importLayouts(incoming);
       toast(`Imported ${incoming.length} grid${incoming.length === 1 ? '' : 's'}`);
     } catch {
@@ -61,16 +53,17 @@ export default function LayoutsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // accepts a link, a bare grid code, JSON from this tool, or legacy JSON
   const doImport = (text: string) => {
     try {
-      const incoming = decodeLayouts(text);
+      const incoming = parseImport(text);
       importLayouts(incoming);
       toast(`Imported ${incoming.length} grid${incoming.length === 1 ? '' : 's'}`);
       setImportOpen(false);
       setScanning(false);
       setImportText('');
-    } catch {
-      toast('Could not read that data', 'info');
+    } catch (e) {
+      toast(e instanceof Error ? e.message : 'Could not read that data', 'info');
     }
   };
 
@@ -102,8 +95,15 @@ export default function LayoutsPage() {
         <button className="btn" onClick={() => setImportOpen(true)}>
           Import
         </button>
-        <button className="btn" onClick={() => download('hero-grids.json', layouts)}>
-          Export file
+        <button className="btn" onClick={() => downloadJson('hero-grids', layouts)}>
+          Export .json
+        </button>
+        <button
+          className="btn"
+          title="All grids as one base64 code"
+          onClick={() => downloadText('hero-grids', encodeLayouts(layouts))}
+        >
+          Export code
         </button>
         <button className="btn" onClick={() => fileRef.current?.click()}>
           Import file
@@ -111,7 +111,7 @@ export default function LayoutsPage() {
         <input
           ref={fileRef}
           type="file"
-          accept="application/json"
+          accept="application/json,text/plain,.json,.txt"
           hidden
           onChange={(e) => {
             const f = e.target.files?.[0];
@@ -148,8 +148,15 @@ export default function LayoutsPage() {
                       >
                         Rename
                       </button>
-                      <button className="btn small" onClick={() => download(`${l.name}.json`, l)}>
+                      <button className="btn small" onClick={() => downloadJson(l.name, l)}>
                         Export
+                      </button>
+                      <button
+                        className="btn small"
+                        title="Save this grid as a base64 code"
+                        onClick={() => downloadText(l.name, gridCode(l.board))}
+                      >
+                        Code
                       </button>
                       <button
                         className="btn small danger"
@@ -198,7 +205,10 @@ export default function LayoutsPage() {
         title="Import grids"
         width="34rem"
       >
-        <p className="muted">Paste a shared link/text, or scan a QR code.</p>
+        <p className="muted">
+          Paste a share link, a grid code, JSON from this tool or from the old version — or scan a
+          QR code.
+        </p>
         <textarea
           className="input"
           style={{ width: '100%' }}

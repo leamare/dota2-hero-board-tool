@@ -755,6 +755,88 @@ body.palette-dragging .sidebar-scrim {
   margin-bottom: 0.4em;
 }
 
+/* ========================================== DOCS PAGE (full width) */
+
+/* like .text-panel but spanning the whole content area, in sections */
+.docs-page {
+  background-color: var(--text-block-bg);
+  line-height: 1.8em;
+}
+.docs-page h1 {
+  font-weight: normal;
+  font-family: sans-serif;
+  color: var(--text-block-caption-color);
+  background-color: var(--text-block-caption-bg);
+  padding: 1rem 2.5rem;
+  margin-bottom: 0;
+  font-size: 2.4rem;
+}
+.docs-body {
+  padding: 1.5rem 2.5rem 2rem;
+  columns: 34rem 2;
+  column-gap: 2.5rem;
+}
+.docs-section {
+  break-inside: avoid-column;
+  margin-bottom: 1.75rem;
+}
+.docs-section h2 {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: var(--menu-link-active);
+  border-bottom: 0.1rem solid var(--cat-outline-hover);
+  padding-bottom: 0.35rem;
+  margin-bottom: 0.75rem;
+}
+.docs-section h3 {
+  font-size: 1rem;
+  font-weight: bold;
+  color: var(--text-block-caption-color);
+  margin: 1rem 0 0.4rem;
+}
+.docs-section p {
+  margin-bottom: 0.9em;
+}
+.docs-section ul {
+  margin: 0 0 1em 1.4em;
+}
+.docs-section li {
+  margin-bottom: 0.35em;
+}
+.docs-section code {
+  font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+  font-size: 0.85em;
+  background: var(--menu-hover);
+  padding: 0.05rem 0.3rem;
+  border-radius: 0.2rem;
+}
+.docs-format code {
+  color: var(--menu-link-active);
+}
+.docs-code {
+  font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  background: var(--cat-head-bg);
+  border: 0.1rem solid var(--cat-outline);
+  border-radius: 0.3rem;
+  padding: 0.75rem 1rem;
+  overflow-x: auto;
+  margin-bottom: 1em;
+  white-space: pre;
+}
+
+@media (max-width: 900px) {
+  .docs-body {
+    columns: 1;
+    padding: 1.25rem 1.25rem 1.75rem;
+  }
+  .docs-page h1 {
+    padding: 0.85rem 1.25rem;
+    font-size: 1.9rem;
+  }
+}
+
 /* ========================================== FORM PRIMITIVES */
 
 .btn {
@@ -952,6 +1034,24 @@ body.palette-dragging .sidebar-scrim {
   padding: 0.35rem 0.5rem;
   margin: -0.35rem -0.5rem;
 }
+/* prose inside dialogs (what's new, notes) */
+.modal-body > p,
+.modal-body > ul {
+  margin-bottom: 0.8em;
+  line-height: 1.55;
+}
+.modal-body > ul {
+  margin-left: 1.2em;
+  list-style: disc;
+}
+.modal-body > ul li {
+  margin-bottom: 0.45em;
+}
+.whatsnew-migrated {
+  background: var(--menu-hover);
+  border-left: 0.2rem solid var(--big-button-color);
+  padding: 0.6rem 0.8rem;
+}
 
 .muted {
   opacity: 0.6;
@@ -972,6 +1072,16 @@ body.palette-dragging .sidebar-scrim {
 .share-main {
   flex: 1;
   min-width: 0;
+}
+.share-files {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 0.1rem solid var(--menu-hover);
+  font-size: 0.85rem;
 }
 .qr {
   flex: 0 0 auto;
