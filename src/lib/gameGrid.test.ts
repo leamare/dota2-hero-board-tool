@@ -5,6 +5,7 @@ import {
   fromGameGrid,
   importStamp,
   isGameGrid,
+  setTagResolver,
   toGameGrid,
 } from './gameGrid';
 import { parseImport } from './importAny';
@@ -73,7 +74,7 @@ describe('game hero_grid_config', () => {
     expect(b.x_position).toBeCloseTo(600, 4);
   });
 
-  it('drops items and blanks, and writes an icon label as S:<name>', () => {
+  it('drops items and blanks, and writes an icon label as {S:name}', () => {
     const board = {
       ...emptyBoard('Mixed'),
       canvas: true,
@@ -98,7 +99,7 @@ describe('game hero_grid_config', () => {
       heroTag: (id) => (id === 5 ? 'crystal_maiden' : `h${id}`),
     });
     const cats = out.configs[0].categories;
-    expect(cats[0].category_name).toBe('S:crystal_maiden');
+    expect(cats[0].category_name).toBe('{S:crystal_maiden}');
     // the item and the blank are gone; the break starts a second block
     expect(cats[0].hero_ids).toEqual([1]);
     expect(cats[1].category_name).toBe(BREAK_CATEGORY_NAME);
@@ -194,6 +195,81 @@ describe('game hero_grid_config', () => {
       ],
     };
     expect(toGameGrid([{ id: 'l', name: 'Plain', board }]).configs[0].categories).toHaveLength(1);
+  });
+
+  it('round-trips an icon label and a row break back into a single category', () => {
+    setTagResolver((tag) => (tag === 'spectre' ? { kind: 'hero', refId: 67 } : null));
+    const file: GameGridFile = {
+      version: 3,
+      configs: [
+        {
+          config_name: 'Icons',
+          categories: [
+            {
+              category_name: '{S:spectre}',
+              x_position: 0,
+              y_position: 0,
+              width: 600,
+              height: 120,
+              hero_ids: [1, 2],
+            },
+            {
+              category_name: BREAK_CATEGORY_NAME,
+              x_position: 0,
+              y_position: 120,
+              width: 600,
+              height: 120,
+              hero_ids: [3],
+            },
+          ],
+        },
+      ],
+    };
+    const [layout] = fromGameGrid(file);
+    // the two boxes came back as one card with a break in the middle
+    expect(layout.board.categories).toHaveLength(1);
+    const cat = layout.board.categories[0];
+    expect(cat.icon).toEqual({ kind: 'hero', refId: 67 });
+    expect(cat.text).toBeUndefined();
+    expect(cat.elements.map((e) => e.kind)).toEqual(['hero', 'hero', 'break', 'hero']);
+    // and it covers both boxes
+    expect(cat.rect!.h).toBeCloseTo((240 / GAME_CANVAS_UNITS) * 100, 5);
+    setTagResolver(null);
+  });
+
+  it('writes a category icon as {S:tag}', () => {
+    const board = {
+      ...emptyBoard('Icons'),
+      canvas: true,
+      categories: [
+        {
+          id: 'a',
+          icon: { kind: 'hero' as const, refId: 67 },
+          color: '',
+          wideness: 0,
+          rect: { x: 0, y: 0, w: 50, h: 20 },
+          elements: [{ kind: 'hero' as const, refId: 1 }],
+        },
+      ],
+    };
+    const out = toGameGrid([{ id: 'l', name: 'Icons', board }], { heroTag: () => 'spectre' });
+    expect(out.configs[0].categories[0].category_name).toBe('{S:spectre}');
+  });
+
+  it('keeps an unresolvable icon marker as text rather than losing it', () => {
+    setTagResolver(null);
+    const file: GameGridFile = {
+      version: 3,
+      configs: [
+        {
+          config_name: 'X',
+          categories: [
+            { category_name: '{S:mystery}', x_position: 0, y_position: 0, width: 100, height: 50, hero_ids: [] },
+          ],
+        },
+      ],
+    };
+    expect(fromGameGrid(file)[0].board.categories[0].text).toBe('{S:mystery}');
   });
 
   it('is picked up by the unified importer', () => {

@@ -1,4 +1,4 @@
-import type { Board, Category } from '../types/board';
+import type { Board, Category, CategoryIcon } from '../types/board';
 import type { SavedLayout } from '../state/layoutsStore';
 import { emptyBoard, genId } from './board';
 import { presetLabel } from './constants';
@@ -58,17 +58,44 @@ export function isGameGrid(parsed: unknown): parsed is GameGridFile {
   );
 }
 
+/**
+ * Icons have no textual form in the game format, so they travel as `{S:<tag>}`
+ * — e.g. a Spectre icon becomes `{S:spectre}` — and are turned back into icons
+ * on the way in.
+ */
+const ICON_LABEL = /^\{S:(.+)\}$/;
+export const iconLabel = (tag: string): string => `{S:${tag}}`;
+
 /** A label for a category that the game can only store as plain text. */
 function gameLabel(cat: Category, heroTag: (id: number) => string, itemTag: (id: number) => string): string {
   if (cat.preset !== undefined) return presetLabel(cat.preset);
   if (cat.text?.trim()) return cat.text.trim();
-  // an icon has no textual form in the game format — keep it recognisable
   const icon = cat.icon;
   if (!icon) return '';
-  if (icon.kind === 'hero' && icon.refId != null) return `S:${heroTag(icon.refId)}`;
-  if (icon.kind === 'item' && icon.refId != null) return `S:${itemTag(icon.refId)}`;
-  if (icon.tag) return `S:${icon.tag}`;
+  if (icon.kind === 'hero' && icon.refId != null) return iconLabel(heroTag(icon.refId));
+  if (icon.kind === 'item' && icon.refId != null) return iconLabel(itemTag(icon.refId));
+  if (icon.tag) return iconLabel(icon.tag);
   return '';
+}
+
+/**
+ * Resolves a courier tag back to a hero or item, so `{S:spectre}` becomes an
+ * icon again. Registered by the metadata provider once names are loaded; until
+ * then the label is kept as plain text.
+ */
+export type TagResolver = (tag: string) => CategoryIcon | null;
+let tagResolver: TagResolver | null = null;
+export const setTagResolver = (fn: TagResolver | null): void => {
+  tagResolver = fn;
+};
+
+/** Split a game category name into the label or icon it came from. */
+function readLabel(name: string): Pick<Category, 'text' | 'icon'> {
+  const match = ICON_LABEL.exec(name.trim());
+  if (!match) return { text: name ?? '' };
+  const icon = tagResolver?.(match[1]);
+  // no metadata to resolve it against — keep the marker as text rather than lose it
+  return icon ? { icon } : { text: name };
 }
 
 export interface ToGameOptions {
@@ -158,22 +185,44 @@ export const importStamp = (d = new Date()): string =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')} ` +
   `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 
-/** Read the game's config file into saved grids. Every one is a canvas grid. */
+/**
+ * Read the game's config file into saved grids. Every one is a canvas grid.
+ *
+ * The two conventions we write out are read back here: `{S:<tag>}` names become
+ * category icons again, and a run of `------` boxes is folded back into the
+ * category above it as row breaks, restoring the original single card.
+ */
 export function fromGameGrid(file: GameGridFile): SavedLayout[] {
   return file.configs.map((cfg) => {
-    const categories: Category[] = cfg.categories.map((c) => ({
-      id: genId(),
-      text: c.category_name ?? '',
-      color: '',
-      wideness: 0,
-      rect: {
+    const categories: Category[] = [];
+    for (const c of cfg.categories) {
+      const rect = {
         x: (c.x_position || 0) * PCT_PER_UNIT,
         y: (c.y_position || 0) * PCT_PER_UNIT,
         w: (c.width || 0) * PCT_PER_UNIT,
         h: (c.height || 0) * PCT_PER_UNIT,
-      },
-      elements: (c.hero_ids ?? []).map((id) => ({ kind: 'hero' as const, refId: id })),
-    }));
+      };
+      const heroes = (c.hero_ids ?? []).map((id) => ({ kind: 'hero' as const, refId: id }));
+      const previous = categories[categories.length - 1];
+
+      if (c.category_name?.trim() === BREAK_CATEGORY_NAME && previous) {
+        // a continuation block: re-join it to the card above with a break
+        previous.elements.push({ kind: 'break' }, ...heroes);
+        const r = previous.rect!;
+        r.h = Math.max(r.h, rect.y + rect.h - r.y);
+        r.w = Math.max(r.w, rect.w);
+        continue;
+      }
+
+      categories.push({
+        id: genId(),
+        ...readLabel(c.category_name ?? ''),
+        color: '',
+        wideness: 0,
+        rect,
+        elements: heroes,
+      });
+    }
 
     const board: Board = {
       ...emptyBoard(cfg.config_name || 'Imported grid'),

@@ -58,7 +58,7 @@ export default function Sidebar() {
   const [tab, setTab] = useState<'settings' | 'heroes'>('settings');
   const [iconModal, setIconModal] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
-  const [gameOpen, setGameOpen] = useState(false);
+  const [gameMode, setGameMode] = useState<'import' | 'export' | null>(null);
   const [saveAsOpen, setSaveAsOpen] = useState(false);
   const [confirmClassic, setConfirmClassic] = useState(false);
   const [confirmCanvas, setConfirmCanvas] = useState(false);
@@ -308,9 +308,16 @@ export default function Sidebar() {
             <button
               className="btn small"
               title={t('sidebar.gameFileHint')}
-              onClick={() => setGameOpen(true)}
+              onClick={() => setGameMode('import')}
             >
-              {t('sidebar.gameFile')}
+              {t('sidebar.gameImport')}
+            </button>
+            <button
+              className="btn small"
+              title={t('sidebar.gameFileHint')}
+              onClick={() => setGameMode('export')}
+            >
+              {t('sidebar.gameExport')}
             </button>
           </div>
           <label className="checkbox">
@@ -479,7 +486,11 @@ export default function Sidebar() {
 
       <BoardIconModal open={iconModal} onClose={() => setIconModal(false)} />
       <ShareModal open={shareOpen} onClose={() => setShareOpen(false)} />
-      <GameGridModal open={gameOpen} onClose={() => setGameOpen(false)} />
+      <GameGridModal
+        open={gameMode !== null}
+        mode={gameMode ?? 'import'}
+        onClose={() => setGameMode(null)}
+      />
       <ConfirmDialog
         open={confirmCanvas}
         title={t('sidebar.canvasEnterTitle')}

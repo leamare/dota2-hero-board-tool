@@ -22,7 +22,7 @@ export const colorIndex = (key: string): number => {
 };
 
 /** Width presets. `basis` is the flex-basis percentage a category occupies. */
-export const WIDENESS: { label: string; basis: number }[] = [
+export const WIDENESS: { label: string; basis: number; fill?: boolean }[] = [
   { label: 'Default', basis: 100 / 3 },
   { label: 'Full', basis: 100 },
   { label: 'Half', basis: 50 },
@@ -30,7 +30,12 @@ export const WIDENESS: { label: string; basis: number }[] = [
   { label: 'Fourth', basis: 25 },
   { label: 'Two thirds', basis: 200 / 3 },
   { label: 'Three fourths', basis: 75 },
+  // stretches to whatever is left in its row — handy for the last category
+  { label: 'Remaining space', basis: 100, fill: true },
 ];
+
+/** Index of the "stretch to the end of the row" width. */
+export const WIDENESS_FILL = WIDENESS.findIndex((w) => w.fill);
 
 /** Preset category names, carried over from the original tool. */
 export const PRESET_NAMES: { value: number; label: string }[] = [

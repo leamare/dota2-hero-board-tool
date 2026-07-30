@@ -176,10 +176,13 @@ export function computeLayout(
     const isChained = !!(c.hGroup || c.vGroup);
 
     if (!isChained) {
-      // standalone: earliest row-major run of `span` free cells
-      const span = Math.min(cols, Math.max(1, spanOf(c)));
-      const cells: Cell[] = [{ id: c.id, r: 0, c: 0, w: span }];
-      const { R, C } = findSpot(cells);
+      const want = spanOf(c);
+      // find the earliest free cell, then take either the requested width or —
+      // for a "remaining space" category — everything left in that row
+      const probe: Cell[] = [{ id: c.id, r: 0, c: 0, w: 1 }];
+      const { R, C } = findSpot(want > 0 ? [{ ...probe[0], w: Math.min(cols, want) }] : probe);
+      let span = want > 0 ? Math.min(cols, want) : 1;
+      if (want <= 0) while (C + span < cols && !taken(R, C + span)) span++;
       for (let u = 0; u < span; u++) take(R, C + u);
       placements.push({ id: c.id, row: R, col: C, colSpan: span });
       placed.add(c.id);
@@ -242,12 +245,17 @@ export function chainLinks(
  */
 export const UNITS_PER_COLUMN = 12;
 
+/** Signals "stretch to the end of the row" to the placement engine. */
+export const FILL_SPAN = 0;
+
 /** Width of a category in layout units, honouring its preset exactly. */
 export function categoryUnits(category: Category, board: Board): number {
   const total = board.columns * UNITS_PER_COLUMN;
   // no preset (or a chained member) = exactly one column
   if (!category.wideness) return UNITS_PER_COLUMN;
-  const basis = WIDENESS[category.wideness]?.basis ?? 100 / board.columns;
+  const preset = WIDENESS[category.wideness];
+  if (preset?.fill) return FILL_SPAN;
+  const basis = preset?.basis ?? 100 / board.columns;
   return Math.min(total, Math.max(1, Math.round((basis / 100) * total)));
 }
 

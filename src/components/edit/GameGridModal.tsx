@@ -18,6 +18,8 @@ import {
 interface Props {
   open: boolean;
   onClose: () => void;
+  /** which half of the exchange to show */
+  mode: 'import' | 'export';
   /** export only the grid being edited instead of every saved grid */
   currentOnly?: boolean;
 }
@@ -26,7 +28,7 @@ interface Props {
  * Import from / export to Dota 2's own `hero_grid_config.json`, with a
  * reminder of where the game keeps it.
  */
-export default function GameGridModal({ open, onClose, currentOnly }: Props) {
+export default function GameGridModal({ open, onClose, mode, currentOnly }: Props) {
   const meta = useMetadata();
   const toast = useToast();
   const board = useBoardStore((s) => s.board);
@@ -62,16 +64,23 @@ export default function GameGridModal({ open, onClose, currentOnly }: Props) {
   };
 
   return (
-    <Modal open={open} onClose={onClose} title="Dota 2 grid file" width="40rem">
+    <Modal
+      open={open}
+      onClose={onClose}
+      title={mode === 'import' ? 'Import game grids' : 'Export game grids'}
+      width="40rem"
+    >
       <p className="muted">
-        The game keeps its hero grids in a single config file. Import it to bring your in-game grids
-        here, or export one to drop into the game.
+        {mode === 'import'
+          ? 'The game keeps every hero grid in one config file. Import it to bring your in-game grids here.'
+          : 'Save your grids as the game\'s own config file, then drop it in next to the one the game wrote.'}
       </p>
       <p className="path-hint">
         <code>{GAME_CONFIG_PATH}</code>
       </p>
 
-      <h4 className="dialog-sub">Import from the game</h4>
+      {mode === 'import' ? (
+        <>
       <FileDropZone accept="application/json,.json" onFile={(f) => f.text().then(doImport)}>
         Drop <code>{GAME_CONFIG_FILENAME}</code> here, or{' '}
         <button className="link-btn" onClick={() => fileRef.current?.click()}>
@@ -102,15 +111,20 @@ export default function GameGridModal({ open, onClose, currentOnly }: Props) {
         Otherwise an imported grid whose name already exists is kept alongside it, stamped with the
         import time.
       </p>
-
-      <h4 className="dialog-sub">Export for the game</h4>
-      <p className="muted">
-        In-game grids only store hero positions, so items, alternate portraits, colours and category
-        icons are dropped. Icons become <code>S:&lt;name&gt;</code> text.
-      </p>
-      <button className="btn primary" onClick={doExport}>
-        Download {GAME_CONFIG_FILENAME}
-      </button>
+        </>
+      ) : (
+        <>
+          <p className="muted">
+            In-game grids only store hero positions, so items, alternate portraits and colours are
+            dropped. A category icon travels as <code>{'{S:spectre}'}</code>, and a row break splits
+            the category into blocks named <code>------</code> — both are restored if you import the
+            file back here.
+          </p>
+          <button className="btn primary" onClick={doExport}>
+            Download {GAME_CONFIG_FILENAME}
+          </button>
+        </>
+      )}
     </Modal>
   );
 }

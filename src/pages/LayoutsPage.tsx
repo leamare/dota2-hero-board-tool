@@ -41,7 +41,7 @@ export default function LayoutsPage() {
   const [importText, setImportText] = useState('');
   const [scanning, setScanning] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<SavedLayout | null>(null);
-  const [gameOpen, setGameOpen] = useState(false);
+  const [gameMode, setGameMode] = useState<'import' | 'export' | null>(null);
 
   const shareUrl = useMemo(() => (shareOpen ? layoutsShareUrl(layouts) : ''), [shareOpen, layouts]);
 
@@ -119,10 +119,17 @@ export default function LayoutsPage() {
         </button>
         <button
           className="btn"
-          title="Import or export Dota 2's hero_grid_config.json"
-          onClick={() => setGameOpen(true)}
+          title="Import Dota 2's hero_grid_config.json"
+          onClick={() => setGameMode('import')}
         >
-          Import game grids
+          Import game config
+        </button>
+        <button
+          className="btn"
+          title="Export as Dota 2's hero_grid_config.json"
+          onClick={() => setGameMode('export')}
+        >
+          Export game config
         </button>
         <input
           ref={fileRef}
@@ -193,7 +200,11 @@ export default function LayoutsPage() {
         </DndContext>
       )}
 
-      <GameGridModal open={gameOpen} onClose={() => setGameOpen(false)} />
+      <GameGridModal
+        open={gameMode !== null}
+        mode={gameMode ?? 'import'}
+        onClose={() => setGameMode(null)}
+      />
 
       <ConfirmDialog
         open={confirmDelete !== null}

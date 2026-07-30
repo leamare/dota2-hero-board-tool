@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { UNITS_PER_COLUMN, boardLayout, computeLayout } from './layout';
+import { WIDENESS_FILL } from './constants';
 import type { Board, Category } from '../types/board';
 
 /** minimal category */
@@ -78,6 +79,25 @@ describe('boardLayout in sub-column units', () => {
     expect(byId.get('a')!.col).toBe(byId.get('b')!.col);
     expect(byId.get('b')!.row).toBe(byId.get('a')!.row + 1);
     expect(byId.get('b')!.colSpan).toBe(UNITS_PER_COLUMN);
+  });
+
+  it('stretches a "remaining space" category to the end of its row', () => {
+    const cats = [cat('a'), { ...cat('rest'), wideness: WIDENESS_FILL }, cat('next')];
+    const p = boardLayout(board(cats, 4));
+    const byId = new Map(p.map((x) => [x.id, x]));
+    const total = 4 * UNITS_PER_COLUMN;
+    // one plain column, then the rest of that row
+    expect(byId.get('a')!.colSpan).toBe(UNITS_PER_COLUMN);
+    expect(byId.get('rest')!.col).toBe(UNITS_PER_COLUMN);
+    expect(byId.get('rest')!.col + byId.get('rest')!.colSpan).toBe(total);
+    // the next category starts a fresh row
+    expect(byId.get('next')!.row).toBe(1);
+    expect(byId.get('next')!.col).toBe(0);
+  });
+
+  it('gives a lone "remaining space" category the whole row', () => {
+    const p = boardLayout(board([{ ...cat('only'), wideness: WIDENESS_FILL }], 3));
+    expect(p[0].colSpan).toBe(3 * UNITS_PER_COLUMN);
   });
 
   it('never overlaps cards in the same row', () => {
