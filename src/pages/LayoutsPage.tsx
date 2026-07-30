@@ -7,6 +7,7 @@ import LayoutRow from '../components/LayoutRow';
 import Modal from '../components/ui/Modal';
 import QRCode from '../components/ui/QRCode';
 import QrScanner from '../components/ui/QrScanner';
+import ShareModal from '../components/edit/ShareModal';
 import { useBoardStore } from '../state/boardStore';
 import { useLayoutsStore, type SavedLayout } from '../state/layoutsStore';
 import { useToast } from '../state/ToastProvider';
@@ -31,6 +32,7 @@ export default function LayoutsPage() {
   };
 
   const [shareOpen, setShareOpen] = useState(false);
+  const [shareGrid, setShareGrid] = useState<SavedLayout | null>(null);
   const [importOpen, setImportOpen] = useState(false);
   const [importText, setImportText] = useState('');
   const [scanning, setScanning] = useState(false);
@@ -131,10 +133,14 @@ export default function LayoutsPage() {
                 <LayoutRow
                   key={l.id}
                   layout={l}
+                  onOpen={() => load(l)}
                   actions={
                     <>
                       <button className="btn small primary" onClick={() => load(l)}>
                         Load
+                      </button>
+                      <button className="btn small" onClick={() => setShareGrid(l)}>
+                        Share
                       </button>
                       <button className="btn small" onClick={() => overwrite(l.id, board)}>
                         Update
@@ -173,7 +179,13 @@ export default function LayoutsPage() {
         </DndContext>
       )}
 
-      <Modal open={shareOpen} onClose={() => setShareOpen(false)} title="Share all grids" width="40rem">
+      <ShareModal
+        open={shareGrid !== null}
+        board={shareGrid?.board}
+        onClose={() => setShareGrid(null)}
+      />
+
+      <Modal open={shareOpen} onClose={() => setShareOpen(false)} title="Share all grids" width="48rem">
         <div className="share-body">
           <div className="share-main">
             <textarea

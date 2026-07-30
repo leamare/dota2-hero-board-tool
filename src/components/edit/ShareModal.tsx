@@ -4,9 +4,18 @@ import QRCode from '../ui/QRCode';
 import { buildShareUrl } from '../../lib/shareUrl';
 import { downloadJson, downloadText, gridCode } from '../../lib/gridFile';
 import { useBoardStore } from '../../state/boardStore';
+import type { Board } from '../../types/board';
 
-export default function ShareModal({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const board = useBoardStore((s) => s.board);
+interface Props {
+  open: boolean;
+  onClose: () => void;
+  /** share this board instead of the one currently being edited */
+  board?: Board;
+}
+
+export default function ShareModal({ open, onClose, board: given }: Props) {
+  const current = useBoardStore((s) => s.board);
+  const board = given ?? current;
   const url = useMemo(() => (open ? buildShareUrl(board) : ''), [open, board]);
   const code = useMemo(() => (open ? gridCode(board) : ''), [open, board]);
   const [copied, setCopied] = useState<'link' | 'code' | null>(null);
@@ -22,7 +31,12 @@ export default function ShareModal({ open, onClose }: { open: boolean; onClose: 
   };
 
   return (
-    <Modal open={open} onClose={onClose} title="Share this grid" width="40rem">
+    <Modal
+      open={open}
+      onClose={onClose}
+      title={given ? `Share "${board.name || 'grid'}"` : 'Share this grid'}
+      width="44rem"
+    >
       <p className="muted" style={{ marginBottom: '0.75rem' }}>
         The whole grid is packed into this link — no server needed.
       </p>
