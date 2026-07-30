@@ -9,6 +9,7 @@ import Modal from '../components/ui/Modal';
 import QRCode from '../components/ui/QRCode';
 import QrScanner from '../components/ui/QrScanner';
 import ShareModal from '../components/edit/ShareModal';
+import ConfirmDialog from '../components/ui/ConfirmDialog';
 import { useBoardStore } from '../state/boardStore';
 import { useLayoutsStore, type SavedLayout } from '../state/layoutsStore';
 import { useToast } from '../state/ToastProvider';
@@ -38,6 +39,7 @@ export default function LayoutsPage() {
   const [importOpen, setImportOpen] = useState(false);
   const [importText, setImportText] = useState('');
   const [scanning, setScanning] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState<SavedLayout | null>(null);
 
   const shareUrl = useMemo(() => (shareOpen ? layoutsShareUrl(layouts) : ''), [shareOpen, layouts]);
 
@@ -169,7 +171,7 @@ export default function LayoutsPage() {
                       </button>
                       <button
                         className="btn small danger"
-                        onClick={() => confirm(`Delete "${l.name}"?`) && remove(l.id)}
+                        onClick={() => setConfirmDelete(l)}
                       >
                         Delete
                       </button>
@@ -181,6 +183,22 @@ export default function LayoutsPage() {
           </SortableContext>
         </DndContext>
       )}
+
+      <ConfirmDialog
+        open={confirmDelete !== null}
+        title="Delete this grid?"
+        confirmLabel="Delete"
+        danger
+        onCancel={() => setConfirmDelete(null)}
+        onConfirm={() => {
+          if (confirmDelete) remove(confirmDelete.id);
+          setConfirmDelete(null);
+        }}
+      >
+        <p>
+          "{confirmDelete?.name}" will be removed from your saved grids. This cannot be undone.
+        </p>
+      </ConfirmDialog>
 
       <ShareModal
         open={shareGrid !== null}

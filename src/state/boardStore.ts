@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware';
 import type { Board, CanvasRect, Category, GridElement } from '../types/board';
 import { emptyBoard, genId, newCategory } from '../lib/board';
 import { autoLayout, seedRects, toClassic } from '../lib/canvas';
+import type { ToCanvasOptions, ToClassicOptions } from '../lib/canvas';
 
 interface BoardStore {
   board: Board;
@@ -22,7 +23,7 @@ interface BoardStore {
   unlinkCategory: (id: string, orient: 'v' | 'h') => void;
 
   /** free placement on (seeding rects from the current grid) or off (to classic) */
-  setCanvasMode: (on: boolean) => void;
+  setCanvasMode: (on: boolean, opts?: ToCanvasOptions & ToClassicOptions) => void;
   setCategoryRect: (id: string, rect: CanvasRect) => void;
   /** tidy the canvas: drop overlaps, fill the width, keep the arrangement */
   applyAutoLayout: () => void;
@@ -116,12 +117,15 @@ export const useBoardStore = create<BoardStore>()(
           return { board: { ...s.board, categories: cats } };
         }),
 
-      setCanvasMode: (on) =>
+      setCanvasMode: (on, opts = {}) =>
         set((s) => {
           if (on) {
             // seed from the current grid so nothing jumps on the way in, and
             // keep any rects the user already arranged
-            const seeded = seedRects(s.board);
+            const seeded = seedRects(s.board, opts);
+            // chains are a grid concept; dropping them here keeps a later
+            // conversion back from silently re-linking things
+            const drop = opts.eraseChains !== false;
             return {
               board: {
                 ...s.board,
@@ -129,6 +133,7 @@ export const useBoardStore = create<BoardStore>()(
                 categories: s.board.categories.map((c) => ({
                   ...c,
                   rect: c.rect ?? seeded.get(c.id),
+                  ...(drop ? { hGroup: undefined, vGroup: undefined } : {}),
                 })),
               },
             };
@@ -142,7 +147,7 @@ export const useBoardStore = create<BoardStore>()(
             ...s.board,
             categories: s.board.categories.map((c) => ({ ...c, rect: tidied.get(c.id) ?? c.rect })),
           };
-          const { columns, categories } = toClassic(withRects);
+          const { columns, categories } = toClassic(withRects, opts);
           return {
             board: {
               ...withRects,

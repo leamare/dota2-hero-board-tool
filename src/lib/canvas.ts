@@ -13,6 +13,22 @@ import { resolveDisplay } from './board';
  * the auto-layout button and the canvas → classic conversion.
  */
 
+/** What to do with the grid's structure when entering canvas mode. */
+export interface ToCanvasOptions {
+  /** lay chained categories out together (default on) */
+  respectChains?: boolean;
+  /** drop the chain links once seeded, so leaving canvas won't re-chain (default on) */
+  eraseChains?: boolean;
+}
+
+/** What to derive from the canvas when going back to a classic grid. */
+export interface ToClassicOptions {
+  /** set each category's portrait size from how big its portraits ended up */
+  adjustSizes?: boolean;
+  /** re-create chains from boxes that ended up adjacent */
+  deduceChains?: boolean;
+}
+
 /** Smallest box a category may be dragged down to, in percent of canvas width. */
 export const MIN_RECT_W = 6;
 export const MIN_RECT_H = 4;
@@ -39,13 +55,17 @@ export function canvasBounds(categories: Category[]): { w: number; h: number } {
  * mode doesn't move anything. Cell widths come from the grid columns; heights
  * are estimated from what each card actually needs at that width.
  */
-export function seedRects(board: Board): Map<string, CanvasRect> {
+export function seedRects(board: Board, opts: ToCanvasOptions = {}): Map<string, CanvasRect> {
   const cols = Math.max(1, board.columns);
-  const placements = boardLayout(board, cols);
+  // ignoring chains lays every category out in plain reading order instead
+  const source = opts.respectChains === false
+    ? { ...board, categories: board.categories.map((c) => ({ ...c, hGroup: undefined, vGroup: undefined })) }
+    : board;
+  const placements = boardLayout(source, cols);
   // placements come back in sub-column units, so a rect is a share of the total
   const unitW = 100 / (cols * UNITS_PER_COLUMN);
   const colW = unitW;
-  const byId = new Map(board.categories.map((c) => [c.id, c]));
+  const byId = new Map(source.categories.map((c) => [c.id, c]));
   const out = new Map<string, CanvasRect>();
 
   // height of one row = the tallest card placed in it
@@ -200,10 +220,10 @@ const nearestIndex = (values: number[], target: number): number =>
  * this aims to be predictable: bands become rows, and proportions snap to the
  * nearest existing preset.
  */
-export function toClassic(board: Board): {
-  columns: number;
-  categories: Category[];
-} {
+export function toClassic(
+  board: Board,
+  opts: ToClassicOptions = {},
+): { columns: number; categories: Category[] } {
   const bands = bandCategories(board.categories);
   const unplaced = board.categories.filter((c) => !c.rect);
 
@@ -229,11 +249,19 @@ export function toClassic(board: Board): {
     const height = Math.max(...band.members.map((c) => c.rect!.h));
     for (const cat of band.members) {
       const r = cat.rect!;
-      // width preset closest to the share of the row this box occupies. one
-      // column wide is "Default" — matching it against the percentage presets
-      // would pick something arbitrary when the column count isn't 2, 3 or 4.
-      const spanCols = Math.max(1, Math.round(r.w / colW));
-      const wideness = spanCols <= 1 ? 0 : nearestIndex(widthValues, Math.min(100, spanCols * colW));
+      // Keep the preset the category already had when it still describes this
+      // width — a "Third" in a 3-column grid must not silently become
+      // "Default" just because both happen to be 33% right now.
+      const currentBasis = cat.wideness ? widthValues[cat.wideness] : colW;
+      const wideness = Math.abs(currentBasis - r.w) < colW / 2
+        ? cat.wideness
+        : // otherwise snap to what the box measures. one column wide is
+          // "Default" — matching against the percentage presets would pick
+          // something arbitrary when the column count isn't 2, 3 or 4.
+          (() => {
+            const spanCols = Math.max(1, Math.round(r.w / colW));
+            return spanCols <= 1 ? 0 : nearestIndex(widthValues, Math.min(100, spanCols * colW));
+          })();
 
       // portrait size closest to what auto-fit was giving it, in rem-ish units
       const { aspect } = resolveDisplay(cat, board);
@@ -248,10 +276,66 @@ export function toClassic(board: Board): {
       const remPct = 100 / 75;
       const size = nearestIndex(sizeValues, fitted / remPct);
 
-      ordered.push({ ...cat, wideness, size, newRow: false });
+      ordered.push({
+        ...cat,
+        wideness,
+        // portrait sizes are only touched when asked for — otherwise the
+        // category keeps whatever it had before the canvas detour
+        ...(opts.adjustSizes ? { size } : {}),
+        newRow: false,
+      });
     }
   }
-  return { columns, categories: [...ordered, ...unplaced] };
+  const all = [...ordered, ...unplaced];
+  return { columns, categories: opts.deduceChains ? deduceChains(all, bands) : all };
+}
+
+/**
+ * Re-create chains from a tidied canvas: boxes sitting side by side in a band
+ * with matching heights read as a horizontal chain, and boxes in the same
+ * column across consecutive bands as a vertical one. Best effort — the canvas
+ * has no explicit link information left to recover.
+ */
+function deduceChains(categories: Category[], bands: Band[]): Category[] {
+  const hOf = new Map<string, string>();
+  const vOf = new Map<string, string>();
+
+  bands.forEach((band, bi) => {
+    // neighbours that touch and are the same height belong together
+    let run: Category[] = [];
+    const flush = () => {
+      if (run.length > 1) run.forEach((m) => hOf.set(m.id, `h${bi}-${run[0].id}`));
+      run = [];
+    };
+    for (const cat of band.members) {
+      const prev = run[run.length - 1];
+      const touching =
+        prev && Math.abs(prev.rect!.x + prev.rect!.w - cat.rect!.x) < 1.5 &&
+        Math.abs(prev.rect!.h - cat.rect!.h) < 1.5;
+      if (prev && !touching) flush();
+      run.push(cat);
+    }
+    flush();
+  });
+
+  // a box directly under one of the same width and column continues a chain
+  for (let i = 1; i < bands.length; i++) {
+    for (const cat of bands[i].members) {
+      const above = bands[i - 1].members.find(
+        (m) => Math.abs(m.rect!.x - cat.rect!.x) < 1.5 && Math.abs(m.rect!.w - cat.rect!.w) < 1.5,
+      );
+      if (!above) continue;
+      const group = vOf.get(above.id) ?? `v${above.id}`;
+      vOf.set(above.id, group);
+      vOf.set(cat.id, group);
+    }
+  }
+
+  return categories.map((c) => ({
+    ...c,
+    hGroup: hOf.get(c.id),
+    vGroup: vOf.get(c.id),
+  }));
 }
 
 /** Element counts between row breaks (a category with no breaks is one run). */

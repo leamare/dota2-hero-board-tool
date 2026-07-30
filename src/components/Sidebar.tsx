@@ -59,6 +59,12 @@ export default function Sidebar() {
   const [shareOpen, setShareOpen] = useState(false);
   const [saveAsOpen, setSaveAsOpen] = useState(false);
   const [confirmClassic, setConfirmClassic] = useState(false);
+  const [confirmCanvas, setConfirmCanvas] = useState(false);
+  // conversion options, remembered between toggles
+  const [toCanvasOpts, setToCanvasOpts] = useState({ respectChains: true, eraseChains: true });
+  const [toClassicOpts, setToClassicOpts] = useState({ adjustSizes: false, deduceChains: false });
+  const [confirmClear, setConfirmClear] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState<{ id: string; name: string } | null>(null);
   const [autosave, setAutosave] = useState(() => localStorage.getItem(AUTOSAVE_KEY) !== '0');
   const firstRun = useRef(true);
 
@@ -94,7 +100,9 @@ export default function Sidebar() {
   };
 
   const doSaveAs = (name: string) => {
-    setCurrentLayoutId(save(name, board));
+    // the saved copy becomes the grid you're working on, so rename it as well
+    patchBoard({ name });
+    setCurrentLayoutId(save(name, { ...board, name }));
     toast(`Saved "${name}"`);
   };
 
@@ -388,7 +396,7 @@ export default function Sidebar() {
           <button
             className="btn small danger"
             style={{ marginTop: '0.5rem' }}
-            onClick={() => confirm('Clear the whole board?') && resetBoard()}
+            onClick={() => setConfirmClear(true)}
           >
             {t('common.clear')}
           </button>
@@ -400,8 +408,8 @@ export default function Sidebar() {
                 role="switch"
                 checked={!!board.canvas}
                 onChange={(e) => {
-                  // leaving canvas mode is lossy, so ask first
-                  if (e.target.checked) setCanvasMode(true);
+                  // both directions reshape the grid, so ask (and offer options)
+                  if (e.target.checked) setConfirmCanvas(true);
                   else setConfirmClassic(true);
                 }}
               />
@@ -446,7 +454,7 @@ export default function Sidebar() {
                       layout={l}
                       active={l.id === currentLayoutId}
                       onLoad={() => loadLayout(l.id)}
-                      onDelete={() => confirm(`Delete "${l.name}"?`) && remove(l.id)}
+                      onDelete={() => setConfirmDelete({ id: l.id, name: l.name })}
                     />
                   ))}
                 </ul>
@@ -461,6 +469,63 @@ export default function Sidebar() {
       <BoardIconModal open={iconModal} onClose={() => setIconModal(false)} />
       <ShareModal open={shareOpen} onClose={() => setShareOpen(false)} />
       <ConfirmDialog
+        open={confirmCanvas}
+        title={t('sidebar.canvasEnterTitle')}
+        confirmLabel={t('sidebar.canvasEnterConfirm')}
+        onCancel={() => setConfirmCanvas(false)}
+        onConfirm={() => {
+          setConfirmCanvas(false);
+          setCanvasMode(true, toCanvasOpts);
+        }}
+      >
+        <p>{t('sidebar.canvasEnterBody')}</p>
+        <label className="checkbox">
+          <input
+            type="checkbox"
+            checked={toCanvasOpts.respectChains}
+            onChange={(e) => setToCanvasOpts((o) => ({ ...o, respectChains: e.target.checked }))}
+          />
+          {t('sidebar.optRespectChains')}
+        </label>
+        <label className="checkbox">
+          <input
+            type="checkbox"
+            checked={toCanvasOpts.eraseChains}
+            onChange={(e) => setToCanvasOpts((o) => ({ ...o, eraseChains: e.target.checked }))}
+          />
+          {t('sidebar.optEraseChains')}
+        </label>
+      </ConfirmDialog>
+
+      <ConfirmDialog
+        open={confirmClear}
+        title={t('confirm.clearTitle')}
+        confirmLabel={t('confirm.clearConfirm')}
+        danger
+        onCancel={() => setConfirmClear(false)}
+        onConfirm={() => {
+          setConfirmClear(false);
+          resetBoard();
+        }}
+      >
+        <p>{t('confirm.clearBody')}</p>
+      </ConfirmDialog>
+
+      <ConfirmDialog
+        open={confirmDelete !== null}
+        title={t('confirm.deleteGridTitle')}
+        confirmLabel={t('confirm.deleteGridConfirm')}
+        danger
+        onCancel={() => setConfirmDelete(null)}
+        onConfirm={() => {
+          if (confirmDelete) remove(confirmDelete.id);
+          setConfirmDelete(null);
+        }}
+      >
+        <p>{t('confirm.deleteGridBody').replace('{name}', confirmDelete?.name ?? '')}</p>
+      </ConfirmDialog>
+
+      <ConfirmDialog
         open={confirmClassic}
         title={t('sidebar.canvasLeaveTitle')}
         confirmLabel={t('sidebar.canvasLeaveConfirm')}
@@ -468,11 +533,27 @@ export default function Sidebar() {
         onCancel={() => setConfirmClassic(false)}
         onConfirm={() => {
           setConfirmClassic(false);
-          setCanvasMode(false);
+          setCanvasMode(false, toClassicOpts);
           toast(t('sidebar.canvasConverted'));
         }}
       >
         <p>{t('sidebar.canvasLeaveBody')}</p>
+        <label className="checkbox">
+          <input
+            type="checkbox"
+            checked={toClassicOpts.adjustSizes}
+            onChange={(e) => setToClassicOpts((o) => ({ ...o, adjustSizes: e.target.checked }))}
+          />
+          {t('sidebar.optAdjustSizes')}
+        </label>
+        <label className="checkbox">
+          <input
+            type="checkbox"
+            checked={toClassicOpts.deduceChains}
+            onChange={(e) => setToClassicOpts((o) => ({ ...o, deduceChains: e.target.checked }))}
+          />
+          {t('sidebar.optDeduceChains')}
+        </label>
       </ConfirmDialog>
 
       <NameDialog
