@@ -1,7 +1,9 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactElement } from 'react';
 import { NavLink, Outlet, Link } from 'react-router-dom';
-import { PARENT_URL, SECTION_HOME } from '../lib/config';
+import { APP_VERSION, PARENT_URL, SECTION_HOME } from '../lib/config';
+import { migrateLegacyData } from '../lib/firstRun';
 import Sidebar from './Sidebar';
+import WhatsNewModal from './ui/WhatsNewModal';
 import { useUiStore, UI_SCALE_STEPS } from '../state/uiStore';
 import { useIsMobile } from '../lib/useIsMobile';
 import { MaxColumnsContext, fitColumns } from '../lib/maxColumns';
@@ -40,6 +42,18 @@ export default function Layout() {
   useEffect(() => {
     document.documentElement.style.setProperty('--ui-scale', String(uiScale));
   }, [uiScale]);
+
+  // one-time upgrade from the old tool, then the what's-new dialog for this
+  // release. runs on mount, after the persisted stores have rehydrated.
+  const lastSeenVersion = useUiStore((s) => s.lastSeenVersion);
+  const markVersionSeen = useUiStore((s) => s.markVersionSeen);
+  const [converted, setConverted] = useState(0);
+  const [whatsNew, setWhatsNew] = useState(false);
+  useEffect(() => {
+    setConverted(migrateLegacyData());
+    if (lastSeenVersion !== APP_VERSION) setWhatsNew(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // how many full categories fit across the board area, so the board can cap
   // its column count to what actually fits (recompute on resize/scale/pin)
@@ -138,6 +152,15 @@ export default function Layout() {
       <footer className="app-footer">
         <a href={PARENT_URL}>spectral.gg</a> — Dota 2 Hero Grid Tool
       </footer>
+
+      <WhatsNewModal
+        open={whatsNew}
+        converted={converted}
+        onClose={() => {
+          setWhatsNew(false);
+          markVersionSeen(APP_VERSION);
+        }}
+      />
     </div>
     </MaxColumnsContext.Provider>
   );

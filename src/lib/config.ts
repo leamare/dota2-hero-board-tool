@@ -6,6 +6,9 @@
  * Nothing is downloaded or bundled — everything is referenced remotely.
  */
 
+/** Bumped when there is something worth showing in the what's-new dialog. */
+export const APP_VERSION = '2.0.0';
+
 export const LRG2_API = 'https://stats.spectral.gg/lrg2/api/';
 
 export const COURIER_BASE = 'https://courier.spectral.gg/images/dota';

@@ -20,6 +20,10 @@ interface UiStore {
   uiScale: number;
   setUiScale: (scale: number) => void;
   bumpUiScale: (dir: 1 | -1) => void;
+
+  /** app version whose what's-new dialog the user has already dismissed */
+  lastSeenVersion: string | null;
+  markVersionSeen: (version: string) => void;
 }
 
 export const useUiStore = create<UiStore>()(
@@ -40,6 +44,9 @@ export const useUiStore = create<UiStore>()(
         const next = UI_SCALE_STEPS[Math.max(0, Math.min(UI_SCALE_STEPS.length - 1, idx + dir))];
         set({ uiScale: next });
       },
+
+      lastSeenVersion: null,
+      markVersionSeen: (version) => set({ lastSeenVersion: version }),
     }),
     { name: 'hgt.ui' },
   ),
