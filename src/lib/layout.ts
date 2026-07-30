@@ -15,7 +15,10 @@ export interface Placement {
 interface Cell {
   id: string;
   r: number;
+  /** column offset, in layout units */
   c: number;
+  /** width in layout units */
+  w: number;
 }
 
 /**
@@ -88,11 +91,18 @@ export function computeLayout(
         if (!known) return;
         const base = coord.get(known.id)!;
         const basePos = chain.indexOf(known);
+        // horizontal neighbours sit after the widths of everything between
+        const offsetTo = (p: number): number => {
+          let sum = 0;
+          if (p > basePos) for (let i = basePos; i < p; i++) sum += spanOf(chain[i]);
+          else for (let i = p; i < basePos; i++) sum -= spanOf(chain[i]);
+          return sum;
+        };
         chain.forEach((m, p) => {
           if (coord.has(m.id)) return;
           const pos =
             orient === 'h'
-              ? { r: base.r, c: base.c + (p - basePos) }
+              ? { r: base.r, c: base.c + offsetTo(p) }
               : { r: base.r + (p - basePos), c: base.c };
           coord.set(m.id, pos);
           changed = true;
@@ -119,7 +129,7 @@ export function computeLayout(
     }
     return members.map((m) => {
       const p = coord.get(m.id)!;
-      return { id: m.id, r: p.r - minR, c: p.c - minC };
+      return { id: m.id, r: p.r - minR, c: p.c - minC, w: spanOf(m) };
     });
   };
 
@@ -127,7 +137,18 @@ export function computeLayout(
   // wider than the board — chains overflow like text
   const wrap = (cells: Cell[]): Cell[] => {
     const ordered = [...cells].sort((a, b) => a.r - b.r || a.c - b.c);
-    return ordered.map((cell, i) => ({ id: cell.id, r: Math.floor(i / cols), c: i % cols }));
+    const out: Cell[] = [];
+    let r = 0;
+    let c = 0;
+    for (const cell of ordered) {
+      if (c + cell.w > cols) {
+        r++;
+        c = 0;
+      }
+      out.push({ ...cell, r, c });
+      c += cell.w;
+    }
+    return out;
   };
 
   // ---- fill: place components/standalones into the occupancy grid ----
@@ -136,14 +157,15 @@ export function computeLayout(
   const take = (r: number, c: number) => occ.add(`${r},${c}`);
 
   const fits = (cells: Cell[], R: number, C: number): boolean =>
-    cells.every(({ r, c }) => {
-      const cc = C + c;
-      return cc >= 0 && cc < cols && !taken(R + r, cc);
+    cells.every(({ r, c, w }) => {
+      if (C + c < 0 || C + c + w > cols) return false;
+      for (let u = 0; u < w; u++) if (taken(R + r, C + c + u)) return false;
+      return true;
     });
   const findSpot = (cells: Cell[]): { R: number; C: number } => {
-    const w = Math.max(...cells.map((c) => c.c)) + 1;
+    const width = Math.max(...cells.map((c) => c.c + c.w));
     for (let R = 0; ; R++)
-      for (let C = 0; C <= cols - w; C++) if (fits(cells, R, C)) return { R, C };
+      for (let C = 0; C <= cols - width; C++) if (fits(cells, R, C)) return { R, C };
   };
 
   const placements: Placement[] = [];
@@ -156,9 +178,9 @@ export function computeLayout(
     if (!isChained) {
       // standalone: earliest row-major run of `span` free cells
       const span = Math.min(cols, Math.max(1, spanOf(c)));
-      const cells: Cell[] = Array.from({ length: span }, (_, s) => ({ id: c.id, r: 0, c: s }));
+      const cells: Cell[] = [{ id: c.id, r: 0, c: 0, w: span }];
       const { R, C } = findSpot(cells);
-      cells.forEach(({ r, c: cx }) => take(R + r, C + cx));
+      for (let u = 0; u < span; u++) take(R, C + u);
       placements.push({ id: c.id, row: R, col: C, colSpan: span });
       placed.add(c.id);
       continue;
@@ -167,12 +189,12 @@ export function computeLayout(
     // place the whole component this category belongs to
     const members = componentOf.get(find(c.id))!;
     let cells = localCells(members);
-    const w = Math.max(...cells.map((x) => x.c)) + 1;
+    const w = Math.max(...cells.map((x) => x.c + x.w));
     if (w > cols) cells = wrap(cells);
     const { R, C } = findSpot(cells);
     for (const cell of cells) {
-      take(R + cell.r, C + cell.c);
-      placements.push({ id: cell.id, row: R + cell.r, col: C + cell.c, colSpan: 1 });
+      for (let u = 0; u < cell.w; u++) take(R + cell.r, C + cell.c + u);
+      placements.push({ id: cell.id, row: R + cell.r, col: C + cell.c, colSpan: cell.w });
       placed.add(cell.id);
     }
   }

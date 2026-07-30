@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { DndContext, PointerSensor, closestCenter, useSensor, useSensors } from '@dnd-kit/core';
 import type { DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
@@ -24,11 +24,12 @@ const AUTOSAVE_KEY = 'hgt.autosave';
 
 export default function Sidebar() {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const toast = useToast();
   const t = useT();
   const maxColumns = useMaxColumns();
 
-  const { sidebarOpen, sidebarPinned, setOpen, toggleOpen, setPinned } = useUiStore();
+  const { sidebarOpen, sidebarPinned, setOpen, toggleOpen, setPinned, lastBoardTab } = useUiStore();
   const isMobile = useIsMobile();
   // on mobile the sidebar is always a plain overlay; pinning only affects desktop
   const pinned = sidebarPinned && !isMobile;
@@ -101,7 +102,8 @@ export default function Sidebar() {
     const l = layouts.find((x) => x.id === id);
     if (!l) return;
     setBoard({ ...l.board }, l.id);
-    navigate('/view');
+    // switching grids while editing keeps you in the editor
+    navigate(pathname.startsWith('/edit') || (!pathname.startsWith('/view') && lastBoardTab === 'edit') ? '/edit' : '/view');
     if (!pinned) setOpen(false);
   };
 
@@ -383,33 +385,6 @@ export default function Sidebar() {
             />
             {t('sidebar.darken')}
           </label>
-          <label className="switch" title={t('sidebar.canvasHint')}>
-            <input
-              type="checkbox"
-              role="switch"
-              checked={!!board.canvas}
-              onChange={(e) => {
-                // leaving canvas mode is lossy, so ask first
-                if (e.target.checked) setCanvasMode(true);
-                else setConfirmClassic(true);
-              }}
-            />
-            <span className="switch-track" aria-hidden="true" />
-            <span className="switch-label">{t('sidebar.canvas')}</span>
-          </label>
-          <p className="field-hint">{t('sidebar.canvasHint')}</p>
-          {board.canvas && (
-            <button
-              className="btn small"
-              style={{ marginTop: '0.5rem' }}
-              onClick={() => {
-                applyAutoLayout();
-                toast(t('sidebar.autoLayoutDone'));
-              }}
-            >
-              {t('sidebar.autoLayout')}
-            </button>
-          )}
           <button
             className="btn small danger"
             style={{ marginTop: '0.5rem' }}
@@ -417,6 +392,35 @@ export default function Sidebar() {
           >
             {t('common.clear')}
           </button>
+
+          <div className="canvas-toggle-block">
+            <label className="switch" title={t('sidebar.canvasHint')}>
+              <input
+                type="checkbox"
+                role="switch"
+                checked={!!board.canvas}
+                onChange={(e) => {
+                  // leaving canvas mode is lossy, so ask first
+                  if (e.target.checked) setCanvasMode(true);
+                  else setConfirmClassic(true);
+                }}
+              />
+              <span className="switch-track" aria-hidden="true" />
+              <span className="switch-label">{t('sidebar.canvas')}</span>
+            </label>
+            <p className="field-hint">{t('sidebar.canvasHint')}</p>
+            {board.canvas && (
+              <button
+                className="btn small"
+                onClick={() => {
+                  applyAutoLayout();
+                  toast(t('sidebar.autoLayoutDone'));
+                }}
+              >
+                {t('sidebar.autoLayout')}
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="sidebar-section" hidden={tab !== 'settings'}>

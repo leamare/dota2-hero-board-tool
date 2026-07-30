@@ -24,6 +24,10 @@ interface UiStore {
   /** app version whose what's-new dialog the user has already dismissed */
   lastSeenVersion: string | null;
   markVersionSeen: (version: string) => void;
+
+  /** the board tab last visited, so loading a grid reopens where you were */
+  lastBoardTab: 'view' | 'edit';
+  setLastBoardTab: (tab: 'view' | 'edit') => void;
 }
 
 export const useUiStore = create<UiStore>()(
@@ -47,6 +51,9 @@ export const useUiStore = create<UiStore>()(
 
       lastSeenVersion: null,
       markVersionSeen: (version) => set({ lastSeenVersion: version }),
+
+      lastBoardTab: 'view',
+      setLastBoardTab: (tab) => set({ lastBoardTab: tab }),
     }),
     { name: 'hgt.ui' },
   ),

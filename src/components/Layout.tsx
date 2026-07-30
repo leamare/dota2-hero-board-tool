@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactElement } from 'react';
-import { NavLink, Outlet, Link } from 'react-router-dom';
+import { NavLink, Outlet, Link, useLocation } from 'react-router-dom';
 import { APP_VERSION, PARENT_URL, SECTION_HOME } from '../lib/config';
 import { migrateLegacyData } from '../lib/firstRun';
 import Sidebar from './Sidebar';
@@ -37,6 +37,14 @@ export default function Layout() {
   const isMobile = useIsMobile();
   const pinned = sidebarPinned && !isMobile;
   const { t, locale, setLocale } = useI18n();
+  const { pathname } = useLocation();
+
+  // remember which board tab you were on, so loading a grid reopens it there
+  const setLastBoardTab = useUiStore((s) => s.setLastBoardTab);
+  useEffect(() => {
+    if (pathname.startsWith('/edit')) setLastBoardTab('edit');
+    else if (pathname.startsWith('/view')) setLastBoardTab('view');
+  }, [pathname, setLastBoardTab]);
 
   // UI scale multiplies the root font-size, so every rem in the app scales
   useEffect(() => {

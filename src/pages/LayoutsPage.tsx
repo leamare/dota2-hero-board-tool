@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useUiStore } from '../state/uiStore';
 import { DndContext, PointerSensor, closestCenter, useSensor, useSensors } from '@dnd-kit/core';
 import type { DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
@@ -17,6 +18,7 @@ import { downloadJson, downloadText, gridCode } from '../lib/gridFile';
 
 export default function LayoutsPage() {
   const navigate = useNavigate();
+  const lastTab = useUiStore((s) => s.lastBoardTab);
   const toast = useToast();
   const [params, setParams] = useSearchParams();
   const board = useBoardStore((s) => s.board);
@@ -77,7 +79,8 @@ export default function LayoutsPage() {
 
   const load = (l: SavedLayout) => {
     setBoard({ ...l.board }, l.id);
-    navigate('/view');
+    // open where the user last was, so coming from Edit keeps editing
+    navigate(lastTab === 'edit' ? '/edit' : '/view');
   };
 
   const onImportFile = async (file: File) => {

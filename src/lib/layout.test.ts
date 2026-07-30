@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { computeLayout } from './layout';
-import type { Category } from '../types/board';
+import { UNITS_PER_COLUMN, boardLayout, computeLayout } from './layout';
+import type { Board, Category } from '../types/board';
 
 /** minimal category */
 const cat = (id: string, extra: Partial<Category> = {}): Category => ({
@@ -33,6 +33,65 @@ function grid(cats: Category[], columns: number): string[] {
   for (const cell of p) g[cell.row][cell.col] = cell.id;
   return g.map((r) => r.join(' '));
 }
+
+describe('boardLayout in sub-column units', () => {
+  const board = (cats: Category[], columns = 3): Board => ({
+    name: 'b',
+    columns,
+    portraitType: 0,
+    itemStyle: 0,
+    size: 0,
+    colorfulLabels: true,
+    centered: false,
+    darkenedBg: true,
+    categories: cats,
+  });
+
+  it('gives a plain category exactly one column of units', () => {
+    const p = boardLayout(board([cat('a'), cat('b'), cat('c')]));
+    p.forEach((x) => expect(x.colSpan).toBe(UNITS_PER_COLUMN));
+    expect(p.map((x) => x.col)).toEqual([0, 12, 24]);
+  });
+
+  it('honours a width preset exactly, not rounded to whole columns', () => {
+    // "Fourth" is index 4 in WIDENESS (25%) — a quarter of 3*12 = 9 units
+    const p = boardLayout(board([{ ...cat('q'), wideness: 4 }]));
+    expect(p[0].colSpan).toBe(9);
+  });
+
+  it('gives chained members a full column each, not a single unit', () => {
+    const a = { ...cat('a'), hGroup: 'h' };
+    const b = { ...cat('b'), hGroup: 'h' };
+    const p = boardLayout(board([a, b, cat('c')]));
+    const byId = new Map(p.map((x) => [x.id, x]));
+    expect(byId.get('a')!.colSpan).toBe(UNITS_PER_COLUMN);
+    expect(byId.get('b')!.colSpan).toBe(UNITS_PER_COLUMN);
+    // and they sit side by side, a full column apart
+    expect(byId.get('b')!.col - byId.get('a')!.col).toBe(UNITS_PER_COLUMN);
+  });
+
+  it('stacks a vertical chain in one column', () => {
+    const a = { ...cat('a'), vGroup: 'v' };
+    const b = { ...cat('b'), vGroup: 'v' };
+    const p = boardLayout(board([a, b]));
+    const byId = new Map(p.map((x) => [x.id, x]));
+    expect(byId.get('a')!.col).toBe(byId.get('b')!.col);
+    expect(byId.get('b')!.row).toBe(byId.get('a')!.row + 1);
+    expect(byId.get('b')!.colSpan).toBe(UNITS_PER_COLUMN);
+  });
+
+  it('never overlaps cards in the same row', () => {
+    const cats = [{ ...cat('wide'), wideness: 2 }, cat('a'), cat('b'), cat('c')];
+    const p = boardLayout(board(cats, 4));
+    const rows = new Map<number, { col: number; colSpan: number }[]>();
+    for (const x of p) (rows.get(x.row) ?? rows.set(x.row, []).get(x.row)!).push(x);
+    for (const cells of rows.values()) {
+      const sorted = [...cells].sort((m, n) => m.col - n.col);
+      for (let i = 1; i < sorted.length; i++)
+        expect(sorted[i].col).toBeGreaterThanOrEqual(sorted[i - 1].col + sorted[i - 1].colSpan);
+    }
+  });
+});
 
 describe('computeLayout', () => {
   it('places the cross with column-aligned chains and blanks at 4 columns', () => {

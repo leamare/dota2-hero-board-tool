@@ -521,6 +521,13 @@ body.palette-dragging .sidebar-scrim {
   margin: -0.15rem 0 0.4rem;
 }
 
+/* canvas mode sits apart from the display settings it doesn't belong to */
+.canvas-toggle-block {
+  margin-top: 1.25rem;
+  padding-top: 0.9rem;
+  border-top: 0.1rem solid var(--cat-outline);
+}
+
 /* toggle switch — a checkbox styled as a sliding tumbler */
 .switch {
   display: flex;

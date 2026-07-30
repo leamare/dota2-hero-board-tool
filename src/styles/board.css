@@ -79,6 +79,8 @@
   opacity: 0.4;
   padding: 2rem;
   font-style: italic;
+  /* a direct child of the board grid — span every sub-column, not just one */
+  grid-column: 1 / -1;
 }
 
 /* ========================================== BOARD LAYOUT */
