@@ -1,5 +1,6 @@
 import type { SavedLayout } from '../state/layoutsStore';
 import { fromBase64Url, toBase64Url } from './bytes';
+import { siteBaseUrl } from './shareUrl';
 
 /** Pack all saved layouts into one URL-safe base64 string. */
 export function encodeLayouts(layouts: SavedLayout[]): string {
@@ -26,5 +27,5 @@ export function decodeLayouts(input: string): SavedLayout[] {
 
 /** Full URL that re-imports all layouts. */
 export function layoutsShareUrl(layouts: SavedLayout[]): string {
-  return `${window.location.origin}/layouts?l=${encodeLayouts(layouts)}`;
+  return `${siteBaseUrl()}layouts?l=${encodeLayouts(layouts)}`;
 }

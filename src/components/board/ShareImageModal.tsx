@@ -4,9 +4,8 @@ import QRCodeLib from 'qrcode';
 import Modal from '../ui/Modal';
 import BoardView from './BoardView';
 import GridIcon from '../GridIcon';
-import { buildShareUrl } from '../../lib/shareUrl';
+import { buildShareUrl, siteBaseLabel } from '../../lib/shareUrl';
 import { downloadDataUrl } from '../../lib/gridFile';
-import { PARENT_URL } from '../../lib/config';
 import type { Board } from '../../types/board';
 
 /** Fixed width of the exported image, so grids look the same for everyone. */
@@ -120,7 +119,7 @@ export default function ShareImageModal({ open, onClose, board }: Props) {
                 {qr && <img className="board-image-qr" src={qr} alt="" width={104} height={104} />}
                 <div className="board-image-credit">
                   <b>Dota 2 Hero Grid Tool</b>
-                  <span>{PARENT_URL.replace(/^https?:\/\//, '')}/herogrid</span>
+                  <span>{siteBaseLabel()}</span>
                   <span className="muted">Scan to open this grid</span>
                 </div>
               </div>
