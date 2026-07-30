@@ -85,7 +85,8 @@
 
 .board {
   display: grid;
-  grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr));
+  /* laid out in sub-columns so width presets are exact (see UNITS_PER_COLUMN) */
+  grid-template-columns: repeat(var(--units, 36), minmax(0, 1fr));
   align-items: stretch; /* categories in a row stretch to the tallest */
   gap: var(--grid-gap);
 }
@@ -337,11 +338,22 @@
 .canvas-card.selected {
   outline: 0.12rem solid var(--sidebar-trigger);
   outline-offset: 0.1rem;
-  z-index: 2;
 }
 .canvas-card.dragging {
   opacity: 0.85;
-  z-index: 3;
+  z-index: 20;
+}
+/* while a card is being moved or resized it owns the pointer — otherwise a
+   neighbour you drag across steals the hover and its handles get in the way */
+.canvas-dragging .canvas-card:not(.dragging) {
+  pointer-events: none;
+}
+.canvas-dragging .canvas-card:not(.dragging) .canvas-handle {
+  opacity: 0;
+}
+/* a selected card floats above its neighbours so its handles stay reachable */
+.canvas-card.selected {
+  z-index: 10;
 }
 .canvas-handle {
   position: absolute;

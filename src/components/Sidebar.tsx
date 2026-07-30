@@ -18,6 +18,7 @@ import PickerGrid from './edit/PickerGrid';
 import BoardIconModal from './edit/BoardIconModal';
 import ShareModal from './edit/ShareModal';
 import NameDialog from './ui/NameDialog';
+import ConfirmDialog from './ui/ConfirmDialog';
 
 const AUTOSAVE_KEY = 'hgt.autosave';
 
@@ -56,6 +57,7 @@ export default function Sidebar() {
   const [iconModal, setIconModal] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [saveAsOpen, setSaveAsOpen] = useState(false);
+  const [confirmClassic, setConfirmClassic] = useState(false);
   const [autosave, setAutosave] = useState(() => localStorage.getItem(AUTOSAVE_KEY) !== '0');
   const firstRun = useRef(true);
 
@@ -381,17 +383,21 @@ export default function Sidebar() {
             />
             {t('sidebar.darken')}
           </label>
-          <label className="checkbox" title="Place categories freely, like the in-game grid">
+          <label className="switch" title={t('sidebar.canvasHint')}>
             <input
               type="checkbox"
+              role="switch"
               checked={!!board.canvas}
               onChange={(e) => {
-                setCanvasMode(e.target.checked);
-                if (!e.target.checked) toast(t('sidebar.canvasConverted'));
+                // leaving canvas mode is lossy, so ask first
+                if (e.target.checked) setCanvasMode(true);
+                else setConfirmClassic(true);
               }}
             />
-            {t('sidebar.canvas')}
+            <span className="switch-track" aria-hidden="true" />
+            <span className="switch-label">{t('sidebar.canvas')}</span>
           </label>
+          <p className="field-hint">{t('sidebar.canvasHint')}</p>
           {board.canvas && (
             <button
               className="btn small"
@@ -450,6 +456,21 @@ export default function Sidebar() {
 
       <BoardIconModal open={iconModal} onClose={() => setIconModal(false)} />
       <ShareModal open={shareOpen} onClose={() => setShareOpen(false)} />
+      <ConfirmDialog
+        open={confirmClassic}
+        title={t('sidebar.canvasLeaveTitle')}
+        confirmLabel={t('sidebar.canvasLeaveConfirm')}
+        danger
+        onCancel={() => setConfirmClassic(false)}
+        onConfirm={() => {
+          setConfirmClassic(false);
+          setCanvasMode(false);
+          toast(t('sidebar.canvasConverted'));
+        }}
+      >
+        <p>{t('sidebar.canvasLeaveBody')}</p>
+      </ConfirmDialog>
+
       <NameDialog
         open={saveAsOpen}
         title="Save grid as"

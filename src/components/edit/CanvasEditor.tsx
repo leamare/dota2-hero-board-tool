@@ -1,10 +1,12 @@
 import { useState } from 'react';
+import type { CSSProperties } from 'react';
 import CanvasBoard from '../board/CanvasBoard';
 import CategoryLabel from '../board/CategoryLabel';
 import ElementPortrait from '../board/ElementPortrait';
 import { useCanvasDrag, HANDLES } from './useCanvasDrag';
 import { useBoardStore } from '../../state/boardStore';
 import { canvasBounds } from '../../lib/canvas';
+import { colorIndex, LABEL_COLORS } from '../../lib/constants';
 import type { Board } from '../../types/board';
 
 interface Props {
@@ -35,6 +37,7 @@ export default function CanvasEditor({ board, onOpenSettings, onAdd }: Props) {
 
   return (
     <div
+      className={activeId ? 'canvas-dragging' : undefined}
       onPointerMove={onPointerMove}
       onPointerUp={endDrag}
       onPointerCancel={endDrag}
@@ -58,11 +61,23 @@ export default function CanvasEditor({ board, onOpenSettings, onAdd }: Props) {
             .filter(Boolean)
             .join(' ');
 
+          // the colour variable the card styles read (CategoryCard sets this
+          // on the read-only path; canvas cards build their own markup)
+          const colorVar = category.color
+            ? `var(--label-${LABEL_COLORS[colorIndex(category.color)].key})`
+            : undefined;
+
           return (
             <div
               key={category.id}
               className={classes}
-              style={{ ...style, position: 'absolute' }}
+              style={
+                {
+                  ...style,
+                  position: 'absolute',
+                  ...(colorVar ? { '--cat-color': colorVar } : {}),
+                } as CSSProperties
+              }
               onPointerDown={() => setSelected(category.id)}
             >
               <div className="cat-head">

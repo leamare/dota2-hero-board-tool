@@ -1,7 +1,7 @@
 import type { Board, CanvasRect, Category } from '../types/board';
 import { SIZES, portraitType } from './images';
 import { WIDENESS } from './constants';
-import { boardLayout } from './layout';
+import { UNITS_PER_COLUMN, boardLayout } from './layout';
 import { resolveDisplay } from './board';
 
 /**
@@ -42,7 +42,9 @@ export function canvasBounds(categories: Category[]): { w: number; h: number } {
 export function seedRects(board: Board): Map<string, CanvasRect> {
   const cols = Math.max(1, board.columns);
   const placements = boardLayout(board, cols);
-  const colW = 100 / cols;
+  // placements come back in sub-column units, so a rect is a share of the total
+  const unitW = 100 / (cols * UNITS_PER_COLUMN);
+  const colW = unitW;
   const byId = new Map(board.categories.map((c) => [c.id, c]));
   const out = new Map<string, CanvasRect>();
 
@@ -227,9 +229,11 @@ export function toClassic(board: Board): {
     const height = Math.max(...band.members.map((c) => c.rect!.h));
     for (const cat of band.members) {
       const r = cat.rect!;
-      // width preset closest to the share of the row this box occupies
+      // width preset closest to the share of the row this box occupies. one
+      // column wide is "Default" — matching it against the percentage presets
+      // would pick something arbitrary when the column count isn't 2, 3 or 4.
       const spanCols = Math.max(1, Math.round(r.w / colW));
-      const wideness = nearestIndex(widthValues, Math.min(100, spanCols * colW));
+      const wideness = spanCols <= 1 ? 0 : nearestIndex(widthValues, Math.min(100, spanCols * colW));
 
       // portrait size closest to what auto-fit was giving it, in rem-ish units
       const { aspect } = resolveDisplay(cat, board);

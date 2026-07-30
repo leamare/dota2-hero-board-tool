@@ -133,16 +133,24 @@ export const useBoardStore = create<BoardStore>()(
               },
             };
           }
-          // leaving canvas mode tidies the arrangement, then folds it into the
-          // classic settings (order, columns, widths, sizes). rects are kept so
-          // switching back restores the layout.
+          // leaving canvas mode tidies the arrangement, folds it into the
+          // classic settings (order, columns, widths, sizes), then drops the
+          // rects — the grid is now the source of truth, so switching back
+          // re-seeds cleanly from it instead of resurrecting a stale canvas.
           const tidied = autoLayout(s.board.categories);
           const withRects = {
             ...s.board,
             categories: s.board.categories.map((c) => ({ ...c, rect: tidied.get(c.id) ?? c.rect })),
           };
           const { columns, categories } = toClassic(withRects);
-          return { board: { ...withRects, canvas: false, columns, categories } };
+          return {
+            board: {
+              ...withRects,
+              canvas: false,
+              columns,
+              categories: categories.map(({ rect: _rect, ...c }) => c),
+            },
+          };
         }),
 
       setCategoryRect: (id, rect) =>

@@ -23,7 +23,7 @@ import CategoryCard from '../board/CategoryCard';
 import ElementPortrait from '../board/ElementPortrait';
 import { useBoardStore } from '../../state/boardStore';
 import { resolveDisplay } from '../../lib/board';
-import { boardLayout, chainLinks } from '../../lib/layout';
+import { UNITS_PER_COLUMN, boardLayout, chainLinks } from '../../lib/layout';
 import { useMaxColumns } from '../../lib/maxColumns';
 import type { CSSProperties } from 'react';
 
@@ -221,7 +221,7 @@ export default function EditableBoard() {
         ]
           .filter(Boolean)
           .join(' ')}
-        style={{ '--cols': cols } as CSSProperties}
+        style={{ '--units': cols * UNITS_PER_COLUMN } as CSSProperties}
       >
         <SortableContext
           items={displayCategories.map((c) => categoryDragId(c.id))}

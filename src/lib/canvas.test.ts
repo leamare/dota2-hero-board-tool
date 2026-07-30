@@ -188,6 +188,38 @@ describe('toClassic', () => {
     expect(basisOf('full')).not.toBe(basisOf('third'));
   });
 
+  it('round-trips a 6-column grid without inventing width presets', () => {
+    // a 6-column board seeded into canvas and folded straight back should come
+    // out as 6 plain columns, not "Fourth" everywhere
+    const cats = Array.from({ length: 12 }, (_, i) => cat(`c${i}`, undefined, hero(3)));
+    const board = boardWith(cats, { columns: 6 });
+    const seeded = seedRects(board);
+    const canvas = boardWith(
+      cats.map((c) => ({ ...c, rect: seeded.get(c.id)! })),
+      { columns: 6, canvas: true },
+    );
+    const { columns, categories } = toClassic(canvas);
+    expect(columns).toBe(6);
+    expect(categories.every((c) => c.wideness === 0)).toBe(true);
+  });
+
+  it('keeps a genuinely wide box wide', () => {
+    const board = boardWith([
+      cat('wide', { x: 0, y: 0, w: 50, h: 20 }),
+      cat('a', { x: 50, y: 0, w: 25, h: 20 }),
+      cat('b', { x: 75, y: 0, w: 25, h: 20 }),
+      cat('c', { x: 0, y: 25, w: 25, h: 20 }),
+      cat('d', { x: 25, y: 25, w: 25, h: 20 }),
+      cat('e', { x: 50, y: 25, w: 25, h: 20 }),
+      cat('f', { x: 75, y: 25, w: 25, h: 20 }),
+    ]);
+    const { columns, categories } = toClassic(board);
+    const byId = new Map(categories.map((c) => [c.id, c]));
+    expect(columns).toBe(4);
+    expect(byId.get('wide')!.wideness).not.toBe(0); // spans two columns
+    expect(byId.get('a')!.wideness).toBe(0);
+  });
+
   it('keeps categories that have no rect', () => {
     const board = boardWith([cat('placed', { x: 0, y: 0, w: 100, h: 20 }), cat('loose')]);
     expect(toClassic(board).categories.map((c) => c.id)).toContain('loose');
@@ -200,7 +232,7 @@ describe('seedRects', () => {
     const seeded = seedRects(board);
     expect(seeded.size).toBe(3);
     const xs = ['a', 'b', 'c'].map((id) => seeded.get(id)!.x);
-    expect(xs).toEqual([0, 100 / 3, (100 / 3) * 2]);
+    [0, 100 / 3, (100 / 3) * 2].forEach((want, i) => expect(xs[i]).toBeCloseTo(want, 5));
     // same row → same y and height
     const ys = ['a', 'b', 'c'].map((id) => seeded.get(id)!.y);
     expect(new Set(ys).size).toBe(1);

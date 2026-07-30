@@ -1,5 +1,5 @@
 import type { Board, Category } from '../types/board';
-import { categorySpan } from './board';
+import { WIDENESS } from './constants';
 
 /** A category's resolved position on the 2D board grid. */
 export interface Placement {
@@ -213,12 +213,29 @@ export function chainLinks(
 }
 
 /**
+ * Sub-columns per real column. The grid is laid out in these finer units so a
+ * width preset means exactly what it says: a "Fourth" is 25% of the board even
+ * when the column count isn't a multiple of four. 12 divides by 2, 3, 4 and 6,
+ * so every preset lands on a whole number of units.
+ */
+export const UNITS_PER_COLUMN = 12;
+
+/** Width of a category in layout units, honouring its preset exactly. */
+export function categoryUnits(category: Category, board: Board): number {
+  const total = board.columns * UNITS_PER_COLUMN;
+  // no preset (or a chained member) = exactly one column
+  if (!category.wideness) return UNITS_PER_COLUMN;
+  const basis = WIDENESS[category.wideness]?.basis ?? 100 / board.columns;
+  return Math.min(total, Math.max(1, Math.round((basis / 100) * total)));
+}
+
+/**
  * Convenience: layout using the board's wideness and a column count (defaults
  * to the board's own, but callers pass the fitted count so a narrow screen
- * uses fewer columns).
+ * uses fewer columns). Placements come back in sub-column units.
  */
 export function boardLayout(board: Board, columns = board.columns): Placement[] {
-  return computeLayout(board.categories, columns, (c) =>
-    c.hGroup || c.vGroup ? 1 : categorySpan(c, board),
+  return computeLayout(board.categories, columns * UNITS_PER_COLUMN, (c) =>
+    c.hGroup || c.vGroup ? UNITS_PER_COLUMN : categoryUnits(c, board),
   );
 }

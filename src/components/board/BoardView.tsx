@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react';
 import type { Board } from '../../types/board';
-import { boardLayout, chainLinks } from '../../lib/layout';
+import { UNITS_PER_COLUMN, boardLayout, chainLinks } from '../../lib/layout';
 import { useMaxColumns } from '../../lib/maxColumns';
 import CanvasBoard from './CanvasBoard';
 import CategoryCard from './CategoryCard';
@@ -38,7 +38,7 @@ export default function BoardView({ board, columns }: Props) {
       ]
         .filter(Boolean)
         .join(' ')}
-      style={{ '--cols': cols } as CSSProperties}
+      style={{ '--units': cols * UNITS_PER_COLUMN } as CSSProperties}
     >
       {layout.map((p) => {
         const category = byId.get(p.id);

@@ -520,6 +520,56 @@ body.palette-dragging .sidebar-scrim {
   opacity: 0.8;
   margin: -0.15rem 0 0.4rem;
 }
+
+/* toggle switch — a checkbox styled as a sliding tumbler */
+.switch {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  cursor: pointer;
+  user-select: none;
+  margin: 0.35rem 0 0.2rem;
+}
+.switch input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.switch-track {
+  position: relative;
+  flex: 0 0 auto;
+  width: 2.1rem;
+  height: 1.1rem;
+  border-radius: 999px;
+  background: var(--menu-selected-borders);
+  transition: background-color 150ms linear;
+}
+.switch-track::after {
+  content: '';
+  position: absolute;
+  top: 0.15rem;
+  left: 0.15rem;
+  width: 0.8rem;
+  height: 0.8rem;
+  border-radius: 50%;
+  background: var(--menu-link);
+  transition: transform 150ms ease, background-color 150ms linear;
+}
+.switch input:checked + .switch-track {
+  background: var(--big-button-color);
+}
+.switch input:checked + .switch-track::after {
+  transform: translateX(1rem);
+  background: #fff;
+}
+.switch input:focus-visible + .switch-track {
+  outline: 0.12rem solid var(--sidebar-trigger);
+  outline-offset: 0.1rem;
+}
+.switch-label {
+  font-size: 0.9rem;
+}
 .sidebar-section h3 {
   font-size: 0.85rem;
   text-transform: uppercase;
