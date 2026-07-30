@@ -1,0 +1,126 @@
+import { describe, expect, it } from 'vitest';
+import { fromGameGrid, isGameGrid, toGameGrid, importStamp, GAME_CANVAS_UNITS } from './gameGrid';
+import { parseImport } from './importAny';
+import { emptyBoard } from './board';
+import type { GameGridFile } from './gameGrid';
+
+// shaped exactly like the file the game writes
+const gameFile: GameGridFile = {
+  version: 3,
+  configs: [
+    {
+      config_name: 'Leamare 740',
+      categories: [
+        {
+          category_name: 'Best heroes',
+          x_position: 0,
+          y_position: 0,
+          width: 456.521759,
+          height: 138.91304,
+          hero_ids: [67, 92, 119, 113, 58],
+        },
+        {
+          category_name: 'Safelane Core',
+          x_position: 600,
+          y_position: 255.652176,
+          width: 393.260864,
+          height: 208.043488,
+          hero_ids: [6, 36, 70],
+        },
+      ],
+    },
+  ],
+};
+
+describe('game hero_grid_config', () => {
+  it('recognises the format and rejects others', () => {
+    expect(isGameGrid(gameFile)).toBe(true);
+    expect(isGameGrid([{ name: 'x', board: emptyBoard() }])).toBe(false);
+    expect(isGameGrid({ version: 3 })).toBe(false);
+  });
+
+  it('imports every config as a canvas grid, scaled to percent of width', () => {
+    const [layout] = fromGameGrid(gameFile);
+    expect(layout.name).toBe('Leamare 740');
+    expect(layout.board.canvas).toBe(true);
+
+    const [first, second] = layout.board.categories;
+    expect(first.text).toBe('Best heroes');
+    expect(first.rect!.x).toBe(0);
+    expect(first.rect!.y).toBe(0);
+    expect(first.rect!.w).toBeCloseTo((456.521759 / GAME_CANVAS_UNITS) * 100, 6);
+    expect(first.rect!.h).toBeCloseTo((138.91304 / GAME_CANVAS_UNITS) * 100, 6);
+    // 600 of 1200 units is the middle of the canvas
+    expect(second.rect!.x).toBeCloseTo(50, 6);
+    expect(first.elements).toEqual([67, 92, 119, 113, 58].map((refId) => ({ kind: 'hero', refId })));
+  });
+
+  it('round-trips positions back to game units', () => {
+    const layouts = fromGameGrid(gameFile);
+    const back = toGameGrid(layouts);
+    expect(back.version).toBe(3);
+    expect(back.configs[0].config_name).toBe('Leamare 740');
+    const [a, b] = back.configs[0].categories;
+    expect(a.width).toBeCloseTo(456.521759, 4);
+    expect(a.hero_ids).toEqual([67, 92, 119, 113, 58]);
+    expect(b.x_position).toBeCloseTo(600, 4);
+  });
+
+  it('drops items and blanks, and writes an icon label as S:<name>', () => {
+    const board = {
+      ...emptyBoard('Mixed'),
+      canvas: true,
+      categories: [
+        {
+          id: 'a',
+          icon: { kind: 'hero' as const, refId: 5 },
+          color: '',
+          wideness: 0,
+          rect: { x: 0, y: 0, w: 50, h: 20 },
+          elements: [
+            { kind: 'hero' as const, refId: 1 },
+            { kind: 'item' as const, refId: 116 },
+            { kind: 'empty' as const },
+            { kind: 'break' as const },
+            { kind: 'hero' as const, refId: 2 },
+          ],
+        },
+      ],
+    };
+    const out = toGameGrid([{ id: 'l', name: 'Mixed', board }], {
+      heroTag: (id) => (id === 5 ? 'crystal_maiden' : `h${id}`),
+    });
+    expect(out.configs[0].categories[0].category_name).toBe('S:crystal_maiden');
+    expect(out.configs[0].categories[0].hero_ids).toEqual([1, 2]);
+  });
+
+  it('gives a classic grid positions on the way out', () => {
+    const board = {
+      ...emptyBoard('Classic'),
+      columns: 3,
+      categories: ['a', 'b', 'c'].map((id) => ({
+        id,
+        text: id,
+        color: '',
+        wideness: 0,
+        elements: [{ kind: 'hero' as const, refId: 1 }],
+      })),
+    };
+    const out = toGameGrid([{ id: 'l', name: 'Classic', board }]);
+    const xs = out.configs[0].categories.map((c) => c.x_position);
+    expect(xs[0]).toBeCloseTo(0, 4);
+    expect(xs[1]).toBeGreaterThan(xs[0]);
+    expect(xs[2]).toBeGreaterThan(xs[1]);
+    out.configs[0].categories.forEach((c) => expect(c.width).toBeGreaterThan(0));
+  });
+
+  it('is picked up by the unified importer', () => {
+    const layouts = parseImport(JSON.stringify(gameFile));
+    expect(layouts).toHaveLength(1);
+    expect(layouts[0].board.canvas).toBe(true);
+  });
+
+  it('stamps imports with a sortable timestamp', () => {
+    expect(importStamp(new Date(2026, 6, 28, 9, 5))).toBe('2026-07-28 09:05');
+  });
+});

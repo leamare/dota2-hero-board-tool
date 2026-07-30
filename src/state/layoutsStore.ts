@@ -20,7 +20,12 @@ interface LayoutsStore {
   /** move the layout at `from` to sit at `to` in the saved list */
   reorder: (from: number, to: number) => void;
   /** merge imported layouts (from a JSON file) */
-  importLayouts: (incoming: SavedLayout[]) => void;
+  /**
+   * Merge imported grids. By default a grid whose name already exists is kept
+   * separate, stamped with the import time; `replaceSameName` overwrites the
+   * existing one instead.
+   */
+  importLayouts: (incoming: SavedLayout[], opts?: { replaceSameName?: boolean; stamp?: string }) => void;
 }
 
 const clone = <T,>(v: T): T =>
@@ -60,13 +65,23 @@ export const useLayoutsStore = create<LayoutsStore>()(
           return { layouts };
         }),
 
-      importLayouts: (incoming) =>
-        set((s) => ({
-          layouts: [
-            ...s.layouts,
-            ...incoming.map((l) => ({ ...clone(l), id: genId() })),
-          ],
-        })),
+      importLayouts: (incoming, opts = {}) =>
+        set((s) => {
+          const layouts = [...s.layouts];
+          for (const raw of incoming) {
+            const copy = { ...clone(raw), id: genId() };
+            const clash = layouts.findIndex((l) => l.name === copy.name);
+            if (clash < 0) {
+              layouts.push(copy);
+            } else if (opts.replaceSameName) {
+              layouts[clash] = { ...copy, id: layouts[clash].id };
+            } else {
+              const name = opts.stamp ? `${copy.name} ${opts.stamp}` : copy.name;
+              layouts.push({ ...copy, name, board: { ...copy.board, name } });
+            }
+          }
+          return { layouts };
+        }),
     }),
     { name: 'hgt.layouts', version: 1 },
   ),

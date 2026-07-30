@@ -1,0 +1,116 @@
+import { useRef, useState } from 'react';
+import Modal from '../ui/Modal';
+import FileDropZone from '../ui/FileDropZone';
+import { useBoardStore } from '../../state/boardStore';
+import { useLayoutsStore } from '../../state/layoutsStore';
+import { useMetadata } from '../../state/MetadataProvider';
+import { useToast } from '../../state/ToastProvider';
+import { downloadJson } from '../../lib/gridFile';
+import {
+  GAME_CONFIG_FILENAME,
+  GAME_CONFIG_PATH,
+  importStamp,
+  isGameGrid,
+  fromGameGrid,
+  toGameGrid,
+} from '../../lib/gameGrid';
+
+interface Props {
+  open: boolean;
+  onClose: () => void;
+  /** export only the grid being edited instead of every saved grid */
+  currentOnly?: boolean;
+}
+
+/**
+ * Import from / export to Dota 2's own `hero_grid_config.json`, with a
+ * reminder of where the game keeps it.
+ */
+export default function GameGridModal({ open, onClose, currentOnly }: Props) {
+  const meta = useMetadata();
+  const toast = useToast();
+  const board = useBoardStore((s) => s.board);
+  const { layouts, importLayouts } = useLayoutsStore();
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [replaceSameName, setReplaceSameName] = useState(false);
+
+  const doExport = () => {
+    const source = currentOnly
+      ? [{ id: 'current', name: board.name || 'Grid', board }]
+      : layouts.length
+        ? layouts
+        : [{ id: 'current', name: board.name || 'Grid', board }];
+    const file = toGameGrid(source, {
+      heroTag: (id) => meta?.heroById.get(id)?.tag ?? String(id),
+      itemTag: (id) => meta?.itemById.get(id)?.tag ?? String(id),
+    });
+    downloadJson(GAME_CONFIG_FILENAME.replace(/\.json$/, ''), file);
+    toast(`Exported ${file.configs.length} grid${file.configs.length === 1 ? '' : 's'}`);
+  };
+
+  const doImport = async (text: string) => {
+    try {
+      const parsed = JSON.parse(text);
+      if (!isGameGrid(parsed)) throw new Error('not a hero grid config');
+      const incoming = fromGameGrid(parsed);
+      importLayouts(incoming, { replaceSameName, stamp: importStamp() });
+      toast(`Imported ${incoming.length} grid${incoming.length === 1 ? '' : 's'} from the game`);
+      onClose();
+    } catch {
+      toast('That file is not a hero_grid_config.json', 'info');
+    }
+  };
+
+  return (
+    <Modal open={open} onClose={onClose} title="Dota 2 grid file" width="40rem">
+      <p className="muted">
+        The game keeps its hero grids in a single config file. Import it to bring your in-game grids
+        here, or export one to drop into the game.
+      </p>
+      <p className="path-hint">
+        <code>{GAME_CONFIG_PATH}</code>
+      </p>
+
+      <h4 className="dialog-sub">Import from the game</h4>
+      <FileDropZone accept="application/json,.json" onFile={(f) => f.text().then(doImport)}>
+        Drop <code>{GAME_CONFIG_FILENAME}</code> here, or{' '}
+        <button className="link-btn" onClick={() => fileRef.current?.click()}>
+          choose a file
+        </button>
+        .
+      </FileDropZone>
+      <input
+        ref={fileRef}
+        type="file"
+        accept="application/json,.json"
+        hidden
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f) f.text().then(doImport);
+          e.target.value = '';
+        }}
+      />
+      <label className="checkbox">
+        <input
+          type="checkbox"
+          checked={replaceSameName}
+          onChange={(e) => setReplaceSameName(e.target.checked)}
+        />
+        Replace grids with the same name
+      </label>
+      <p className="field-hint">
+        Otherwise an imported grid whose name already exists is kept alongside it, stamped with the
+        import time.
+      </p>
+
+      <h4 className="dialog-sub">Export for the game</h4>
+      <p className="muted">
+        In-game grids only store hero positions, so items, alternate portraits, colours and category
+        icons are dropped. Icons become <code>S:&lt;name&gt;</code> text.
+      </p>
+      <button className="btn primary" onClick={doExport}>
+        Download {GAME_CONFIG_FILENAME}
+      </button>
+    </Modal>
+  );
+}

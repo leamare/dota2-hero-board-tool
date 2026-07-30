@@ -4,6 +4,7 @@ import { APP_VERSION, PARENT_URL, SECTION_HOME } from '../lib/config';
 import { migrateLegacyData } from '../lib/firstRun';
 import Sidebar from './Sidebar';
 import WhatsNewModal from './ui/WhatsNewModal';
+import GlobalFileDrop from './ui/GlobalFileDrop';
 import { useUiStore, UI_SCALE_STEPS } from '../state/uiStore';
 import { useIsMobile } from '../lib/useIsMobile';
 import { MaxColumnsContext, fitColumns } from '../lib/maxColumns';
@@ -160,6 +161,8 @@ export default function Layout() {
       <footer className="app-footer">
         <a href={PARENT_URL}>spectral.gg</a> — Dota 2 Hero Grid Tool
       </footer>
+
+      <GlobalFileDrop />
 
       <WhatsNewModal
         open={whatsNew}

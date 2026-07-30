@@ -17,6 +17,7 @@ import SortableLayoutRow from './SortableLayoutRow';
 import PickerGrid from './edit/PickerGrid';
 import BoardIconModal from './edit/BoardIconModal';
 import ShareModal from './edit/ShareModal';
+import GameGridModal from './edit/GameGridModal';
 import NameDialog from './ui/NameDialog';
 import ConfirmDialog from './ui/ConfirmDialog';
 
@@ -57,6 +58,7 @@ export default function Sidebar() {
   const [tab, setTab] = useState<'settings' | 'heroes'>('settings');
   const [iconModal, setIconModal] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
+  const [gameOpen, setGameOpen] = useState(false);
   const [saveAsOpen, setSaveAsOpen] = useState(false);
   const [confirmClassic, setConfirmClassic] = useState(false);
   const [confirmCanvas, setConfirmCanvas] = useState(false);
@@ -301,6 +303,13 @@ export default function Sidebar() {
             <button className="btn small" onClick={() => setShareOpen(true)}>
               {t('common.share')}
             </button>
+            <button
+              className="btn small"
+              title={t('sidebar.gameFileHint')}
+              onClick={() => setGameOpen(true)}
+            >
+              {t('sidebar.gameFile')}
+            </button>
           </div>
           <label className="checkbox">
             <input type="checkbox" checked={autosave} onChange={(e) => setAutosave(e.target.checked)} />
@@ -468,6 +477,7 @@ export default function Sidebar() {
 
       <BoardIconModal open={iconModal} onClose={() => setIconModal(false)} />
       <ShareModal open={shareOpen} onClose={() => setShareOpen(false)} />
+      <GameGridModal open={gameOpen} onClose={() => setGameOpen(false)} />
       <ConfirmDialog
         open={confirmCanvas}
         title={t('sidebar.canvasEnterTitle')}

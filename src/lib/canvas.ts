@@ -281,7 +281,9 @@ export function toClassic(
         wideness,
         // portrait sizes are only touched when asked for — otherwise the
         // category keeps whatever it had before the canvas detour
-        ...(opts.adjustSizes ? { size } : {}),
+        // without the option the canvas detour shouldn't leave per-category
+        // sizes behind — everything falls back to the grid's own setting
+        size: opts.adjustSizes ? size : undefined,
         newRow: false,
       });
     }

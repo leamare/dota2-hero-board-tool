@@ -3,6 +3,7 @@ import type { SavedLayout } from '../state/layoutsStore';
 import { decodeBoard } from './share';
 import { decodeLayouts } from './layoutsShare';
 import { convertLegacyLayouts, isLegacyLayouts, type LegacySettings } from './legacyImport';
+import { fromGameGrid, isGameGrid } from './gameGrid';
 import { genId } from './board';
 
 /**
@@ -22,6 +23,7 @@ export function parseImport(input: string, legacy: LegacySettings = {}): SavedLa
     } catch {
       throw new Error('That looks like JSON but could not be parsed.');
     }
+    if (isGameGrid(parsed)) return fromGameGrid(parsed);
     if (isLegacyLayouts(parsed)) return convertLegacyLayouts(parsed, legacy);
     return asSavedLayouts(parsed);
   }

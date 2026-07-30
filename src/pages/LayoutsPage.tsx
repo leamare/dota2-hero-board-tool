@@ -10,6 +10,7 @@ import QRCode from '../components/ui/QRCode';
 import QrScanner from '../components/ui/QrScanner';
 import ShareModal from '../components/edit/ShareModal';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
+import GameGridModal from '../components/edit/GameGridModal';
 import { useBoardStore } from '../state/boardStore';
 import { useLayoutsStore, type SavedLayout } from '../state/layoutsStore';
 import { useToast } from '../state/ToastProvider';
@@ -40,6 +41,7 @@ export default function LayoutsPage() {
   const [importText, setImportText] = useState('');
   const [scanning, setScanning] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<SavedLayout | null>(null);
+  const [gameOpen, setGameOpen] = useState(false);
 
   const shareUrl = useMemo(() => (shareOpen ? layoutsShareUrl(layouts) : ''), [shareOpen, layouts]);
 
@@ -115,6 +117,13 @@ export default function LayoutsPage() {
         <button className="btn" onClick={() => fileRef.current?.click()}>
           Import file
         </button>
+        <button
+          className="btn"
+          title="Import or export Dota 2's hero_grid_config.json"
+          onClick={() => setGameOpen(true)}
+        >
+          Game file
+        </button>
         <input
           ref={fileRef}
           type="file"
@@ -183,6 +192,8 @@ export default function LayoutsPage() {
           </SortableContext>
         </DndContext>
       )}
+
+      <GameGridModal open={gameOpen} onClose={() => setGameOpen(false)} />
 
       <ConfirmDialog
         open={confirmDelete !== null}
