@@ -227,18 +227,10 @@ export function toClassic(
   const bands = bandCategories(board.categories);
   const unplaced = board.categories.filter((c) => !c.rect);
 
-  // the most common band length is the column count that fits best
-  const counts = new Map<number, number>();
-  for (const b of bands) counts.set(b.members.length, (counts.get(b.members.length) ?? 0) + 1);
-  let columns = 3;
-  let bestSeen = -1;
-  for (const [len, times] of counts) {
-    if (times > bestSeen || (times === bestSeen && len > columns)) {
-      columns = len;
-      bestSeen = times;
-    }
-  }
-  columns = Math.min(6, Math.max(1, columns));
+  // the busiest row decides the column count, so every row can be expressed:
+  // a grid of 2 + 1 + 3 + 2 boxes per row needs 3 columns.
+  const widest = bands.reduce((most, b) => Math.max(most, b.members.length), 1);
+  const columns = Math.min(6, Math.max(1, widest));
 
   const colW = 100 / columns;
   const widthValues = WIDENESS.map((w) => w.basis);
@@ -249,18 +241,24 @@ export function toClassic(
     const height = Math.max(...band.members.map((c) => c.rect!.h));
     for (const cat of band.members) {
       const r = cat.rect!;
-      // Keep the preset the category already had when it still describes this
-      // width — a "Third" in a 3-column grid must not silently become
-      // "Default" just because both happen to be 33% right now.
+      // Match the width the box actually occupies against the presets directly.
+      // Rounding to whole columns first would turn a half-width box in a
+      // 3-column grid into "Two thirds"; the grid is laid out in sub-columns
+      // now, so a preset means exactly its percentage.
       const currentBasis = cat.wideness ? widthValues[cat.wideness] : colW;
-      const wideness = Math.abs(currentBasis - r.w) < colW / 2
-        ? cat.wideness
-        : // otherwise snap to what the box measures. one column wide is
-          // "Default" — matching against the percentage presets would pick
-          // something arbitrary when the column count isn't 2, 3 or 4.
-          (() => {
-            const spanCols = Math.max(1, Math.round(r.w / colW));
-            return spanCols <= 1 ? 0 : nearestIndex(widthValues, Math.min(100, spanCols * colW));
+      const wideness = Math.abs(currentBasis - r.w) < 1.5
+        ? // the preset it already had still describes this box — keep it
+          cat.wideness
+        : (() => {
+            const preset = nearestIndex(widthValues, Math.min(100, r.w));
+            // Lean towards "Default" — a plain column that keeps following the
+            // grid's column count. Hand-drawn rows are never exactly even, and
+            // three roughly-equal boxes should come out as three columns rather
+            // than picking up stray presets, so another preset only wins when
+            // it is closer by a clear margin.
+            const defaultMiss = Math.abs(colW - r.w);
+            const presetMiss = Math.abs(widthValues[preset] - r.w);
+            return defaultMiss - presetMiss > colW / 4 ? preset : 0;
           })();
 
       // portrait size closest to what auto-fit was giving it, in rem-ish units

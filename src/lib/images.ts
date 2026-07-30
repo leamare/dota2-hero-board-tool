@@ -49,6 +49,8 @@ export const SIZES: SizeStep[] = [
 ];
 
 export const DEFAULT_PORTRAIT_TYPE = 0;
+/** Vertical portraits — the default for grids imported from other formats. */
+export const VERTICAL_PORTRAITS = 1;
 export const DEFAULT_ITEM_STYLE = 0;
 export const DEFAULT_SIZE = 0;
 

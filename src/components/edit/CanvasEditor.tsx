@@ -5,7 +5,6 @@ import CategoryLabel from '../board/CategoryLabel';
 import ElementPortrait from '../board/ElementPortrait';
 import { useCanvasDrag, HANDLES } from './useCanvasDrag';
 import { useBoardStore } from '../../state/boardStore';
-import { canvasBounds } from '../../lib/canvas';
 import { colorIndex, LABEL_COLORS } from '../../lib/constants';
 import type { Board } from '../../types/board';
 
@@ -33,7 +32,6 @@ export default function CanvasEditor({ board, onOpenSettings, onAdd }: Props) {
     onChange: setCategoryRect,
   });
 
-  const bounds = canvasBounds(board.categories);
 
   return (
     <div
@@ -145,10 +143,6 @@ export default function CanvasEditor({ board, onOpenSettings, onAdd }: Props) {
           );
         }}
       />
-      <p className="muted canvas-hint">
-        Drag cards to move them, use the handles to resize. Hold <b>Alt</b> to snap to a grid.
-        Canvas is {Math.round(bounds.w)}% × {Math.round(bounds.h)}% of its width.
-      </p>
     </div>
   );
 }

@@ -303,6 +303,8 @@ export default function Sidebar() {
             <button className="btn small" onClick={() => setShareOpen(true)}>
               {t('common.share')}
             </button>
+          </div>
+          <div className="sidebar-actions">
             <button
               className="btn small"
               title={t('sidebar.gameFileHint')}

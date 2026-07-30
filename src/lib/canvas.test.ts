@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { autoLayout, canvasBounds, elementRuns, fitPortraits, seedRects, toClassic } from './canvas';
 import { emptyBoard } from './board';
+import { WIDENESS } from './constants';
 import type { Board, CanvasRect, Category, GridElement } from '../types/board';
 
 const hero = (n: number): GridElement[] =>
@@ -218,6 +219,47 @@ describe('toClassic', () => {
     expect(columns).toBe(4);
     expect(byId.get('wide')!.wideness).not.toBe(0); // spans two columns
     expect(byId.get('a')!.wideness).toBe(0);
+  });
+
+  it('reproduces the shape of a real in-game grid', () => {
+    // "Leamare 728": a 1/3 + 2/3 row, a full-width row, three cores, two supports
+    const board = boardWith([
+      cat('best', { x: 0, y: 0, w: 33.3, h: 20 }),
+      cat('practice', { x: 33.3, y: 0, w: 66.7, h: 20 }),
+      cat('bans', { x: 0, y: 22, w: 100, h: 15 }),
+      cat('safe', { x: 0, y: 40, w: 33.3, h: 18 }),
+      cat('mid', { x: 33.3, y: 40, w: 33.3, h: 18 }),
+      cat('off', { x: 66.6, y: 40, w: 33.4, h: 18 }),
+      cat('pos4', { x: 0, y: 60, w: 50, h: 18 }),
+      cat('pos5', { x: 50, y: 60, w: 50, h: 18 }),
+    ]);
+    const { columns, categories } = toClassic(board);
+    const w = new Map(categories.map((c) => [c.id, c.wideness]));
+    const basis = (id: string) => WIDENESS[w.get(id)!].basis;
+
+    // the busiest row has three boxes
+    expect(columns).toBe(3);
+    // 1/3 + 2/3
+    expect(w.get('best')).toBe(0); // one plain column
+    expect(basis('practice')).toBeCloseTo(200 / 3, 1);
+    // full width
+    expect(basis('bans')).toBe(100);
+    // three cores, each a plain column
+    ['safe', 'mid', 'off'].forEach((id) => expect(w.get(id)).toBe(0));
+    // two halves — not "two thirds", which is what column rounding used to give
+    ['pos4', 'pos5'].forEach((id) => expect(basis(id)).toBe(50));
+  });
+
+  it('keeps a Third from decaying into Default and back', () => {
+    const board = boardWith(
+      [
+        { ...cat('third', { x: 0, y: 0, w: 33.3, h: 20 }), wideness: 3 },
+        cat('a', { x: 33.3, y: 0, w: 33.3, h: 20 }),
+        cat('b', { x: 66.6, y: 0, w: 33.4, h: 20 }),
+      ],
+      { columns: 3 },
+    );
+    expect(toClassic(board).categories.find((c) => c.id === 'third')!.wideness).toBe(3);
   });
 
   it('keeps categories that have no rect', () => {

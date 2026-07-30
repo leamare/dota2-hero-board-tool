@@ -2,6 +2,7 @@ import type { Board, Category, GridElement } from '../types/board';
 import type { SavedLayout } from '../state/layoutsStore';
 import { emptyBoard, genId } from './board';
 import { LABEL_COLORS, WIDENESS } from './constants';
+import { VERTICAL_PORTRAITS } from './images';
 
 /**
  * Import support for grids made with the original AngularJS tool.
@@ -122,6 +123,8 @@ export function convertLegacyLayouts(parsed: unknown, settings: LegacySettings =
     const board: Board = {
       ...emptyBoard(l.name?.trim() || `Imported grid ${i + 1}`),
       icon: l.tag || '',
+      // the old format has no portrait style either — vertical reads best
+      portraitType: VERTICAL_PORTRAITS,
       categories: (l.categories ?? []).map(convertCategory),
     };
     if (settings.columns) board.columns = settings.columns;

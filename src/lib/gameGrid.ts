@@ -3,6 +3,7 @@ import type { SavedLayout } from '../state/layoutsStore';
 import { emptyBoard, genId } from './board';
 import { presetLabel } from './constants';
 import { seedRects } from './canvas';
+import { VERTICAL_PORTRAITS } from './images';
 
 /**
  * Dota 2's own `hero_grid_config.json`, as written by the game client:
@@ -130,6 +131,8 @@ export function fromGameGrid(file: GameGridFile): SavedLayout[] {
       ...emptyBoard(cfg.config_name || 'Imported grid'),
       // in-game grids are freeform, so they arrive as canvas grids
       canvas: true,
+      // the file carries no portrait style; vertical reads best for imports
+      portraitType: VERTICAL_PORTRAITS,
       categories,
     };
     return { id: genId(), name: board.name, board };

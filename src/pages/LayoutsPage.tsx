@@ -122,7 +122,7 @@ export default function LayoutsPage() {
           title="Import or export Dota 2's hero_grid_config.json"
           onClick={() => setGameOpen(true)}
         >
-          Game file
+          Import game grids
         </button>
         <input
           ref={fileRef}
