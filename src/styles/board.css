@@ -4,12 +4,35 @@
   gap: 1rem;
   margin-bottom: 1rem;
 }
+.board-titles {
+  min-width: 0;
+}
+/* the author line and blurb mirror what the exported image shows */
+.board-author {
+  color: var(--menu-link);
+  font-size: 0.95rem;
+  margin-top: 0.15rem;
+}
+.board-desc {
+  margin-top: 0.35rem;
+  max-width: 70rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
 .view-head.centered {
   justify-content: center;
   position: relative;
 }
 .view-head.centered .board-name {
   text-align: center;
+}
+.view-head.centered .board-titles {
+  text-align: center;
+}
+.view-head.centered .board-desc {
+  margin-left: auto;
+  margin-right: auto;
 }
 .view-head.centered .view-actions {
   position: absolute;

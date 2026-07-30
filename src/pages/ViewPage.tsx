@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import BoardView from '../components/board/BoardView';
-import GridIcon from '../components/GridIcon';
+import BoardHeading from '../components/board/BoardHeading';
 import ShareModal from '../components/edit/ShareModal';
 import ShareImageModal from '../components/board/ShareImageModal';
 import { useBoardStore } from '../state/boardStore';
@@ -18,23 +18,22 @@ export default function ViewPage() {
 
   return (
     <div className="view-page">
-      <div className={`view-head${board.centered ? ' centered' : ''}`}>
-        <h1 className="board-name">
-          <GridIcon tag={board.icon} />
-          {board.name}
-        </h1>
-        <div className="view-actions">
-          <Link className="btn" to="/edit">
-            Edit
-          </Link>
-          <button className="btn" onClick={() => setImageOpen(true)}>
-            Image
-          </button>
-          <button className="btn primary" onClick={() => setShareOpen(true)}>
-            Share
-          </button>
-        </div>
-      </div>
+      <BoardHeading
+        board={board}
+        actions={
+          <>
+            <Link className="btn" to="/edit">
+              Edit
+            </Link>
+            <button className="btn" onClick={() => setImageOpen(true)}>
+              Image
+            </button>
+            <button className="btn primary" onClick={() => setShareOpen(true)}>
+              Share
+            </button>
+          </>
+        }
+      />
       <BoardView board={board} />
       <ShareModal open={shareOpen} onClose={() => setShareOpen(false)} />
       <ShareImageModal open={imageOpen} onClose={() => setImageOpen(false)} board={board} />

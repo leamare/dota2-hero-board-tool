@@ -1,5 +1,5 @@
 import EditableBoard from '../components/edit/EditableBoard';
-import GridIcon from '../components/GridIcon';
+import BoardHeading from '../components/board/BoardHeading';
 import { useBoardStore } from '../state/boardStore';
 import { useMetadataState } from '../state/MetadataProvider';
 import { useT } from '../lib/i18n';
@@ -15,17 +15,15 @@ export default function EditPage() {
 
   return (
     <div className="edit-page">
-      <div className={`view-head${board.centered ? ' centered' : ''}`}>
-        <h1 className="board-name">
-          <GridIcon tag={board.icon} />
-          {board.name || 'Untitled grid'}
-        </h1>
-        <div className="view-actions">
+      <BoardHeading
+        board={board}
+        fallbackName="Untitled grid"
+        actions={
           <button className="btn primary" onClick={addCategory}>
             ＋ {t('common.category')}
           </button>
-        </div>
-      </div>
+        }
+      />
       {board.categories.length === 0 && (
         <p className="board-empty">{t('edit.addCategoryHint')}</p>
       )}
