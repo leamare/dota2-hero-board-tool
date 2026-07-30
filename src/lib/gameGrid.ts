@@ -24,6 +24,15 @@ import { VERTICAL_PORTRAITS } from './images';
 export const GAME_CANVAS_UNITS = 1200;
 const PCT_PER_UNIT = 100 / GAME_CANVAS_UNITS;
 
+/**
+ * Breathing room left below every box on the way out, in game units. Our rows
+ * sit flush against each other, which crowds the category names in the client;
+ * carving a little off each height separates them without moving anything.
+ * Importing adds it straight back, so a round trip returns the original.
+ */
+export const GAME_ROW_GAP_UNITS = 12;
+const GAP_PCT = GAME_ROW_GAP_UNITS * PCT_PER_UNIT;
+
 /** Where the game keeps the file, shown in the import/export dialogs. */
 export const GAME_CONFIG_PATH =
   '<Steam install folder>/userdata/<steam account ID>/570/remote/cfg/hero_grid_config.json';
@@ -162,12 +171,14 @@ export function toGameGrid(layouts: SavedLayout[], opts: ToGameOptions = {}): Ga
       blocks.forEach((heroes, i) => {
         // each block takes the share of the height its heroes need
         const share = i === blocks.length - 1 ? rect.y + rect.h - y : (heroes.length / total) * rect.h;
+        // leave a gap under the box, but never shrink it past being usable
+        const drawn = Math.max(share * 0.6, share - GAP_PCT);
         categories.push({
           category_name: i === 0 ? gameLabel(cat, heroTag, itemTag) : BREAK_CATEGORY_NAME,
           x_position: +(rect.x / PCT_PER_UNIT).toFixed(6),
           y_position: +(y / PCT_PER_UNIT).toFixed(6),
           width: +(rect.w / PCT_PER_UNIT).toFixed(6),
-          height: +(share / PCT_PER_UNIT).toFixed(6),
+          height: +(drawn / PCT_PER_UNIT).toFixed(6),
           hero_ids: heroes,
         });
         y += share;
@@ -200,7 +211,8 @@ export function fromGameGrid(file: GameGridFile): SavedLayout[] {
         x: (c.x_position || 0) * PCT_PER_UNIT,
         y: (c.y_position || 0) * PCT_PER_UNIT,
         w: (c.width || 0) * PCT_PER_UNIT,
-        h: (c.height || 0) * PCT_PER_UNIT,
+        // the gap we leave on the way out belongs to the card, so take it back
+        h: (c.height || 0) * PCT_PER_UNIT + GAP_PCT,
       };
       const heroes = (c.hero_ids ?? []).map((id) => ({ kind: 'hero' as const, refId: id }));
       const previous = categories[categories.length - 1];

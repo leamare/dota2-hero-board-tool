@@ -4,6 +4,7 @@ import {
   GAME_CANVAS_UNITS,
   fromGameGrid,
   importStamp,
+  GAME_ROW_GAP_UNITS,
   isGameGrid,
   setTagResolver,
   toGameGrid,
@@ -57,7 +58,11 @@ describe('game hero_grid_config', () => {
     expect(first.rect!.x).toBe(0);
     expect(first.rect!.y).toBe(0);
     expect(first.rect!.w).toBeCloseTo((456.521759 / GAME_CANVAS_UNITS) * 100, 6);
-    expect(first.rect!.h).toBeCloseTo((138.91304 / GAME_CANVAS_UNITS) * 100, 6);
+    // the gap the exporter leaves under each box is given back on the way in
+    expect(first.rect!.h).toBeCloseTo(
+      ((138.91304 + GAME_ROW_GAP_UNITS) / GAME_CANVAS_UNITS) * 100,
+      6,
+    );
     // 600 of 1200 units is the middle of the canvas
     expect(second.rect!.x).toBeCloseTo(50, 6);
     expect(first.elements).toEqual([67, 92, 119, 113, 58].map((refId) => ({ kind: 'hero', refId })));
@@ -174,9 +179,13 @@ describe('game hero_grid_config', () => {
     // stacked inside the original box: same column, second below the first
     expect(second.x_position).toBe(first.x_position);
     expect(second.width).toBe(first.width);
-    expect(second.y_position).toBeCloseTo(first.y_position + first.height, 4);
-    // and together they still cover exactly the original height
-    expect(first.height + second.height).toBeCloseTo(30 / (100 / GAME_CANVAS_UNITS), 3);
+    // the second block starts a gap below where the first one stops
+    expect(second.y_position).toBeCloseTo(first.y_position + first.height + GAME_ROW_GAP_UNITS, 4);
+    // together they cover the original height, less the gap under each block
+    expect(first.height + second.height).toBeCloseTo(
+      30 / (100 / GAME_CANVAS_UNITS) - 2 * GAME_ROW_GAP_UNITS,
+      3,
+    );
   });
 
   it('leaves a category without breaks as a single block', () => {
@@ -232,8 +241,8 @@ describe('game hero_grid_config', () => {
     expect(cat.icon).toEqual({ kind: 'hero', refId: 67 });
     expect(cat.text).toBeUndefined();
     expect(cat.elements.map((e) => e.kind)).toEqual(['hero', 'hero', 'break', 'hero']);
-    // and it covers both boxes
-    expect(cat.rect!.h).toBeCloseTo((240 / GAME_CANVAS_UNITS) * 100, 5);
+    // and it covers both boxes, with the exporter's gap restored
+    expect(cat.rect!.h).toBeCloseTo(((240 + GAME_ROW_GAP_UNITS) / GAME_CANVAS_UNITS) * 100, 5);
     setTagResolver(null);
   });
 
@@ -270,6 +279,44 @@ describe('game hero_grid_config', () => {
       ],
     };
     expect(fromGameGrid(file)[0].board.categories[0].text).toBe('{S:mystery}');
+  });
+
+  it('leaves a gap under each box, and gives it back on the way in', () => {
+    const board = {
+      ...emptyBoard('Gaps'),
+      canvas: true,
+      categories: [
+        {
+          id: 'a',
+          text: 'Top',
+          color: '',
+          wideness: 0,
+          rect: { x: 0, y: 0, w: 100, h: 20 },
+          elements: [{ kind: 'hero' as const, refId: 1 }],
+        },
+        {
+          id: 'b',
+          text: 'Bottom',
+          color: '',
+          wideness: 0,
+          rect: { x: 0, y: 20, w: 100, h: 20 },
+          elements: [{ kind: 'hero' as const, refId: 2 }],
+        },
+      ],
+    };
+    const out = toGameGrid([{ id: 'l', name: 'Gaps', board }]);
+    const [top, bottom] = out.configs[0].categories;
+
+    // the rows still start where they did, but each stops short of the next
+    expect(bottom.y_position - top.y_position).toBeCloseTo(20 / (100 / GAME_CANVAS_UNITS), 4);
+    expect(top.y_position + top.height).toBeLessThan(bottom.y_position);
+    expect(bottom.y_position - (top.y_position + top.height)).toBeCloseTo(GAME_ROW_GAP_UNITS, 4);
+
+    // and importing it back returns the heights we started with
+    const back = fromGameGrid(out)[0].board.categories;
+    expect(back[0].rect!.h).toBeCloseTo(20, 4);
+    expect(back[1].rect!.h).toBeCloseTo(20, 4);
+    expect(back[1].rect!.y).toBeCloseTo(20, 4);
   });
 
   it('is picked up by the unified importer', () => {
