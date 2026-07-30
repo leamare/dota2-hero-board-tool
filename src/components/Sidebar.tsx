@@ -259,6 +259,15 @@ export default function Sidebar() {
               onChange={(e) => patchBoard({ name: e.target.value })}
             />
           </div>
+          <div className="field row">
+            <input
+              className="input"
+              value={board.author ?? ''}
+              placeholder={t('sidebar.author')}
+              // stored only when non-empty, so grids stay authorless by default
+              onChange={(e) => patchBoard({ author: e.target.value || undefined })}
+            />
+          </div>
           <div className="sidebar-actions">
             <button className="btn small primary" onClick={saveCurrent}>
               {t('common.save')}

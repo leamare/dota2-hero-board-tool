@@ -62,6 +62,8 @@ export interface Board {
   name: string;
   /** small glyph shown for the grid in lists and the header */
   icon?: string;
+  /** optional credit shown on exported images; only set when typed or imported */
+  author?: string;
   /** number of columns the categories flow into (1..6) */
   columns: number;
   /** default hero portrait type */

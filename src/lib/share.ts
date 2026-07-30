@@ -4,7 +4,9 @@ import { ByteReader, ByteWriter, fromBase64Url, toBase64Url } from './bytes';
 import type { CategoryIconKind } from '../types/board';
 import type { ElementKind } from './images';
 
-const SHARE_VERSION = 6;
+const SHARE_VERSION = 7;
+/** Older versions this decoder still understands. */
+const LEGACY_VERSIONS = [5, 6];
 
 const KIND_CODE: Record<Exclude<ElementKind, 'break'>, number> = {
   hero: 0,
@@ -126,6 +128,7 @@ export function encodeBoard(board: Board): string {
   w.u8(board.size);
   w.string(board.name);
   w.string(board.icon ?? '');
+  w.string(board.author ?? '');
 
   // index distinct chain ids per axis as small ints
   const vIndex = new Map<string, number>();
@@ -198,7 +201,7 @@ function decodeCategory(r: ByteReader, version: number): Category {
 export function decodeBoard(str: string): Board {
   const r = new ByteReader(fromBase64Url(str.trim()));
   const version = r.u8();
-  if (version !== SHARE_VERSION && version !== 5)
+  if (version !== SHARE_VERSION && !LEGACY_VERSIONS.includes(version))
     throw new Error(`unsupported share version ${version}`);
 
   const board = emptyBoard();
@@ -212,6 +215,10 @@ export function decodeBoard(str: string): Board {
   board.size = r.u8();
   board.name = r.string();
   board.icon = r.string();
+  if (version >= 7) {
+    const author = r.string();
+    if (author) board.author = author;
+  }
 
   const count = r.varint();
   board.categories = [];

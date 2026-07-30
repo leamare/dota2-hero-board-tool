@@ -84,4 +84,13 @@ describe('board share encoding', () => {
   it('rejects an unknown version', () => {
     expect(() => decodeBoard('AAAA')).toThrow();
   });
+
+  it('round-trips an author', () => {
+    const b = { ...sample, author: 'Leamare' };
+    expect(decodeBoard(encodeBoard(b)).author).toBe('Leamare');
+  });
+
+  it('leaves the author unset when there is none', () => {
+    expect(decodeBoard(encodeBoard(sample)).author).toBeUndefined();
+  });
 });

@@ -180,7 +180,7 @@ export const useBoardStore = create<BoardStore>()(
     }),
     {
       name: 'hgt.board',
-      version: 5,
+      version: 6,
       migrate: (persisted, from) => {
         const state = persisted as { board?: Record<string, unknown> };
         if (!state?.board) return persisted as unknown as { board: Board };
