@@ -261,28 +261,90 @@
   pointer-events: none;
 }
 .chain-conn.chain-right {
-  right: calc(var(--grid-gap) * -1);
+  right: calc(var(--grid-gap) * -1 + .1rem);
   top: 50%;
   transform: translateY(-50%);
-  width: var(--grid-gap);
-  height: 0.95rem;
+  width: calc(var(--grid-gap) - .2rem);
+  height: 2rem;
   background: repeating-linear-gradient(
     to bottom,
-    var(--chain-line) 0 1px,
-    transparent 1px 0.4rem
+    var(--chain-line) 0 .2rem,
+    transparent .2rem 0.8rem
   );
 }
 .chain-conn.chain-down {
-  bottom: calc(var(--grid-gap) * -1);
+  bottom: calc(var(--grid-gap) * -1 + .1rem);
   left: 50%;
   transform: translateX(-50%);
-  height: var(--grid-gap);
-  width: 0.95rem;
+  height: calc(var(--grid-gap) - .2rem);
+  width: 2rem;
   background: repeating-linear-gradient(
     to right,
-    var(--chain-line) 0 1px,
-    transparent 1px 0.4rem
+    var(--chain-line) 0 .2rem,
+    transparent .2rem 0.8rem
   );
+}
+
+/* ========================================== IMAGE EXPORT */
+
+/* the stage is rendered for rasterizing only, parked off-screen */
+.image-stage-wrap {
+  position: fixed;
+  left: -20000px;
+  top: 0;
+  pointer-events: none;
+  opacity: 1;
+}
+.board-image {
+  background: var(--main-bg);
+  padding: 1.5rem;
+}
+.board-image-head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+.board-image-name {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 2rem;
+  font-weight: normal;
+}
+.board-image-author {
+  color: var(--menu-link);
+  font-size: 1.1rem;
+}
+.board-image-foot {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 0.1rem solid var(--cat-outline-hover);
+}
+.board-image-qr {
+  background: #fff;
+  padding: 0.3rem;
+  border-radius: 0.3rem;
+  image-rendering: pixelated;
+  flex: 0 0 auto;
+}
+.board-image-credit {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  font-size: 1rem;
+  line-height: 1.4;
+}
+.image-preview {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 0.1rem solid var(--cat-outline);
+  border-radius: 0.3rem;
+  background: var(--main-bg);
 }
 
 /* ========================================== MOBILE */

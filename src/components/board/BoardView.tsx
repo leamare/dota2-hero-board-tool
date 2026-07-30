@@ -10,9 +10,16 @@ import { useT } from '../../lib/i18n';
  * category occupies its own cell at the position resolved by the layout
  * engine (chains place members in adjacent columns / stacked rows).
  */
-export default function BoardView({ board }: { board: Board }) {
+interface Props {
+  board: Board;
+  /** force a column count, ignoring what fits on screen (used by image export) */
+  columns?: number;
+}
+
+export default function BoardView({ board, columns }: Props) {
   const t = useT();
-  const cols = Math.min(board.columns, useMaxColumns());
+  const fitted = useMaxColumns();
+  const cols = columns ?? Math.min(board.columns, fitted);
   const layout = boardLayout(board, cols);
   const links = chainLinks(board.categories, layout);
   const byId = new Map(board.categories.map((c) => [c.id, c]));
