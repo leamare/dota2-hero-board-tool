@@ -46,6 +46,8 @@ export const SIZES: SizeStep[] = [
   { id: 1, label: 'Medium', rem: 3.2 },
   { id: 2, label: 'Large', rem: 4.4 },
   { id: 3, label: 'Huge', rem: 6 },
+  { id: 4, label: 'Massive', rem: 8 },
+  { id: 5, label: 'Absolute Unit', rem: 11 },
 ];
 
 export const DEFAULT_PORTRAIT_TYPE = 0;
