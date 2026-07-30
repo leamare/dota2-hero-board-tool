@@ -93,4 +93,10 @@ describe('board share encoding', () => {
   it('leaves the author unset when there is none', () => {
     expect(decodeBoard(encodeBoard(sample)).author).toBeUndefined();
   });
+
+  it('round-trips a description', () => {
+    const b = { ...sample, description: 'Draft helper for pos 1\nsecond line' };
+    expect(decodeBoard(encodeBoard(b)).description).toBe('Draft helper for pos 1\nsecond line');
+    expect(decodeBoard(encodeBoard(sample)).description).toBeUndefined();
+  });
 });

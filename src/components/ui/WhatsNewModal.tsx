@@ -39,7 +39,7 @@ export default function WhatsNewModal({ open, onClose, converted = 0 }: Props) {
           <b>Row breaks</b> inside a category, so you can group portraits into rows.
         </li>
         <li>
-          <b>Shareable images</b> — export the whole grid as a PNG with a QR code back to it.
+          <b>Shareable images</b> — export the whole grid as a PNG with a QR code, author and description.
         </li>
         <li>
           <b>Portable grids</b> — copy a grid code, save it as a file, and import codes, JSON or

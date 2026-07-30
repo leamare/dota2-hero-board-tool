@@ -10,7 +10,7 @@ import { PARENT_URL } from '../../lib/config';
 import type { Board } from '../../types/board';
 
 /** Fixed width of the exported image, so grids look the same for everyone. */
-const IMAGE_WIDTH = 1400;
+const IMAGE_WIDTH = 1600;
 
 /**
  * Stand-in for an image that won't load (a stale hero tag, a grid icon that no
@@ -106,23 +106,27 @@ export default function ShareImageModal({ open, onClose, board }: Props) {
         <div className="image-stage-wrap" aria-hidden="true">
           <div className="board-image" ref={stageRef} style={{ width: IMAGE_WIDTH }}>
             <div className="board-image-head">
-              <h2 className="board-image-name">
-                <GridIcon tag={board.icon} />
-                {board.name}
-              </h2>
-              {board.author && <span className="board-image-author">by {board.author}</span>}
+              <div className="board-image-titles">
+                <h2 className="board-image-name">
+                  <GridIcon tag={board.icon} />
+                  {board.name}
+                </h2>
+                {board.author && <div className="board-image-author">by {board.author}</div>}
+                {board.description && (
+                  <p className="board-image-desc">{board.description}</p>
+                )}
+              </div>
+              <div className="board-image-brand">
+                {qr && <img className="board-image-qr" src={qr} alt="" width={104} height={104} />}
+                <div className="board-image-credit">
+                  <b>Dota 2 Hero Grid Tool</b>
+                  <span>{PARENT_URL.replace(/^https?:\/\//, '')}/herogrid</span>
+                  <span className="muted">Scan to open this grid</span>
+                </div>
+              </div>
             </div>
 
             <BoardView board={board} columns={board.columns} />
-
-            <div className="board-image-foot">
-              {qr && <img className="board-image-qr" src={qr} alt="" width={110} height={110} />}
-              <div className="board-image-credit">
-                <b>Dota 2 Hero Grid Tool</b>
-                <span>{PARENT_URL.replace(/^https?:\/\//, '')}/herogrid</span>
-                <span className="muted">Scan to open this grid</span>
-              </div>
-            </div>
           </div>
         </div>
       )}

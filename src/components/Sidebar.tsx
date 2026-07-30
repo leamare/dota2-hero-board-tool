@@ -268,6 +268,15 @@ export default function Sidebar() {
               onChange={(e) => patchBoard({ author: e.target.value || undefined })}
             />
           </div>
+          <div className="field row">
+            <textarea
+              className="input"
+              rows={2}
+              value={board.description ?? ''}
+              placeholder={t('sidebar.description')}
+              onChange={(e) => patchBoard({ description: e.target.value || undefined })}
+            />
+          </div>
           <div className="sidebar-actions">
             <button className="btn small primary" onClick={saveCurrent}>
               {t('common.save')}

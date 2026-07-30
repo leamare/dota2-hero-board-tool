@@ -4,9 +4,9 @@ import { ByteReader, ByteWriter, fromBase64Url, toBase64Url } from './bytes';
 import type { CategoryIconKind } from '../types/board';
 import type { ElementKind } from './images';
 
-const SHARE_VERSION = 7;
+const SHARE_VERSION = 8;
 /** Older versions this decoder still understands. */
-const LEGACY_VERSIONS = [5, 6];
+const LEGACY_VERSIONS = [5, 6, 7];
 
 const KIND_CODE: Record<Exclude<ElementKind, 'break'>, number> = {
   hero: 0,
@@ -129,6 +129,7 @@ export function encodeBoard(board: Board): string {
   w.string(board.name);
   w.string(board.icon ?? '');
   w.string(board.author ?? '');
+  w.string(board.description ?? '');
 
   // index distinct chain ids per axis as small ints
   const vIndex = new Map<string, number>();
@@ -218,6 +219,10 @@ export function decodeBoard(str: string): Board {
   if (version >= 7) {
     const author = r.string();
     if (author) board.author = author;
+  }
+  if (version >= 8) {
+    const description = r.string();
+    if (description) board.description = description;
   }
 
   const count = r.varint();

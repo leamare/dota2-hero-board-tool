@@ -69,7 +69,7 @@ export default function AboutPage() {
           </p>
           <ul className="docs-format">
             <li>
-              <code>version</code> — one byte; the current format is <code>7</code>, and older codes
+              <code>version</code> — one byte; the current format is <code>8</code>, and older codes
               still import.
             </li>
             <li>
@@ -81,8 +81,8 @@ export default function AboutPage() {
               <code>size</code> — one byte each.
             </li>
             <li>
-              <code>name</code>, <code>icon</code>, <code>author</code> — length-prefixed UTF-8
-              strings (author may be empty).
+              <code>name</code>, <code>icon</code>, <code>author</code>, <code>description</code> —
+              length-prefixed UTF-8 strings (author and description may be empty).
             </li>
             <li>
               <code>categories</code> — a count, then one record per category: flags, label (preset
@@ -117,6 +117,7 @@ export default function AboutPage() {
     "board": {
       "name": "My grid",
       "author": "optional",
+      "description": "optional",
       "columns": 3,
       "portraitType": 0,
       "itemStyle": 0,
@@ -165,7 +166,7 @@ export default function AboutPage() {
               <b>Link</b> — the grid code in a URL, plus a QR code for getting it onto a phone.
             </li>
             <li>
-              <b>Image</b> — a PNG of the whole grid, 1400px wide, with a QR code linking back to
+              <b>Image</b> — a PNG of the whole grid, 1600px wide, with the grid name, author, description and a QR code linking back to
               the editable version and the author credit if the grid has one.
             </li>
             <li>
