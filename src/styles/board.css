@@ -362,12 +362,14 @@
   gap: 0.85rem;
   flex: 0 0 auto;
 }
+/* drawn 1:1 at its generated size — no padding or scaling, or the modules
+   blur and scanners stop reading it (the PNG carries its own quiet zone) */
 .board-image-qr {
   background: #fff;
-  padding: 0.3rem;
-  border-radius: 0.3rem;
+  border-radius: 0.2rem;
   image-rendering: pixelated;
   flex: 0 0 auto;
+  display: block;
 }
 .board-image-credit {
   display: flex;

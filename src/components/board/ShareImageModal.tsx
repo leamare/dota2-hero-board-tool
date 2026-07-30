@@ -12,6 +12,12 @@ import type { Board } from '../../types/board';
 const IMAGE_WIDTH = 1600;
 
 /**
+ * QR size in image pixels. It is generated at exactly this size and never
+ * scaled — resampling a QR blurs the modules and makes it unscannable.
+ */
+const QR_SIZE = 208;
+
+/**
  * Stand-in for an image that won't load (a stale hero tag, a grid icon that no
  * longer exists). Without it a single 404 would reject the whole render.
  */
@@ -31,7 +37,8 @@ interface Props {
  */
 export default function ShareImageModal({ open, onClose, board }: Props) {
   const stageRef = useRef<HTMLDivElement>(null);
-  const [qr, setQr] = useState('');
+  // null = still generating, '' = too much data for a QR (render without one)
+  const [qr, setQr] = useState<string | null>(null);
   const [png, setPng] = useState('');
   const [error, setError] = useState<string | null>(null);
 
@@ -42,9 +49,12 @@ export default function ShareImageModal({ open, onClose, board }: Props) {
     if (!open) return;
     let alive = true;
     setPng('');
+    setQr(null);
     setError(null);
-    QRCodeLib.toDataURL(url, { width: 320, margin: 1, errorCorrectionLevel: 'L' })
+    // margin 2 keeps a quiet zone, which scanners need to find the code
+    QRCodeLib.toDataURL(url, { width: QR_SIZE, margin: 2, errorCorrectionLevel: 'L' })
       .then((u) => alive && setQr(u))
+      // a huge grid can exceed the QR capacity — still export, just without one
       .catch(() => alive && setQr(''));
     return () => {
       alive = false;
@@ -53,7 +63,7 @@ export default function ShareImageModal({ open, onClose, board }: Props) {
 
   // rasterize once the stage (and its QR) have painted
   useEffect(() => {
-    if (!open || !qr) return;
+    if (!open || qr === null) return;
     let alive = true;
     const node = stageRef.current;
     if (!node) return;
@@ -116,7 +126,9 @@ export default function ShareImageModal({ open, onClose, board }: Props) {
                 )}
               </div>
               <div className="board-image-brand">
-                {qr && <img className="board-image-qr" src={qr} alt="" width={104} height={104} />}
+                {qr && (
+                  <img className="board-image-qr" src={qr} alt="" width={QR_SIZE} height={QR_SIZE} />
+                )}
                 <div className="board-image-credit">
                   <b>Dota 2 Hero Grid Tool</b>
                   <span>{siteBaseLabel()}</span>
