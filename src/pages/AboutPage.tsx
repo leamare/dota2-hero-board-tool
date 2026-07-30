@@ -62,8 +62,10 @@ export default function AboutPage() {
 
           <h3>Grid code (main format)</h3>
           <p>
-            A single grid is packed into a binary record and written as URL-safe base64 — typically
-            around a hundred characters. This is what share links carry (
+            A single grid is packed into a binary record, deflated, and written as URL-safe base64 —
+            typically around a hundred characters, and a fraction of that for large grids.
+            Compression is only kept when it actually makes the code shorter, and codes made before
+            it was introduced still decode. This is what share links carry (
             <code>/import?b=&lt;code&gt;</code>), what <b>Copy code</b> puts on your clipboard, and
             what the <code>.txt</code> export contains. The record is, in order:
           </p>
@@ -101,8 +103,9 @@ export default function AboutPage() {
 
           <h3>All grids code</h3>
           <p>
-            Your whole collection can be exported at once. That is the JSON list below, base64
-            encoded, as used by <b>Share all</b> and <code>/layouts?l=&lt;code&gt;</code>.
+            Your whole collection can be exported at once. That is the JSON list below, deflated and
+            base64 encoded, as used by <b>Share all</b> and <code>/layouts?l=&lt;code&gt;</code>.
+            Compression matters most here — a few grids shrink by well over 90%.
           </p>
 
           <h3>JSON</h3>

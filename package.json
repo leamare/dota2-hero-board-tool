@@ -18,6 +18,7 @@
     "@dnd-kit/modifiers": "^7.0.0",
     "@dnd-kit/sortable": "^8.0.0",
     "@dnd-kit/utilities": "^3.2.2",
+    "fflate": "^0.8.3",
     "html-to-image": "^1.11.13",
     "jsqr": "^1.4.0",
     "qrcode": "^1.5.4",

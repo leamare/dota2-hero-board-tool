@@ -1,6 +1,13 @@
 import type { Board, Category, CategoryIcon, GridElement } from '../types/board';
 import { emptyBoard, genId } from './board';
-import { ByteReader, ByteWriter, fromBase64Url, toBase64Url } from './bytes';
+import {
+  ByteReader,
+  ByteWriter,
+  fromBase64Url,
+  packBytes,
+  toBase64Url,
+  unpackBytes,
+} from './bytes';
 import type { CategoryIconKind } from '../types/board';
 import type { ElementKind } from './images';
 
@@ -112,8 +119,8 @@ function encodeCategory(
   for (const el of c.elements) encodeElement(w, el);
 }
 
-/** Encode a board to a compact URL-safe base64 string. */
-export function encodeBoard(board: Board): string {
+/** The raw (uncompressed) binary record for a board. */
+export function encodeBoardBytes(board: Board): Uint8Array {
   const w = new ByteWriter();
   w.u8(SHARE_VERSION);
 
@@ -142,7 +149,12 @@ export function encodeBoard(board: Board): string {
   w.varint(board.categories.length);
   for (const c of board.categories) encodeCategory(w, c, vIndex, hIndex);
 
-  return toBase64Url(w.toUint8Array());
+  return w.toUint8Array();
+}
+
+/** Encode a board to a compact, deflated, URL-safe base64 string. */
+export function encodeBoard(board: Board): string {
+  return toBase64Url(packBytes(encodeBoardBytes(board)));
 }
 
 function decodeElement(r: ByteReader): GridElement {
@@ -200,7 +212,7 @@ function decodeCategory(r: ByteReader, version: number): Category {
 
 /** Decode a share string back into a board. Throws on malformed input. */
 export function decodeBoard(str: string): Board {
-  const r = new ByteReader(fromBase64Url(str.trim()));
+  const r = new ByteReader(unpackBytes(fromBase64Url(str.trim())));
   const version = r.u8();
   if (version !== SHARE_VERSION && !LEGACY_VERSIONS.includes(version))
     throw new Error(`unsupported share version ${version}`);

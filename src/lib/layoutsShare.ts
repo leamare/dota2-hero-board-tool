@@ -1,11 +1,11 @@
 import type { SavedLayout } from '../state/layoutsStore';
-import { fromBase64Url, toBase64Url } from './bytes';
+import { fromBase64Url, packBytes, toBase64Url, unpackBytes } from './bytes';
 import { siteBaseUrl } from './shareUrl';
 
-/** Pack all saved layouts into one URL-safe base64 string. */
+/** Pack all saved layouts into one URL-safe base64 string (deflated). */
 export function encodeLayouts(layouts: SavedLayout[]): string {
   const json = JSON.stringify(layouts.map((l) => ({ name: l.name, board: l.board })));
-  return toBase64Url(new TextEncoder().encode(json));
+  return toBase64Url(packBytes(new TextEncoder().encode(json)));
 }
 
 /** Read layouts from an encoded string (base64) or raw JSON. */
@@ -18,7 +18,7 @@ export function decodeLayouts(input: string): SavedLayout[] {
     // may be a full URL with ?l=...
     const l = /[?&]l=([^&]+)/.exec(trimmed);
     const code = l ? l[1] : trimmed;
-    json = new TextDecoder().decode(fromBase64Url(code));
+    json = new TextDecoder().decode(unpackBytes(fromBase64Url(code)));
   }
   const parsed = JSON.parse(json);
   const list = Array.isArray(parsed) ? parsed : [parsed];

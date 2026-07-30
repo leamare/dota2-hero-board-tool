@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { decodeBoard, encodeBoard } from './share';
+import { decodeBoard, encodeBoard, encodeBoardBytes as rawBoardBytes } from './share';
+import { fromBase64Url, toBase64Url } from './bytes';
 import { emptyBoard } from './board';
 import type { Board } from '../types/board';
 
@@ -92,6 +93,33 @@ describe('board share encoding', () => {
 
   it('leaves the author unset when there is none', () => {
     expect(decodeBoard(encodeBoard(sample)).author).toBeUndefined();
+  });
+
+  it('still decodes an uncompressed (pre-compression) code', () => {
+    // what encodeBoard produced before payloads were deflated
+    const legacy = toBase64Url(rawBoardBytes(sample));
+    expect(normalize(decodeBoard(legacy))).toEqual(normalize(sample));
+  });
+
+  it('compresses a big board well below the raw bytes', () => {
+    const big: Board = {
+      ...sample,
+      description: 'A '.repeat(200),
+      categories: Array.from({ length: 12 }, (_, i) => ({
+        id: `c${i}`,
+        text: `Category number ${i}`,
+        color: 'red',
+        wideness: 0,
+        elements: Array.from({ length: 20 }, (_, j) => ({
+          kind: 'hero' as const,
+          refId: j + 1,
+        })),
+      })),
+    };
+    const raw = rawBoardBytes(big).length;
+    const packed = fromBase64Url(encodeBoard(big)).length;
+    expect(packed).toBeLessThan(raw);
+    expect(normalize(decodeBoard(encodeBoard(big)))).toEqual(normalize(big));
   });
 
   it('round-trips a description', () => {

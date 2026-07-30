@@ -1,3 +1,5 @@
+import { deflateSync, inflateSync } from 'fflate';
+
 /** Minimal byte writer with LEB128 varints and length-prefixed utf8 strings. */
 export class ByteWriter {
   private bytes: number[] = [];
@@ -62,6 +64,36 @@ export class ByteReader {
     this.pos += len;
     return new TextDecoder().decode(slice);
   }
+}
+
+/*
+ * Compression container.
+ *
+ * Payloads are deflated before base64 so share links stay short. Raw deflate
+ * rather than gzip: same algorithm, without the 18 bytes of gzip framing, and
+ * both ends are ours. Compression is only kept when it actually wins — on a
+ * tiny grid the deflate overhead can exceed the savings.
+ *
+ * A compressed payload is prefixed with COMPRESSED_TAG. Uncompressed payloads
+ * start with their own format's version byte (currently 5-8 for boards, or the
+ * `[`/`{` of JSON), so old links keep decoding untouched.
+ */
+const COMPRESSED_TAG = 0xc0;
+
+/** Deflate `raw`, tagged, or return it as-is when compression doesn't help. */
+export function packBytes(raw: Uint8Array): Uint8Array {
+  const packed = deflateSync(raw, { level: 9 });
+  if (packed.length + 1 >= raw.length) return raw;
+  const out = new Uint8Array(packed.length + 1);
+  out[0] = COMPRESSED_TAG;
+  out.set(packed, 1);
+  return out;
+}
+
+/** Inverse of packBytes; passes uncompressed payloads straight through. */
+export function unpackBytes(bytes: Uint8Array): Uint8Array {
+  if (bytes.length === 0 || bytes[0] !== COMPRESSED_TAG) return bytes;
+  return inflateSync(bytes.subarray(1));
 }
 
 /** URL-safe base64 (no padding) for a byte array. */
