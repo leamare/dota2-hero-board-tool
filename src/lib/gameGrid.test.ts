@@ -308,6 +308,41 @@ describe('game hero_grid_config', () => {
     expect(fromGameGrid(file)[0].board.categories[0].text).toBe('{S:mystery}');
   });
 
+  it('exports a canvas grid exactly as arranged, without tidying it first', () => {
+    // deliberately ragged: overlapping, uneven, not what autoLayout would produce
+    const board = {
+      ...emptyBoard('Freeform'),
+      canvas: true,
+      categories: [
+        {
+          id: 'a',
+          text: 'A',
+          color: '',
+          wideness: 0,
+          rect: { x: 13.5, y: 7.25, w: 41, h: 18 },
+          elements: [{ kind: 'hero' as const, refId: 1 }],
+        },
+        {
+          id: 'b',
+          text: 'B',
+          color: '',
+          wideness: 0,
+          rect: { x: 48, y: 12, w: 29.5, h: 22 },
+          elements: [{ kind: 'hero' as const, refId: 2 }],
+        },
+      ],
+    };
+    const cats = toGameGrid([{ id: 'l', name: 'Freeform', board }]).configs[0].categories;
+    const unit = 100 / GAME_CANVAS_UNITS;
+    // positions and widths come straight from the rects — overlap and all
+    expect(cats[0].x_position).toBeCloseTo(13.5 / unit, 3);
+    expect(cats[0].y_position).toBeCloseTo(7.25 / unit, 3);
+    expect(cats[0].width).toBeCloseTo(41 / unit, 3);
+    expect(cats[1].x_position).toBeCloseTo(48 / unit, 3);
+    expect(cats[1].y_position).toBeCloseTo(12 / unit, 3);
+    expect(cats[1].width).toBeCloseTo(29.5 / unit, 3);
+  });
+
   it('leaves a gap under each box, and gives it back on the way in', () => {
     const board = {
       ...emptyBoard('Gaps'),

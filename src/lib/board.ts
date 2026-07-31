@@ -70,11 +70,12 @@ export function elementImageUrl(
   const { type, style } = resolveDisplay(category, board);
   switch (element.kind) {
     case 'hero': {
-      const tag = element.refId != null ? meta.heroById.get(element.refId)?.tag : undefined;
+      // a raw tag stands in for portraits the metadata doesn't list yet
+      const tag = element.refId != null ? meta.heroById.get(element.refId)?.tag : element.tag;
       return tag ? heroImageUrl(type, tag, element.alticon) : null;
     }
     case 'item': {
-      const tag = element.refId != null ? meta.itemById.get(element.refId)?.tag : undefined;
+      const tag = element.refId != null ? meta.itemById.get(element.refId)?.tag : element.tag;
       return tag ? itemImageUrl(style, tag) : null;
     }
     case 'custom':

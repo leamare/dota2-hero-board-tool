@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react';
 import type { Board, Category, GridElement } from '../../types/board';
 import { elementImageUrl, resolveDisplay } from '../../lib/board';
-import { itemStyle } from '../../lib/images';
+import { itemStyle, isAutoSize } from '../../lib/images';
 import { useMetadata } from '../../state/MetadataProvider';
 
 interface Props {
@@ -20,12 +20,14 @@ interface Props {
  */
 export default function ElementPortrait({ element, category, board, sizePx }: Props) {
   const meta = useMetadata();
-  const { aspect, heightRem, style: styleId } = resolveDisplay(category, board);
+  const { aspect, heightRem, size, style: styleId } = resolveDisplay(category, board);
 
-  const style: CSSProperties = {
-    aspectRatio: aspect,
-    height: sizePx !== undefined ? `${sizePx}px` : `${heightRem}rem`,
-  };
+  // autoscale hands sizing to the row: the cell decides the width, the aspect
+  // decides the height, so portraits stretch to use all of it
+  const auto = sizePx === undefined && isAutoSize(size);
+  const style: CSSProperties = auto
+    ? { aspectRatio: aspect, width: '100%', height: 'auto' }
+    : { aspectRatio: aspect, height: sizePx !== undefined ? `${sizePx}px` : `${heightRem}rem` };
 
   // a break forces the following portraits onto a new line inside the category
   if (element.kind === 'break') {

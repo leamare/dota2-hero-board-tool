@@ -62,8 +62,9 @@ export default function PickerGrid({ onPick, previewType = 0, draggable, autoFoc
     return meta.items.filter((i: Item) => matches(`${i.name} ${i.tag}`.toLowerCase(), query));
   }, [meta, query]);
 
-  // secret: typing "!<tag>" in the item search offers a custom courier icon
-  const customTag = tab === 'item' && query.startsWith('!') ? query.slice(1).trim() : '';
+  // typing "!<tag>" offers a raw courier icon, for heroes and items the
+  // metadata doesn't list yet (new heroes, seasonal art, and so on)
+  const rawTag = query.startsWith('!') ? query.slice(1).trim() : '';
 
   const tileStyle = { aspectRatio: portraitType(previewType).aspect };
 
@@ -123,6 +124,13 @@ export default function PickerGrid({ onPick, previewType = 0, draggable, autoFoc
 
       {tab === 'hero' && (
         <div className="picker-grid">
+          {rawTag &&
+            tile(
+              { kind: 'hero', tag: rawTag },
+              heroImageUrl(previewType, rawTag),
+              `custom: ${rawTag}`,
+              false,
+            )}
           {heroes.map((h) =>
             tile({ kind: 'hero', refId: h.id }, heroImageUrl(previewType, h.tag), h.name, false),
           )}
@@ -131,8 +139,8 @@ export default function PickerGrid({ onPick, previewType = 0, draggable, autoFoc
 
       {tab === 'item' && (
         <div className="picker-grid">
-          {customTag &&
-            tile({ kind: 'custom', tag: customTag }, itemImageUrl(0, customTag), `custom: ${customTag}`, true)}
+          {rawTag &&
+            tile({ kind: 'custom', tag: rawTag }, itemImageUrl(0, rawTag), `custom: ${rawTag}`, true)}
           {items.map((i) => tile({ kind: 'item', refId: i.id }, itemImageUrl(0, i.tag), i.name, true))}
         </div>
       )}

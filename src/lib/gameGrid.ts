@@ -30,7 +30,7 @@ const PCT_PER_UNIT = 100 / GAME_CANVAS_UNITS;
  * carving a little off each height separates them without moving anything.
  * Importing adds it straight back, so a round trip returns the original.
  */
-export const GAME_ROW_GAP_UNITS = 12;
+export const GAME_ROW_GAP_UNITS = 22;
 const GAP_PCT = GAME_ROW_GAP_UNITS * PCT_PER_UNIT;
 
 /** Where the game keeps the file, shown in the import/export dialogs. */

@@ -51,6 +51,7 @@ const C_RECT = 256; // v9: canvas rect (flags is a varint, so wider bits are fin
 const E_KIND_MASK = 3;
 const E_ALTICON = 4;
 const E_BREAK = 8; // a row break; payload-less like empty, its own kind on decode
+const E_TAG = 16; // hero/item identified by a raw courier tag rather than an id
 
 // colour keys in the same fixed order as LABEL_COLORS (see constants.ts).
 const COLOR_KEYS = [
@@ -65,8 +66,11 @@ function encodeElement(w: ByteWriter, el: GridElement): void {
   let flags = KIND_CODE[el.kind === 'break' ? 'empty' : el.kind];
   if (el.alticon) flags |= E_ALTICON;
   if (el.kind === 'break') flags |= E_BREAK;
+  const byTag = (el.kind === 'hero' || el.kind === 'item') && el.refId == null && !!el.tag;
+  if (byTag) flags |= E_TAG;
   w.u8(flags);
-  if (el.kind === 'hero' || el.kind === 'item') w.varint(el.refId ?? 0);
+  if (byTag) w.string(el.tag ?? '');
+  else if (el.kind === 'hero' || el.kind === 'item') w.varint(el.refId ?? 0);
   else if (el.kind === 'custom') w.string(el.tag ?? '');
   if (el.alticon) w.string(el.alticon);
 }
@@ -170,7 +174,8 @@ function decodeElement(r: ByteReader): GridElement {
   const flags = r.u8();
   const kind: ElementKind = flags & E_BREAK ? 'break' : KIND_BY_CODE[flags & E_KIND_MASK] ?? 'hero';
   const el: GridElement = { kind };
-  if (kind === 'hero' || kind === 'item') el.refId = r.varint();
+  if (flags & E_TAG) el.tag = r.string();
+  else if (kind === 'hero' || kind === 'item') el.refId = r.varint();
   else if (kind === 'custom') el.tag = r.string();
   if (flags & E_ALTICON) el.alticon = r.string();
   return el;

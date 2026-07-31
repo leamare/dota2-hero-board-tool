@@ -225,6 +225,25 @@
   padding: 0.35rem;
   align-content: flex-start;
 }
+/* autoscale: fit as many portraits per row as the width allows, then stretch
+   them so the row is filled exactly rather than trailing off */
+.category .cat-body.autoscale {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(var(--min-tile, 5rem), 1fr));
+  align-content: start;
+}
+.category .cat-body.autoscale .portrait-slot {
+  min-width: 0;
+}
+.category .cat-body.autoscale .portrait-slot.break-slot {
+  grid-column: 1 / -1;
+}
+.category .cat-body.autoscale .portrait.add-tile {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+}
+
 .category .cat-body.empty {
   min-height: 2.5rem;
   align-items: center;

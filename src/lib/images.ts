@@ -39,6 +39,8 @@ export interface SizeStep {
   id: number;
   label: string;
   rem: number;
+  /** stretch portraits to fill the row, using `rem` only as a minimum */
+  auto?: boolean;
 }
 
 export const SIZES: SizeStep[] = [
@@ -48,7 +50,12 @@ export const SIZES: SizeStep[] = [
   { id: 3, label: 'Huge', rem: 6 },
   { id: 4, label: 'Massive', rem: 8 },
   { id: 5, label: 'Absolute Unit', rem: 11 },
+  // packs in as many as fit and stretches them to use the whole width
+  { id: 6, label: 'Autoscale', rem: 3.2, auto: true },
 ];
+
+/** Does this size step stretch portraits to fill the category? */
+export const isAutoSize = (id: number): boolean => !!SIZES[id]?.auto;
 
 export const DEFAULT_PORTRAIT_TYPE = 0;
 /** Vertical portraits — the default for grids imported from other formats. */

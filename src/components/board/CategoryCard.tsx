@@ -5,6 +5,8 @@ import { colorIndex, LABEL_COLORS } from '../../lib/constants';
 import CategoryLabel from './CategoryLabel';
 import ChainConnectors from './ChainConnectors';
 import ElementPortrait from './ElementPortrait';
+import { resolveDisplay } from '../../lib/board';
+import { isAutoSize } from '../../lib/images';
 
 interface Props {
   category: Category;
@@ -40,6 +42,11 @@ export default function CategoryCard({
   renderElementOverlay,
   bodyExtra,
 }: Props) {
+  // autoscale lets the row decide how many portraits fit and stretches them
+  const { aspect, size: sizeId, heightRem } = resolveDisplay(category, board);
+  const autoScale = portraitPx === undefined && isAutoSize(sizeId);
+  const minTile = `${(heightRem * aspect).toFixed(2)}rem`;
+
   const hasColor = !!category.color;
   const colorVar = hasColor
     ? `var(--label-${LABEL_COLORS[colorIndex(category.color)].key})`
@@ -70,7 +77,10 @@ export default function CategoryCard({
         {headerControls}
       </div>
 
-      <div className={`cat-body${category.elements.length || bodyExtra ? '' : ' empty'}`}>
+      <div
+        className={`cat-body${category.elements.length || bodyExtra ? '' : ' empty'}${autoScale ? ' autoscale' : ''}`}
+        style={autoScale ? ({ '--min-tile': minTile } as CSSProperties) : undefined}
+      >
         {category.elements.length === 0 && !bodyExtra && <span>empty</span>}
         {category.elements.map((el, i) => (
           <div className={`portrait-slot${el.kind === 'break' ? ' break-slot' : ''}`} key={i}>

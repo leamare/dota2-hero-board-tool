@@ -4,6 +4,7 @@ import type { CSSProperties } from 'react';
 import type { Board, Category, GridElement } from '../../types/board';
 import type { ChainSides } from '../../lib/layout';
 import { resolveDisplay } from '../../lib/board';
+import { isAutoSize } from '../../lib/images';
 import { colorIndex, LABEL_COLORS } from '../../lib/constants';
 import CategoryLabel from '../board/CategoryLabel';
 import ChainConnectors from '../board/ChainConnectors';
@@ -73,7 +74,9 @@ export default function SortableCategory({
     animateLayoutChanges: () => false,
   });
 
-  const { aspect, heightRem } = resolveDisplay(category, board);
+  const { aspect, heightRem, size: sizeId } = resolveDisplay(category, board);
+  const autoScale = isAutoSize(sizeId);
+  const minTile = `${(heightRem * aspect).toFixed(2)}rem`;
   const hasColor = !!category.color;
   const vLinked = !!category.vGroup;
   const hLinked = !!category.hGroup;
@@ -144,7 +147,10 @@ export default function SortableCategory({
         </span>
       </div>
 
-      <div className={`cat-body${category.elements.length ? '' : ' empty'}`}>
+      <div
+        className={`cat-body${category.elements.length ? '' : ' empty'}${autoScale ? ' autoscale' : ''}`}
+        style={autoScale ? ({ '--min-tile': minTile } as CSSProperties) : undefined}
+      >
         <SortableContext
           items={category.elements
             .map((el, i) => (el.kind === 'break' ? null : elementDragId(category.id, i)))

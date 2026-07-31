@@ -32,16 +32,20 @@ export default function GameGridModal({ open, onClose, mode, currentOnly }: Prop
   const meta = useMetadata();
   const toast = useToast();
   const board = useBoardStore((s) => s.board);
+  const currentLayoutId = useBoardStore((s) => s.currentLayoutId);
   const { layouts, importLayouts } = useLayoutsStore();
   const fileRef = useRef<HTMLInputElement>(null);
   const [replaceSameName, setReplaceSameName] = useState(false);
 
   const doExport = () => {
+    const live = { id: 'current', name: board.name || 'Grid', board };
+    // the board in hand is newer than its saved copy — a canvas you just
+    // arranged must export as it stands, not as it was last saved
     const source = currentOnly
-      ? [{ id: 'current', name: board.name || 'Grid', board }]
+      ? [live]
       : layouts.length
-        ? layouts
-        : [{ id: 'current', name: board.name || 'Grid', board }];
+        ? layouts.map((l) => (l.id === currentLayoutId ? { ...l, board } : l))
+        : [live];
     const file = toGameGrid(source, {
       heroTag: (id) => meta?.heroById.get(id)?.tag ?? String(id),
       itemTag: (id) => meta?.itemById.get(id)?.tag ?? String(id),
