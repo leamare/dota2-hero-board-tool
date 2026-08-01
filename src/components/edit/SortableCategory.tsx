@@ -128,6 +128,11 @@ export default function SortableCategory({
           {isEmptyLabel(category) ? 'Untitled' : <CategoryLabel category={category} />}
         </span>
         <span className="cat-controls">
+          {/* the body's add tile disappears with the body, so the header keeps
+              its own way into the picker */}
+          <button className="btn small" title="Add hero or item" onClick={onAdd}>
+            ＋
+          </button>
           <button
             className={`btn small${linkPending ? ' primary' : ''}${vLinked ? ' active' : ''}`}
             title={vLinked ? 'Unlink vertically' : 'Link vertically'}

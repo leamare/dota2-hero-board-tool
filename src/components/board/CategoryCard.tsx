@@ -23,6 +23,11 @@ interface Props {
   dragHandle?: ReactNode;
   renderElementOverlay?: (index: number) => ReactNode;
   bodyExtra?: ReactNode;
+  /**
+   * Collapse an empty category to just its header. Decided by the caller, which
+   * is the only place that knows what else shares the row.
+   */
+  headerOnly?: boolean;
 }
 
 const isEmptyLabel = (c: Category): boolean =>
@@ -41,14 +46,15 @@ export default function CategoryCard({
   dragHandle,
   renderElementOverlay,
   bodyExtra,
+  headerOnly,
 }: Props) {
   // autoscale lets the row decide how many portraits fit and stretches them
   const { aspect, size: sizeId, heightRem } = resolveDisplay(category, board);
   const autoScale = portraitPx === undefined && isAutoSize(sizeId);
   const minTile = `${(heightRem * aspect).toFixed(2)}rem`;
 
-  // no elements and nothing to add into = header only (read-only board)
-  const headerOnly = category.elements.length === 0 && !bodyExtra;
+  // nothing to show and nothing to add into
+  const collapsed = !!headerOnly && category.elements.length === 0 && !bodyExtra;
   const hasColor = !!category.color;
   const colorVar = hasColor
     ? `var(--label-${LABEL_COLORS[colorIndex(category.color)].key})`
@@ -64,7 +70,7 @@ export default function CategoryCard({
       className={[
         'category',
         grouped ? 'grouped' : '',
-        headerOnly ? 'head-only' : '',
+        collapsed ? 'head-only' : '',
         hasColor ? 'has-color' : '',
         HEADER_SIZE_CLASS[category.headerSize ?? 1],
       ]
@@ -85,7 +91,7 @@ export default function CategoryCard({
         placeholder block only exists so there is somewhere to drop things while
         editing, which is what `bodyExtra` (the add tile) marks.
       */}
-      {!headerOnly && (
+      {!collapsed && (
       <div
         className={`cat-body${autoScale ? ' autoscale' : ''}`}
         style={autoScale ? ({ '--min-tile': minTile } as CSSProperties) : undefined}

@@ -30,6 +30,17 @@ export default function BoardView({ board, columns }: Props) {
   const links = chainLinks(board.categories, layout);
   const byId = new Map(board.categories.map((c) => [c.id, c]));
 
+  /*
+   * An empty category shrinks to its header only when nothing else on its row
+   * has portraits — next to a filled neighbour the row would look broken, so
+   * there it keeps its (blank) body and matches the height.
+   */
+  const filledRows = new Set(
+    layout
+      .filter((p) => (byId.get(p.id)?.elements.length ?? 0) > 0)
+      .map((p) => p.row),
+  );
+
   return (
     <div
       ref={boardRef}
@@ -58,6 +69,7 @@ export default function BoardView({ board, columns }: Props) {
             board={board}
             style={cell}
             chain={links.get(p.id)}
+            headerOnly={!filledRows.has(p.row)}
           />
         );
       })}

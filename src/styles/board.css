@@ -520,3 +520,7 @@
 .board .category.head-only {
   align-self: start;
 }
+/* a canvas card is sized by its rect, so collapsing needs the height dropped */
+.canvas-board .category.head-only {
+  height: auto !important;
+}

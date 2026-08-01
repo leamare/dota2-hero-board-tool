@@ -94,6 +94,9 @@ export default function CanvasEditor({ board, onOpenSettings, onAdd }: Props) {
                   <CategoryLabel category={category} />
                 </span>
                 <span className="cat-controls">
+                  <button className="btn small" title="Add hero or item" onClick={() => onAdd(category.id)}>
+                    ＋
+                  </button>
                   <button className="btn small" title="Settings" onClick={() => onOpenSettings(category.id)}>
                     ⚙
                   </button>

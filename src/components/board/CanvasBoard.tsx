@@ -100,6 +100,9 @@ export default function CanvasBoard({ board, renderCard, width, onMeasure, child
                 board={board}
                 style={{ ...style, position: 'absolute' }}
                 portraitPx={portraitPx}
+                /* a canvas card has no row to match, so an empty one is always
+                   just its header rather than an empty box of its own size */
+                headerOnly
               />
             );
           })}
