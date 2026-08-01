@@ -492,22 +492,22 @@
    mobile override needed — a narrow screen resolves to a single column */
 
 /*
- * Transparent headers: the label sits straight on the card with no bar of its
- * own. The colour still reads through the left edge / body tint, so a coloured
- * category is still identifiable.
+ * Transparent categories: no header bar, no card background, no outline — the
+ * portraits and the label sit straight on the page. The label keeps the
+ * category's colour, which is then the only thing marking it.
  */
+.board.clear-heads .category,
 .board.clear-heads .category .cat-head,
-.board.clear-heads.full-labels .category.has-color .cat-head {
+.board.clear-heads.full-labels .category.has-color .cat-head,
+.board.clear-heads.darken .category.has-color,
+.board.clear-heads:not(.darken) .category.has-color {
   background-color: transparent;
 }
-.board.clear-heads .category {
+.board.clear-heads .category,
+.board.clear-heads .category:hover,
+.board.clear-heads:not(.full-labels) .category.has-color,
+.board.clear-heads:not(.full-labels) .category.has-color:hover {
   box-shadow: none;
-}
-.board.clear-heads .category:hover {
-  box-shadow: none;
-}
-.board.clear-heads:not(.full-labels) .category.has-color {
-  box-shadow: inset 0.15rem 0 0 var(--cat-color);
 }
 /* without a filled bar the title needs the label colour to stay legible */
 .board.clear-heads.full-labels .category.has-color .cat-title {
