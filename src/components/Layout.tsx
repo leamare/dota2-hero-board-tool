@@ -11,7 +11,7 @@ import { MaxColumnsContext, fitColumns } from '../lib/maxColumns';
 import { useI18n, LOCALES, type LocaleCode } from '../lib/i18n';
 import { useHotkeys } from '../lib/useHotkeys';
 import { usePrintMode } from '../lib/usePrintMode';
-import PrintBanner from './board/PrintBanner';
+import PrintSheet from './board/PrintSheet';
 
 const MENU = [
   { to: '/view', key: 'nav.view', icon: 'grid' },
@@ -65,6 +65,31 @@ export default function Layout() {
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
   }, [theme]);
+
+  // the sidebar is fixed under the header, which scrolls away — follow it down
+  // so no strip of page shows through above the panel
+  useEffect(() => {
+    const el = document.querySelector<HTMLElement>('.app-header');
+    let queued = false;
+    const sync = () => {
+      queued = false;
+      const height = el?.offsetHeight ?? 0;
+      const left = Math.max(0, height - window.scrollY);
+      document.documentElement.style.setProperty('--sb-top', `${left}px`);
+    };
+    const onScroll = () => {
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame(sync);
+    };
+    sync();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+    };
+  }, [uiScale]);
 
   // one-time upgrade from the old tool, then the what's-new dialog for this
   // release. runs on mount, after the persisted stores have rehydrated.
@@ -178,16 +203,8 @@ export default function Layout() {
       <Sidebar />
 
       <main className="app-main" ref={mainRef}>
-        {/* usePrintMode scales this inner box; `main` stays unscaled and is
-            sized to the result, so the printer paginates the fitted height */}
-        <div className="print-scale">
-          <PrintBanner />
-          <Outlet />
-        </div>
+        <Outlet />
       </main>
-
-      {/* measured by usePrintMode to learn the printable box in px */}
-      <div className="print-probe" aria-hidden="true" />
 
       <footer className="app-footer">
         <a href={PARENT_URL}>spectral.gg</a> — Dota 2 Hero Grid Tool
@@ -204,6 +221,12 @@ export default function Layout() {
         }}
       />
     </div>
+
+    {/* print-only, and deliberately outside the shell — printing hides the
+        shell wholesale, which would take the sheet down with it. the probe is
+        the mm ruler usePrintMode measures the page with. */}
+    <PrintSheet />
+    <div className="print-probe" aria-hidden="true" />
     </MaxColumnsContext.Provider>
   );
 }

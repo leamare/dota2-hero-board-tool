@@ -325,18 +325,6 @@ export default function Sidebar() {
             <button className="btn small" onClick={() => setShareOpen(true)}>
               {t('common.share')}
             </button>
-            <button
-              className="btn small"
-              title={t('print.hint')}
-              onClick={() => {
-                // the page reshapes itself for print; get the sidebar out of
-                // the way first so the preview matches what you'll see
-                if (!pinned) setOpen(false);
-                setTimeout(() => window.print(), 50);
-              }}
-            >
-              {t('common.print')}
-            </button>
           </div>
           <GameConfigButtons
             onImport={() => setGameMode('import')}

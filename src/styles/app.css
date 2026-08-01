@@ -411,11 +411,15 @@ ul.menu li:has(> a.active):hover::after {
 
 .sidebar {
   position: fixed;
-  top: var(--header-height);
+  /*
+   * Starts below the header, but the header scrolls away — --sb-top tracks how
+   * much of it is still on screen so the panel doesn't leave a gap above it.
+   */
+  top: var(--sb-top, var(--header-height));
   right: 0;
   width: 23rem;
   max-width: 88vw;
-  height: calc(100vh - var(--header-height));
+  height: calc(100vh - var(--sb-top, var(--header-height)));
   background: var(--sidebar-widget-bg);
   z-index: 71;
   transform: translateX(100%);
@@ -429,7 +433,7 @@ ul.menu li:has(> a.active):hover::after {
 }
 .sidebar-scrim {
   position: fixed;
-  inset: var(--header-height) 0 0 0;
+  inset: var(--sb-top, var(--header-height)) 0 0 0;
   background: var(--scrim);
   z-index: 70;
 }

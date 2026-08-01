@@ -1,36 +1,32 @@
 /*
- * Print mode. There is no print route — Ctrl+P reshapes the page you are on.
+ * Print mode. There is no print route — Ctrl+P swaps the app for a hidden,
+ * fixed-width copy of the grid (PrintSheet) and scales it onto one page.
  *
- * Everything here keys off `body.printing`, which `usePrintMode` adds on
+ * Everything keys off `body.printing`, which `usePrintMode` adds on
  * `beforeprint`, rather than `@media print`. Chrome fires `beforeprint` before
  * print styles take effect, so a media query would leave the hook measuring the
- * on-screen layout and picking the wrong fit scale.
+ * on-screen layout and picking the wrong fit.
  *
- * The page box is pinned to A4 landscape minus 10mm margins, so the scale the
- * hook computes matches the sheet the browser actually prints.
+ * `@page` only carries the margin here; the size (and orientation) is injected
+ * at print time, chosen to suit the grid's shape.
  */
 
 @page {
-  size: A4 landscape;
   margin: 10mm;
 }
 
 :root {
+  /* the long edge of A4 minus the margins — the probe's width */
   --print-page-w: 277mm;
-  --print-page-h: 190mm;
 }
 
-/*
- * Measured, never seen: reports the printable box in css pixels. Pinned to the
- * top-left and dropped entirely while printing, so a page-tall invisible box
- * can't extend the document past the sheet the content was fitted to.
- */
+/* measured, never seen: gives the hook this document's px-per-mm */
 .print-probe {
   position: absolute;
   top: 0;
   left: 0;
   width: var(--print-page-w);
-  height: var(--print-page-h);
+  height: 0;
   visibility: hidden;
   pointer-events: none;
   z-index: -1;
@@ -39,74 +35,43 @@ body.printing .print-probe {
   display: none;
 }
 
-/* the export banner is print-only */
-.print-banner {
+/* the print copy of the grid, hidden until the browser asks for it */
+.print-sheet-root {
   display: none;
 }
-body.printing .print-banner {
+body.printing .print-sheet-root {
   display: block;
-  margin-bottom: 1rem;
-}
-
-/* the app chrome and every editing affordance stay off the paper */
-body.printing .app-header,
-body.printing .subheader-bar,
-body.printing .sidebar,
-body.printing .sidebar-tab,
-body.printing .sidebar-scrim,
-body.printing .app-footer,
-body.printing .toast-stack,
-body.printing .view-head,
-body.printing .view-actions,
-body.printing .add-tile,
-body.printing .portrait-remove,
-body.printing .cat-controls,
-body.printing .drag-handle,
-body.printing .canvas-handle {
-  display: none !important;
-}
-
-/*
- * The shell stretches its main area to fill the viewport, which would override
- * the scaled height usePrintMode pins on it — and an unpinned box paginates at
- * full size however small the content is drawn. Take it out of the flex flow
- * for the duration of the print job.
- */
-body.printing .app-shell {
-  display: block;
-  min-height: 0;
-}
-body.printing .app-main {
-  flex: none;
-  padding: 0;
-  /*
-   * The scale transform shrinks what is painted but not the children's layout
-   * boxes, which still measure full size — enough for the paginator to spill
-   * onto extra sheets. Clipping to the pinned (already fitted) box keeps it to
-   * one page without cutting anything off, since the content is drawn inside.
-   */
   overflow: hidden;
+}
+body.printing .app-shell {
+  display: none;
+}
+
+body.printing {
+  /* paper is white — the light theme's page grey would print as ink */
+  background: #fff;
+}
+.print-sheet {
+  background: #fff;
+  --main-bg: #fff;
 }
 body.printing .category {
   break-inside: avoid;
 }
 
 /*
- * The banner is authored for the 1600px PNG export, so on a page-width sheet
- * the QR has to be pinned down or it crowds out the credit block. It is still
- * generated at full module size, so print resolution stays crisp.
+ * The banner is authored for the 1600px PNG export and the sheet is that same
+ * width, so only the credit block needs reining in.
  */
-.print-banner .qr {
-  width: 7rem;
-  height: 7rem;
-  min-width: 0 !important;
-}
-.print-banner .board-image-name {
-  font-size: 1.6rem;
-}
-.print-banner .board-image-credit {
-  font-size: 0.8rem;
+.print-sheet .board-image-credit {
   white-space: nowrap;
+}
+/* pin the QR the way the PNG export does, instead of letting it grow with the
+   amount of data until it crowds out the credit block */
+.print-sheet .qr {
+  width: 208px;
+  height: 208px;
+  min-width: 0 !important;
 }
 
 @media print {
@@ -116,7 +81,7 @@ body.printing .category {
     print-color-adjust: exact;
   }
   /*
-   * A page printed without the hook running (a route with no board, or a
+   * A page printed without the hook running (a route with no grid, or a
    * browser that never fired beforeprint) still shouldn't carry the chrome.
    */
   .app-header,

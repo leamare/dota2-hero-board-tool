@@ -1,109 +1,98 @@
 import { useEffect } from 'react';
 import { useUiStore } from '../state/uiStore';
 
+/** A4 minus 10mm margins on every side, in millimetres. */
+const PAGE_MM = { long: 297 - 20, short: 210 - 20 };
+
+/** Injected at print time so the sheet orientation can follow the grid. */
+const PAGE_STYLE_ID = 'print-page-size';
+
+const setPageSize = (orientation: 'portrait' | 'landscape'): void => {
+  let el = document.getElementById(PAGE_STYLE_ID) as HTMLStyleElement | null;
+  if (!el) {
+    el = document.createElement('style');
+    el.id = PAGE_STYLE_ID;
+    document.head.append(el);
+  }
+  el.textContent = `@page { size: A4 ${orientation}; margin: 10mm; }`;
+};
+
 /**
- * Reshape the live page for printing, in place.
+ * Reshape the page for printing, in place — there is no print route.
  *
- * The browser's own Ctrl+P is what triggers this — there is no separate print
- * route. On `beforeprint` the page is switched to the light palette, given the
- * `printing` class (which hides the app chrome and reveals the export banner),
- * and scaled down until the board fits one sheet; `afterprint` puts everything
- * back.
+ * On `beforeprint` the app chrome is swapped for the hidden print sheet (a
+ * fixed-width copy of the grid, see PrintSheet), the palette goes light, the
+ * orientation is picked to suit the grid's shape, and the sheet is scaled to
+ * fill one page. `afterprint` puts it all back.
  *
- * The class is deliberately not an `@media print` rule: Chrome fires
- * `beforeprint` *before* print styles apply, so measuring would otherwise see
- * the on-screen layout — chrome visible, banner hidden — and compute the wrong
- * scale.
+ * Everything keys off a class rather than `@media print`, because Chrome fires
+ * `beforeprint` *before* print styles apply — a media query would leave the
+ * measurements below reading the on-screen layout.
  */
 export function usePrintMode(): void {
   const theme = useUiStore((s) => s.theme);
 
   useEffect(() => {
     const root = document.documentElement;
-    const main = () => document.querySelector<HTMLElement>('.app-main');
-    const inner = () => document.querySelector<HTMLElement>('.print-scale');
+    const sheet = () => document.querySelector<HTMLElement>('.print-sheet');
+    const wrap = () => document.querySelector<HTMLElement>('.print-sheet-root');
     const probe = () => document.querySelector<HTMLElement>('.print-probe');
-
-    /*
-     * The width the board is currently laid out for, tracked live.
-     *
-     * The browser narrows the viewport to the paper before printing, which
-     * would re-run the column-fit observer and make the board taller *after*
-     * the fit has been measured — one sheet's worth of content spilling onto
-     * three. Pinning the printed box back to this width keeps the column count
-     * (and therefore the height) exactly what was on screen.
-     */
-    let laidOutAt = main()?.clientWidth ?? 0;
-    const track = new ResizeObserver(() => {
-      if (!document.body.classList.contains('printing')) {
-        laidOutAt = main()?.clientWidth ?? laidOutAt;
-      }
-    });
-    const el0 = main();
-    if (el0) track.observe(el0);
 
     const before = () => {
       // chrome fires `beforeprint` *and* flips the print media query, so this
-      // runs twice per job. the second pass would measure an already-hidden
-      // probe, get a zero page box and collapse the board to nothing.
+      // runs twice per job; only the first pass may measure
       if (document.body.classList.contains('printing')) return;
-      const el = main();
-      const scaled = inner();
-      const box = probe();
-      if (!el || !scaled || !box || !box.offsetWidth || !box.offsetHeight) return;
-      // mm are absolute, so the page box reads the same before the switch —
-      // and the probe is hidden once `printing` is on
-      const pageW = box.offsetWidth;
-      const pageH = box.offsetHeight;
+      const el = sheet();
+      const box = wrap();
+      const ruler = probe();
+      if (!el || !box || !ruler || !ruler.offsetWidth) return;
 
-      root.dataset.theme = 'light';
+      // the probe is a known number of millimetres wide, which gives this
+      // document's px-per-mm; the page box follows from that
+      const perMm = ruler.offsetWidth / PAGE_MM.long;
+
       /*
-       * The root font-size is a viewport-relative formula, and print media
-       * resolves it differently (16px instead of whatever the window gives),
-       * which would inflate every rem in the board *after* it has been
-       * measured. Freeze it at the on-screen value so the printed layout is
-       * the one that was fitted.
+       * The root font-size is a viewport-relative formula behind an
+       * `@media screen` query, so print media falls back to 16px and every rem
+       * in the sheet would inflate after being measured. Freeze it.
        */
       root.style.fontSize = getComputedStyle(root).fontSize;
+      root.dataset.theme = 'light';
       document.body.classList.add('printing');
 
-      // scale the on-screen layout rather than reflowing it to page width —
-      // what you see is what comes out, just smaller
-      scaled.style.transform = '';
-      el.style.height = '';
-      const w = laidOutAt || el.scrollWidth;
-      // the inner box keeps the on-screen width so nothing reflows
-      scaled.style.width = `${w}px`;
-      el.style.width = `${w}px`;
-      const h = scaled.scrollHeight;
-      const scale = Math.min(1, pageW / Math.max(1, w), pageH / Math.max(1, h));
+      const w = el.offsetWidth;
+      const h = el.scrollHeight;
 
-      // the transform shrinks what is painted but not the layout box, so the
-      // inner element is scaled and `main` — untransformed — is pinned to the
-      // result. that pinned box is what the printer paginates.
-      scaled.style.transform = `scale(${scale})`;
-      scaled.style.transformOrigin = 'top left';
-      // the outer box takes the *scaled* size. leaving it at full width would
-      // make the document wider than the paper, and chrome would shrink the
-      // whole page to fit — scaling everything a second time.
-      el.style.width = `${w * scale}px`;
-      el.style.height = `${h * scale}px`;
+      // print in whichever orientation lets the grid come out bigger
+      const fit = (pw: number, ph: number) =>
+        Math.min(1, (pw * perMm) / Math.max(1, w), (ph * perMm) / Math.max(1, h));
+      const landscape = fit(PAGE_MM.long, PAGE_MM.short);
+      const portrait = fit(PAGE_MM.short, PAGE_MM.long);
+      const scale = Math.max(landscape, portrait);
+      setPageSize(landscape >= portrait ? 'landscape' : 'portrait');
+
+      // a transform shrinks what is painted but not the layout box, so the
+      // wrapper — untransformed — is pinned to the scaled size. that box is
+      // what the printer paginates.
+      el.style.transform = `scale(${scale})`;
+      el.style.transformOrigin = 'top left';
+      box.style.width = `${w * scale}px`;
+      box.style.height = `${h * scale}px`;
     };
 
     const after = () => {
-      const el = main();
-      const scaled = inner();
+      const el = sheet();
+      const box = wrap();
       root.dataset.theme = theme;
       root.style.fontSize = '';
       document.body.classList.remove('printing');
       if (el) {
-        el.style.width = '';
-        el.style.height = '';
+        el.style.transform = '';
+        el.style.transformOrigin = '';
       }
-      if (scaled) {
-        scaled.style.width = '';
-        scaled.style.transform = '';
-        scaled.style.transformOrigin = '';
+      if (box) {
+        box.style.width = '';
+        box.style.height = '';
       }
     };
 
@@ -115,7 +104,6 @@ export function usePrintMode(): void {
     mq?.addEventListener?.('change', onMedia);
 
     return () => {
-      track.disconnect();
       window.removeEventListener('beforeprint', before);
       window.removeEventListener('afterprint', after);
       mq?.removeEventListener?.('change', onMedia);
