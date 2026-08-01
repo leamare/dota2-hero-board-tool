@@ -34,24 +34,50 @@ export const ITEM_STYLES: ItemStyle[] = [
   { id: 1, key: 'profile_badges', label: 'Profile Badges', folder: 'profile_badges' },
 ];
 
-/** Portrait size scale — box height in rem. */
+/**
+ * Portrait size scale — box height in rem.
+ *
+ * A vertical portrait is *narrower* than it is tall, so at a shared height it
+ * reads much smaller than a horizontal one. Each step therefore carries a
+ * second height used by vertical portraits, one notch further up the scale.
+ *
+ * Ids are persisted (share codes, saved grids), so new steps are appended;
+ * `SIZE_OPTIONS` holds the order menus show them in.
+ */
 export interface SizeStep {
   id: number;
   label: string;
+  /** box height for horizontal portraits and icons */
   rem: number;
-  /** stretch portraits to fill the row, using `rem` only as a minimum */
+  /** box height for vertical portraits; falls back to `rem` */
+  remVert?: number;
+  /** stretch portraits to fill the row, using the height only as a minimum */
   auto?: boolean;
 }
 
 export const SIZES: SizeStep[] = [
-  { id: 0, label: 'Small', rem: 2.4 },
-  { id: 1, label: 'Medium', rem: 3.2 },
-  { id: 2, label: 'Large', rem: 4.4 },
-  { id: 3, label: 'Huge', rem: 6 },
-  { id: 4, label: 'Massive', rem: 8 },
-  { id: 5, label: 'Absolute Unit', rem: 11 },
+  { id: 0, label: 'Small', rem: 2.4, remVert: 3.2 },
+  { id: 1, label: 'Medium', rem: 3.2, remVert: 4.4 },
+  { id: 2, label: 'Large', rem: 4.4, remVert: 6 },
+  { id: 3, label: 'Huge', rem: 6, remVert: 8 },
+  { id: 4, label: 'Massive', rem: 8, remVert: 11 },
+  { id: 5, label: 'Absolute Unit', rem: 11, remVert: 14 },
   // packs in as many as fit and stretches them to use the whole width
-  { id: 6, label: 'Autoscale', rem: 3.2, auto: true },
+  { id: 6, label: 'Autoscale', rem: 3.2, remVert: 4.4, auto: true },
+  // smaller than Small — appended so existing grids keep their size ids
+  { id: 7, label: 'Mini', rem: 1.7, remVert: 2.4 },
+];
+
+/** Menu order, smallest first, with the stretching option last. */
+export const SIZE_OPTIONS: SizeStep[] = [
+  SIZES[7],
+  SIZES[0],
+  SIZES[1],
+  SIZES[2],
+  SIZES[3],
+  SIZES[4],
+  SIZES[5],
+  SIZES[6],
 ];
 
 /** Does this size step stretch portraits to fill the category? */
@@ -70,6 +96,12 @@ export const itemStyle = (id: number): ItemStyle =>
   ITEM_STYLES[id] ?? ITEM_STYLES[DEFAULT_ITEM_STYLE];
 
 export const sizeStep = (id: number): SizeStep => SIZES[id] ?? SIZES[DEFAULT_SIZE];
+
+/** Box height in rem for a size step rendered at a given portrait type. */
+export const sizeRem = (id: number, type: number): number => {
+  const step = sizeStep(id);
+  return type === VERTICAL_PORTRAITS ? (step.remVert ?? step.rem) : step.rem;
+};
 
 /** Low-level courier URL builder. */
 export function imageUrl(folder: string, tag: string, alticon?: string | null): string {

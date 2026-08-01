@@ -1,5 +1,5 @@
 import type { Board, CanvasRect, Category } from '../types/board';
-import { SIZES, portraitType } from './images';
+import { SIZES, portraitType, sizeRem } from './images';
 import { WIDENESS } from './constants';
 import { UNITS_PER_COLUMN, boardLayout } from './layout';
 import { resolveDisplay } from './board';
@@ -234,7 +234,6 @@ export function toClassic(
 
   const colW = 100 / columns;
   const widthValues = WIDENESS.map((w) => w.basis);
-  const sizeValues = SIZES.map((s) => s.rem);
 
   const ordered: Category[] = [];
   for (const band of bands) {
@@ -261,8 +260,10 @@ export function toClassic(
             return defaultMiss - presetMiss > colW / 4 ? preset : 0;
           })();
 
-      // portrait size closest to what auto-fit was giving it, in rem-ish units
-      const { aspect } = resolveDisplay(cat, board);
+      // portrait size closest to what auto-fit was giving it, in rem-ish units.
+      // the scale depends on the portrait type, so read it per category.
+      const { aspect, type } = resolveDisplay(cat, board);
+      const sizeValues = SIZES.map((s) => sizeRem(s.id, type));
       const runs = elementRuns(cat);
       const fitted = fitPortraits({
         boxW: r.w - 1,

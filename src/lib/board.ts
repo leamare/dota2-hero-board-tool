@@ -8,7 +8,7 @@ import {
   itemImageUrl,
   itemStyle,
   portraitType,
-  sizeStep,
+  sizeRem,
 } from './images';
 import { WIDENESS } from './constants';
 
@@ -56,7 +56,7 @@ export function resolveDisplay(category: Category, board: Board) {
     style: category.itemStyle ?? board.itemStyle,
     size: category.size ?? board.size,
     aspect: portraitType(type).aspect,
-    heightRem: sizeStep(category.size ?? board.size).rem,
+    heightRem: sizeRem(category.size ?? board.size, type),
   };
 }
 

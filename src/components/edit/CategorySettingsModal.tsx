@@ -3,7 +3,7 @@ import Modal from '../ui/Modal';
 import CategoryIconModal from './CategoryIconModal';
 import { useBoardStore } from '../../state/boardStore';
 import { LABEL_COLORS, PRESET_NAMES, WIDENESS } from '../../lib/constants';
-import { ITEM_STYLES, PORTRAIT_TYPES, SIZES } from '../../lib/images';
+import { ITEM_STYLES, PORTRAIT_TYPES, SIZE_OPTIONS } from '../../lib/images';
 import { useMetadata } from '../../state/MetadataProvider';
 import type { CategoryIcon } from '../../types/board';
 
@@ -209,7 +209,7 @@ export default function CategorySettingsModal({ categoryId, onClose }: Props) {
               }
             >
               <option value="">Board default</option>
-              {SIZES.map((s) => (
+              {SIZE_OPTIONS.map((s) => (
                 <option key={s.id} value={s.id}>
                   {s.label}
                 </option>

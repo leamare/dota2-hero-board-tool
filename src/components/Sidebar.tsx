@@ -8,7 +8,7 @@ import { useLayoutsStore } from '../state/layoutsStore';
 import { useUiStore } from '../state/uiStore';
 import { useToast } from '../state/ToastProvider';
 import { COLUMN_OPTIONS, DEFAULT_GRID_ICON } from '../lib/constants';
-import { ITEM_STYLES, PORTRAIT_TYPES, SIZES, imageUrl } from '../lib/images';
+import { ITEM_STYLES, PORTRAIT_TYPES, SIZE_OPTIONS, imageUrl } from '../lib/images';
 import { emptyBoard } from '../lib/board';
 import { useIsMobile } from '../lib/useIsMobile';
 import { useMaxColumns } from '../lib/maxColumns';
@@ -388,7 +388,7 @@ export default function Sidebar() {
               value={board.size}
               onChange={(e) => patchBoard({ size: Number(e.target.value) })}
             >
-              {SIZES.map((s) => (
+              {SIZE_OPTIONS.map((s) => (
                 <option key={s.id} value={s.id}>
                   {s.label}
                 </option>
