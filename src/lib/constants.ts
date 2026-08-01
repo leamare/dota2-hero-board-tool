@@ -41,13 +41,14 @@ export const WIDENESS: { label: string; basis: number; fill?: boolean; portrait?
   { label: 'Eighth', basis: 12.5 },
   // as narrow as a single portrait — a stack of one per row
   { label: 'One portrait', basis: 0, portrait: true },
+  { label: 'Fifth', basis: 20 },
 ];
 
 /** Index of the "stretch to the end of the row" width. */
 export const WIDENESS_FILL = WIDENESS.findIndex((w) => w.fill);
 
 /** Menu order — widest first, with the two open-ended options at the ends. */
-export const WIDENESS_OPTIONS: number[] = [0, 1, 6, 5, 2, 3, 4, 8, 9, 10, 7];
+export const WIDENESS_OPTIONS: number[] = [0, 1, 6, 5, 2, 3, 4, 11, 8, 9, 10, 7];
 
 /**
  * Preset name with the share of the board it takes, so picking a width doesn't

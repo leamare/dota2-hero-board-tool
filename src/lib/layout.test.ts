@@ -48,6 +48,12 @@ describe('boardLayout in sub-column units', () => {
     categories: cats,
   });
 
+  it('resolves a fifth exactly on a five-column board', () => {
+    const fifth = WIDENESS.findIndex((w) => w.label === 'Fifth');
+    const p = boardLayout(board([cat('f', { wideness: fifth })], 5), 5);
+    expect(p[0].colSpan).toBe(UNITS_PER_COLUMN);
+  });
+
   it('sizes a "one portrait" category to hold a single portrait', () => {
     const one = WIDENESS.findIndex((w) => w.label === 'One portrait');
     // 900px board, 3 columns of 24 units, no gaps: 12.5px per unit
