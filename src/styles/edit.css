@@ -56,6 +56,21 @@
   display: inline-flex;
   gap: 0.25rem;
   flex: 0 0 auto;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+/*
+ * A "one portrait" wide category is narrower than its own header controls.
+ * Let the header wrap so the buttons stack inside the card instead of spilling
+ * over the neighbour, and trim their padding so fewer rows are needed.
+ */
+.board.edit .cat-head {
+  flex-wrap: wrap;
+  row-gap: 0.2rem;
+}
+.board.edit .cat-controls .btn.small {
+  padding: 0.2rem 0.35rem;
 }
 .cat-controls .btn.active {
   background: var(--menu-selected);
