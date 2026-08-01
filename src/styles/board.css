@@ -1,6 +1,8 @@
 .view-head {
   display: flex;
-  align-items: center;
+  /* the actions belong beside the grid name, not floating halfway down the
+     author + description block */
+  align-items: flex-start;
   gap: 1rem;
   margin-bottom: 1rem;
 }
@@ -37,6 +39,7 @@
 .view-head.centered .view-actions {
   position: absolute;
   right: 0;
+  top: 0;
 }
 .view-actions {
   margin-left: auto;
