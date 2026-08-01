@@ -148,4 +148,11 @@ describe('board share encoding', () => {
     expect(decodeBoard(encodeBoard(b)).description).toBe('Draft helper for pos 1\nsecond line');
     expect(decodeBoard(encodeBoard(sample)).description).toBeUndefined();
   });
+
+  it('round-trips the transparent-headers flag', () => {
+    const board = { ...emptyBoard('Clear'), clearHeaders: true };
+    expect(decodeBoard(encodeBoard(board)).clearHeaders).toBe(true);
+    // and stays absent when it is off, rather than coming back as false
+    expect(decodeBoard(encodeBoard(emptyBoard('Plain'))).clearHeaders).toBeUndefined();
+  });
 });

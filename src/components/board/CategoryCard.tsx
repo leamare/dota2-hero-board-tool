@@ -47,6 +47,8 @@ export default function CategoryCard({
   const autoScale = portraitPx === undefined && isAutoSize(sizeId);
   const minTile = `${(heightRem * aspect).toFixed(2)}rem`;
 
+  // no elements and nothing to add into = header only (read-only board)
+  const headerOnly = category.elements.length === 0 && !bodyExtra;
   const hasColor = !!category.color;
   const colorVar = hasColor
     ? `var(--label-${LABEL_COLORS[colorIndex(category.color)].key})`
@@ -62,6 +64,7 @@ export default function CategoryCard({
       className={[
         'category',
         grouped ? 'grouped' : '',
+        headerOnly ? 'head-only' : '',
         hasColor ? 'has-color' : '',
         HEADER_SIZE_CLASS[category.headerSize ?? 1],
       ]
@@ -77,11 +80,16 @@ export default function CategoryCard({
         {headerControls}
       </div>
 
+      {/*
+        On the read-only board an empty category is just its header — the
+        placeholder block only exists so there is somewhere to drop things while
+        editing, which is what `bodyExtra` (the add tile) marks.
+      */}
+      {!headerOnly && (
       <div
-        className={`cat-body${category.elements.length || bodyExtra ? '' : ' empty'}${autoScale ? ' autoscale' : ''}`}
+        className={`cat-body${autoScale ? ' autoscale' : ''}`}
         style={autoScale ? ({ '--min-tile': minTile } as CSSProperties) : undefined}
       >
-        {category.elements.length === 0 && !bodyExtra && <span>empty</span>}
         {category.elements.map((el, i) => (
           <div className={`portrait-slot${el.kind === 'break' ? ' break-slot' : ''}`} key={i}>
             <ElementPortrait element={el} category={category} board={board} sizePx={portraitPx} />
@@ -90,6 +98,7 @@ export default function CategoryCard({
         ))}
         {bodyExtra}
       </div>
+      )}
       <ChainConnectors chain={chain} />
     </div>
   );

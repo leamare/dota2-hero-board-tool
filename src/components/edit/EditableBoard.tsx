@@ -234,6 +234,7 @@ export default function EditableBoard() {
           board.centered ? 'centered' : '',
           board.darkenedBg ? 'darken' : '',
           board.colorfulLabels ? 'full-labels' : '',
+          board.clearHeaders ? 'clear-heads' : '',
         ]
           .filter(Boolean)
           .join(' ')}

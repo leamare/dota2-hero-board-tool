@@ -94,6 +94,8 @@ export interface Board {
   centered: boolean;
   /** darken the page background */
   darkenedBg: boolean;
+  /** strip the header's own background and outline, leaving just the label */
+  clearHeaders?: boolean;
   /** free-placement mode: categories sit at their own rects instead of a grid */
   canvas?: boolean;
   categories: Category[];

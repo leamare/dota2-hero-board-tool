@@ -421,6 +421,14 @@ export default function Sidebar() {
             />
             {t('sidebar.darken')}
           </label>
+          <label className="checkbox">
+            <input
+              type="checkbox"
+              checked={!!board.clearHeaders}
+              onChange={(e) => patchBoard({ clearHeaders: e.target.checked || undefined })}
+            />
+            {t('sidebar.clearHeaders')}
+          </label>
           <button
             className="btn small danger"
             style={{ marginTop: '0.5rem' }}

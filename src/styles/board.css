@@ -490,3 +490,33 @@
 
 /* columns are limited to what actually fits (see useFitColumns); no hard
    mobile override needed — a narrow screen resolves to a single column */
+
+/*
+ * Transparent headers: the label sits straight on the card with no bar of its
+ * own. The colour still reads through the left edge / body tint, so a coloured
+ * category is still identifiable.
+ */
+.board.clear-heads .category .cat-head,
+.board.clear-heads.full-labels .category.has-color .cat-head {
+  background-color: transparent;
+}
+.board.clear-heads .category {
+  box-shadow: none;
+}
+.board.clear-heads .category:hover {
+  box-shadow: none;
+}
+.board.clear-heads:not(.full-labels) .category.has-color {
+  box-shadow: inset 0.15rem 0 0 var(--cat-color);
+}
+/* without a filled bar the title needs the label colour to stay legible */
+.board.clear-heads.full-labels .category.has-color .cat-title {
+  color: var(--cat-color);
+  text-shadow: none;
+}
+
+/* an empty category on the read-only board is just its header — don't let the
+   row's stretch turn it into a tall block of colour */
+.board .category.head-only {
+  align-self: start;
+}

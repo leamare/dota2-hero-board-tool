@@ -30,6 +30,7 @@ const B_COLORFUL = 1;
 const B_CENTERED = 2;
 const B_DARKENED = 4;
 const B_CANVAS = 8;
+const B_CLEAR_HEADS = 16;
 
 // icon flag bits
 const I_ALTICON = 1;
@@ -141,6 +142,7 @@ export function encodeBoardBytes(board: Board): Uint8Array {
   if (board.centered) bflags |= B_CENTERED;
   if (board.darkenedBg) bflags |= B_DARKENED;
   if (board.canvas) bflags |= B_CANVAS;
+  if (board.clearHeaders) bflags |= B_CLEAR_HEADS;
   w.u8(bflags);
   w.u8(board.columns);
   w.u8(board.portraitType);
@@ -241,6 +243,7 @@ export function decodeBoard(str: string): Board {
   board.centered = !!(bflags & B_CENTERED);
   board.darkenedBg = !!(bflags & B_DARKENED);
   if (bflags & B_CANVAS) board.canvas = true;
+  if (bflags & B_CLEAR_HEADS) board.clearHeaders = true;
   board.columns = r.u8();
   board.portraitType = r.u8();
   board.itemStyle = r.u8();

@@ -65,6 +65,7 @@ export default function CanvasBoard({ board, renderCard, width, onMeasure, child
         'canvas-board',
         board.darkenedBg ? 'darken' : '',
         board.colorfulLabels ? 'full-labels' : '',
+        board.clearHeaders ? 'clear-heads' : '',
       ]
         .filter(Boolean)
         .join(' ')}
