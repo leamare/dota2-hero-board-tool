@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import { useLocation } from 'react-router-dom';
 import BoardView from './BoardView';
 import BoardImageHead from './BoardImageHead';
@@ -35,9 +36,16 @@ export default function PrintSheet() {
   // only the board tabs have a grid to print
   if (!pathname.startsWith('/view') && !pathname.startsWith('/edit')) return null;
 
+  const width = board.canvas ? PRINT_SHEET_MAX : printSheetWidth(board.columns);
+
   return (
     <div className="print-sheet-root" aria-hidden="true">
-      <div className="print-sheet" style={{ width: board.canvas ? PRINT_SHEET_MAX : printSheetWidth(board.columns) }}>
+      {/* the QR keeps its share of the banner on a narrow sheet, instead of
+          squeezing the credit block off the edge */}
+      <div
+        className="print-sheet"
+        style={{ width, '--qr-size': `${Math.round(width * 0.13)}px` } as CSSProperties}
+      >
         <BoardImageHead
           board={board}
           qr={<QRCode text={buildShareUrl(board)} scale={3} minSize={0} />}

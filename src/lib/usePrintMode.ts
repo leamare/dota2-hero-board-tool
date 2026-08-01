@@ -4,6 +4,9 @@ import { useUiStore } from '../state/uiStore';
 /** A4 minus 10mm margins on every side, in millimetres. */
 const PAGE_MM = { long: 297 - 20, short: 210 - 20 };
 
+/** Never blow the sheet up beyond this, however small the grid is. */
+const MAX_ZOOM = 3;
+
 /** Injected at print time so the sheet orientation can follow the grid. */
 const PAGE_STYLE_ID = 'print-page-size';
 
@@ -35,7 +38,6 @@ export function usePrintMode(): void {
   useEffect(() => {
     const root = document.documentElement;
     const sheet = () => document.querySelector<HTMLElement>('.print-sheet');
-    const wrap = () => document.querySelector<HTMLElement>('.print-sheet-root');
     const probe = () => document.querySelector<HTMLElement>('.print-probe');
 
     const before = () => {
@@ -43,9 +45,8 @@ export function usePrintMode(): void {
       // runs twice per job; only the first pass may measure
       if (document.body.classList.contains('printing')) return;
       const el = sheet();
-      const box = wrap();
       const ruler = probe();
-      if (!el || !box || !ruler || !ruler.offsetWidth) return;
+      if (!el || !ruler || !ruler.offsetWidth) return;
 
       // the probe is a known number of millimetres wide, which gives this
       // document's px-per-mm; the page box follows from that
@@ -63,37 +64,45 @@ export function usePrintMode(): void {
       const w = el.offsetWidth;
       const h = el.scrollHeight;
 
-      // print in whichever orientation lets the grid come out bigger
-      const fit = (pw: number, ph: number) =>
-        Math.min(1, (pw * perMm) / Math.max(1, w), (ph * perMm) / Math.max(1, h));
+      /*
+       * Pick the orientation, allowing the sheet to grow past 1:1 — it is a
+       * fixed-width layout, so a small grid should fill the page rather than
+       * sit in a corner of it.
+       *
+       * Orientation is scored on how much of the page *width* the grid ends up
+       * using, not on the raw scale: a one-column tier list fits marginally
+       * bigger across a landscape page but leaves a third of it blank down the
+       * side, where in portrait it spans edge to edge. Ties (both fill the
+       * width) go to whichever comes out larger.
+       */
+      const fit = (pw: number, ph: number) => {
+        const zoom = Math.min(MAX_ZOOM, (pw * perMm) / Math.max(1, w), (ph * perMm) / Math.max(1, h));
+        return { zoom, cover: (w * zoom) / (pw * perMm) };
+      };
       const landscape = fit(PAGE_MM.long, PAGE_MM.short);
       const portrait = fit(PAGE_MM.short, PAGE_MM.long);
-      const scale = Math.max(landscape, portrait);
-      setPageSize(landscape >= portrait ? 'landscape' : 'portrait');
+      const tied = Math.abs(landscape.cover - portrait.cover) < 0.01;
+      const useLandscape = tied
+        ? landscape.zoom >= portrait.zoom
+        : landscape.cover > portrait.cover;
+      const scale = useLandscape ? landscape.zoom : portrait.zoom;
+      setPageSize(useLandscape ? 'landscape' : 'portrait');
 
-      // a transform shrinks what is painted but not the layout box, so the
-      // wrapper — untransformed — is pinned to the scaled size. that box is
-      // what the printer paginates.
-      el.style.transform = `scale(${scale})`;
-      el.style.transformOrigin = 'top left';
-      box.style.width = `${w * scale}px`;
-      box.style.height = `${h * scale}px`;
+      /*
+       * `zoom`, not `transform: scale()`. A transform shrinks what is painted
+       * but leaves the layout box full size, so the printer keeps paginating
+       * the unscaled height and trails empty sheets behind the grid — clipping
+       * it away only works in some engines. Zoom resizes the box itself.
+       */
+      el.style.zoom = String(scale);
     };
 
     const after = () => {
       const el = sheet();
-      const box = wrap();
       root.dataset.theme = theme;
       root.style.fontSize = '';
       document.body.classList.remove('printing');
-      if (el) {
-        el.style.transform = '';
-        el.style.transformOrigin = '';
-      }
-      if (box) {
-        box.style.width = '';
-        box.style.height = '';
-      }
+      if (el) el.style.zoom = '';
     };
 
     window.addEventListener('beforeprint', before);

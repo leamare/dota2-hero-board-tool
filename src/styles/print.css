@@ -41,7 +41,6 @@ body.printing .print-probe {
 }
 body.printing .print-sheet-root {
   display: block;
-  overflow: hidden;
 }
 body.printing .app-shell {
   display: none;
@@ -50,6 +49,9 @@ body.printing .app-shell {
 body.printing {
   /* paper is white — the light theme's page grey would print as ink */
   background: #fff;
+  /* the shell's full-viewport minimum would otherwise reserve a whole sheet */
+  min-height: 0;
+  margin: 0;
 }
 .print-sheet {
   background: #fff;
@@ -59,18 +61,11 @@ body.printing .category {
   break-inside: avoid;
 }
 
-/*
- * The banner is authored for the 1600px PNG export and the sheet is that same
- * width, so only the credit block needs reining in.
- */
-.print-sheet .board-image-credit {
-  white-space: nowrap;
-}
 /* pin the QR the way the PNG export does, instead of letting it grow with the
    amount of data until it crowds out the credit block */
 .print-sheet .qr {
-  width: 208px;
-  height: 208px;
+  width: var(--qr-size, 208px);
+  height: var(--qr-size, 208px);
   min-width: 0 !important;
 }
 
