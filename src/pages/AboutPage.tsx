@@ -54,6 +54,38 @@ export default function AboutPage() {
         </section>
 
         <section className="docs-section">
+          <h2>Autogrid</h2>
+          <p>
+            The <b>Autogrid</b> tab in the sidebar builds tier lists straight from the spectral.gg
+            LRG2 stats reports — the same numbers behind{' '}
+            <a href="https://stats.spectral.gg" target="_blank" rel="noreferrer">
+              stats.spectral.gg
+            </a>
+            . Pick a report (or type your own report tag), tick the grids you want, and each one is
+            saved under a dated name.
+          </p>
+          <ul>
+            <li>
+              <b>Tiers</b> — heroes picked less than 90% as often as the median for that position are
+              dropped, and the rest are cut into six tiers of equal <code>rank</code> range, S down to
+              E. Tier sizes are therefore uneven by design: the top tier is whoever is genuinely at
+              the top of the scale.
+            </li>
+            <li>
+              <b>Role grids</b> — one tier per row, coloured by tier.
+            </li>
+            <li>
+              <b>Total meta</b> — a column per role, a tier per row, each column chained vertically
+              and coloured by role.
+            </li>
+          </ul>
+          <p className="muted">
+            Rank-bracket selection, meta tier lists and OpenDota personalization are not wired up
+            yet.
+          </p>
+        </section>
+
+        <section className="docs-section">
           <h2>Keyboard shortcuts</h2>
           <p>
             Every shortcut is <b>Alt</b> plus one key, and none of them fire while you are typing in

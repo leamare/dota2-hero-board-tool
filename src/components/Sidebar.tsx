@@ -18,6 +18,8 @@ import PickerGrid from './edit/PickerGrid';
 import BoardIconModal from './edit/BoardIconModal';
 import ShareModal from './edit/ShareModal';
 import GameGridModal from './edit/GameGridModal';
+import GameConfigButtons from './edit/GameConfigButtons';
+import AutogridPanel from './edit/AutogridPanel';
 import NameDialog from './ui/NameDialog';
 import ConfirmDialog from './ui/ConfirmDialog';
 import { useLoadLayout } from '../lib/useLoadLayout';
@@ -57,7 +59,7 @@ export default function Sidebar() {
     if (from >= 0 && to >= 0) reorder(from, to);
   };
 
-  const [tab, setTab] = useState<'settings' | 'heroes'>('settings');
+  const [tab, setTab] = useState<'settings' | 'heroes' | 'autogrid'>('settings');
   const [iconModal, setIconModal] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [gameMode, setGameMode] = useState<'import' | 'export' | null>(null);
@@ -253,12 +255,33 @@ export default function Sidebar() {
           >
             {t('sidebar.tabHeroes')}
           </button>
+          <button
+            className={`sidebar-tab-btn${tab === 'autogrid' ? ' active' : ''}`}
+            onClick={() => setTab('autogrid')}
+          >
+            {t('sidebar.tabAutogrid')}
+          </button>
         </div>
 
         {tab === 'heroes' && (
           <div className="sidebar-heroes">
             <PickerGrid draggable autoFocus />
           </div>
+        )}
+
+        {tab === 'autogrid' && (
+          <>
+            <div className="sidebar-section">
+              <h3>{t('autogrid.gameConfig')}</h3>
+              <GameConfigButtons
+                onImport={() => setGameMode('import')}
+                onExport={() => setGameMode('export')}
+              />
+            </div>
+            <div className="sidebar-section">
+              <AutogridPanel />
+            </div>
+          </>
         )}
 
         <div className="sidebar-section" hidden={tab !== 'settings'}>
@@ -312,22 +335,10 @@ export default function Sidebar() {
               {t('common.print')}
             </button>
           </div>
-          <div className="sidebar-actions">
-            <button
-              className="btn small"
-              title={t('sidebar.gameFileHint')}
-              onClick={() => setGameMode('import')}
-            >
-              {t('sidebar.gameImport')}
-            </button>
-            <button
-              className="btn small"
-              title={t('sidebar.gameFileHint')}
-              onClick={() => setGameMode('export')}
-            >
-              {t('sidebar.gameExport')}
-            </button>
-          </div>
+          <GameConfigButtons
+            onImport={() => setGameMode('import')}
+            onExport={() => setGameMode('export')}
+          />
           <label className="checkbox">
             <input type="checkbox" checked={autosave} onChange={(e) => setAutosave(e.target.checked)} />
             {t('sidebar.autosave')}
