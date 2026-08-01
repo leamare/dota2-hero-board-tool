@@ -37,25 +37,32 @@ interface Props {
  */
 export default function ShareImageModal({ open, onClose, board }: Props) {
   const stageRef = useRef<HTMLDivElement>(null);
-  // null = still generating, '' = too much data for a QR (render without one)
-  const [qr, setQr] = useState<string | null>(null);
-  const [png, setPng] = useState('');
-  const [error, setError] = useState<string | null>(null);
+
+  /*
+   * Both results are tagged with the grid they belong to, and read back only
+   * when that tag still matches. Plain state would leave the previous grid's
+   * image on screen from the render that switches grids until an effect could
+   * clear it — a wait, not a flash, because re-rendering the 1600px stage takes
+   * a moment. The same tagging stops a stale QR kicking off a doomed render.
+   */
+  const [qrJob, setQrJob] = useState<{ url: string; qr: string } | null>(null);
+  const [pngJob, setPngJob] = useState<{ url: string; png?: string; error?: string } | null>(null);
 
   const url = buildShareUrl(board);
+  // null = still generating, '' = too much data for a QR (render without one)
+  const qr = qrJob?.url === url ? qrJob.qr : null;
+  const png = (pngJob?.url === url && pngJob.png) || '';
+  const error = pngJob?.url === url ? pngJob.error : undefined;
 
   // the QR has to be a data URL before rasterizing, or it won't be in the PNG
   useEffect(() => {
     if (!open) return;
     let alive = true;
-    setPng('');
-    setQr(null);
-    setError(null);
     // margin 2 keeps a quiet zone, which scanners need to find the code
     QRCodeLib.toDataURL(url, { width: QR_SIZE, margin: 2, errorCorrectionLevel: 'L' })
-      .then((u) => alive && setQr(u))
+      .then((u) => alive && setQrJob({ url, qr: u }))
       // a huge grid can exceed the QR capacity — still export, just without one
-      .catch(() => alive && setQr(''));
+      .catch(() => alive && setQrJob({ url, qr: '' }));
     return () => {
       alive = false;
     };
@@ -88,16 +95,22 @@ export default function ShareImageModal({ open, onClose, board }: Props) {
           backgroundColor: getComputedStyle(document.body).backgroundColor,
         }),
       )
-      .then((data) => alive && setPng(data))
+      .then((data) => alive && setPngJob({ url, png: data }))
       .catch(
         () =>
-          alive && setError('Could not render the image — some portraits may have failed to load.'),
+          alive &&
+          setPngJob({
+            url,
+            error: 'Could not render the image — some portraits may have failed to load.',
+          }),
       );
 
     return () => {
       alive = false;
     };
-  }, [open, qr, board]);
+    // `board` is not a dependency: its identity changes on unrelated store
+    // writes, and `url` already changes whenever its contents do
+  }, [open, qr, url]);
 
   const copyImage = async () => {
     try {
