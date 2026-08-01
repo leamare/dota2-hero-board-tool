@@ -69,11 +69,18 @@ interface RawItem {
  * by their code name.
  */
 function normalizeItems(raw: Record<string, RawItem>): Item[] {
-  const items: Item[] = [];
+  const byId = new Map<number, Item>();
   for (const entry of Object.values(raw)) {
     const tag = entry.name.replace(/^item_/, '');
     if (!tag || tag.startsWith('recipe_')) continue; // recipes aren't useful on a grid
-    items.push({
+    /*
+     * Ids are not unique in the feed: the upgraded forms reuse the base item's
+     * id (`item_diffusal_blade_2` is also 174). An id is all a grid stores, so
+     * a second entry under one would be indistinguishable once picked — keep
+     * the first, which is the base item.
+     */
+    if (byId.has(entry.id)) continue;
+    byId.set(entry.id, {
       id: entry.id,
       tag,
       name: entry.localized_name?.trim() || prettify(tag),
@@ -81,8 +88,19 @@ function normalizeItems(raw: Record<string, RawItem>): Item[] {
       alt: entry.localized_name ? prettify(tag) : undefined,
     });
   }
-  items.sort((a, b) => a.name.localeCompare(b.name));
-  return items;
+  const items = [...byId.values()];
+
+  // a display name can be shared by two real items ("Restorative" is both the
+  // Ogre Heart and the enhancement) — tell them apart by their code name
+  const seen = new Map<string, number>();
+  for (const item of items) seen.set(item.name, (seen.get(item.name) ?? 0) + 1);
+  for (const item of items) {
+    if ((seen.get(item.name) ?? 0) > 1 && item.alt && item.alt !== item.name) {
+      item.name = `${item.name} (${item.alt})`;
+    }
+  }
+
+  return items.sort((a, b) => a.name.localeCompare(b.name));
 }
 
 async function fetchJson<T>(url: string): Promise<T> {
@@ -91,8 +109,8 @@ async function fetchJson<T>(url: string): Promise<T> {
   return (await res.json()) as T;
 }
 
-// v2: items carry their in-game names, so a v1 cache is stale by shape
-const CACHE_KEY = 'hgt.metadata.v2';
+// bumped whenever the normalised shape changes, so stale caches are dropped
+const CACHE_KEY = 'hgt.metadata.v3';
 const CACHE_TTL = 6 * 60 * 60 * 1000; // 6 hours
 
 interface CachedMetadata {

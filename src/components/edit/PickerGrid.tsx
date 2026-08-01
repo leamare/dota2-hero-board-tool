@@ -68,9 +68,12 @@ export default function PickerGrid({ onPick, previewType = 0, draggable, autoFoc
 
   const tileStyle = { aspectRatio: portraitType(previewType).aspect };
 
-  const tile = (el: GridElement, src: string, label: string, contain: boolean) => (
+  // `key` is the element identity, not the label: two items can share a display
+  // name (there are two "Restorative"s), and a duplicate key leaves React
+  // holding a stale tile that then shows up in every later search
+  const tile = (key: string, el: GridElement, src: string, label: string, contain: boolean) => (
     <button
-      key={label}
+      key={key}
       className={`picker-tile${contain ? ' item' : ''}`}
       title={label}
       draggable={draggable}
@@ -126,13 +129,20 @@ export default function PickerGrid({ onPick, previewType = 0, draggable, autoFoc
         <div className="picker-grid">
           {rawTag &&
             tile(
+              `raw:${rawTag}`,
               { kind: 'hero', tag: rawTag },
               heroImageUrl(previewType, rawTag),
               `custom: ${rawTag}`,
               false,
             )}
           {heroes.map((h) =>
-            tile({ kind: 'hero', refId: h.id }, heroImageUrl(previewType, h.tag), h.name, false),
+            tile(
+              `hero:${h.id}`,
+              { kind: 'hero', refId: h.id },
+              heroImageUrl(previewType, h.tag),
+              h.name,
+              false,
+            ),
           )}
         </div>
       )}
@@ -140,8 +150,16 @@ export default function PickerGrid({ onPick, previewType = 0, draggable, autoFoc
       {tab === 'item' && (
         <div className="picker-grid">
           {rawTag &&
-            tile({ kind: 'custom', tag: rawTag }, itemImageUrl(0, rawTag), `custom: ${rawTag}`, true)}
-          {items.map((i) => tile({ kind: 'item', refId: i.id }, itemImageUrl(0, i.tag), i.name, true))}
+            tile(
+              `raw:${rawTag}`,
+              { kind: 'custom', tag: rawTag },
+              itemImageUrl(0, rawTag),
+              `custom: ${rawTag}`,
+              true,
+            )}
+          {items.map((i) =>
+            tile(`item:${i.id}`, { kind: 'item', refId: i.id }, itemImageUrl(0, i.tag), i.name, true),
+          )}
         </div>
       )}
     </div>
