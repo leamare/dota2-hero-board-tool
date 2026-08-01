@@ -35,6 +35,8 @@ export default function Layout() {
   const toggleSidebar = useUiStore((s) => s.toggleOpen);
   const uiScale = useUiStore((s) => s.uiScale);
   const bumpUiScale = useUiStore((s) => s.bumpUiScale);
+  const theme = useUiStore((s) => s.theme);
+  const toggleTheme = useUiStore((s) => s.toggleTheme);
   const isMobile = useIsMobile();
   const pinned = sidebarPinned && !isMobile;
   const { t, locale, setLocale } = useI18n();
@@ -51,6 +53,11 @@ export default function Layout() {
   useEffect(() => {
     document.documentElement.style.setProperty('--ui-scale', String(uiScale));
   }, [uiScale]);
+
+  // the light palette is a token override set keyed off this attribute
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+  }, [theme]);
 
   // one-time upgrade from the old tool, then the what's-new dialog for this
   // release. runs on mount, after the persisted stores have rehydrated.
@@ -144,6 +151,15 @@ export default function Layout() {
           </button>
           <span className="ui-scale-value">{Math.round(uiScale * 100)}%</span>
         </span>
+        <button
+          type="button"
+          className="theme-toggle"
+          onClick={toggleTheme}
+          title={t(theme === 'dark' ? 'theme.toLight' : 'theme.toDark')}
+          aria-label={t(theme === 'dark' ? 'theme.toLight' : 'theme.toDark')}
+        >
+          {theme === 'dark' ? '☀' : '☾'}
+        </button>
         {!pinned && (
           <button className="subheader-toggle" onClick={toggleSidebar}>
             <MenuIcon name="stack" />

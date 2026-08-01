@@ -117,7 +117,7 @@ export default function CategoryIconModal({ categoryId, onClose }: Props) {
                 title={f}
                 onClick={() => set({ kind: 'facet', folder: 'facets', tag: f })}
               >
-                <img className="contain" src={imageUrl('facets', f)} alt={f} loading="lazy" />
+                <img className="contain facet" src={imageUrl('facets', f)} alt={f} loading="lazy" />
                 <span>{f}</span>
               </button>
             ))}

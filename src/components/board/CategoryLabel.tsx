@@ -30,7 +30,7 @@ function IconImg({ icon }: { icon: CategoryIcon }) {
       if (!icon.folder || !icon.tag) return null;
       return (
         <img
-          className="cat-title-icon contain"
+          className={`cat-title-icon contain${icon.folder === 'facets' ? ' facet' : ''}`}
           src={imageUrl(icon.folder, icon.tag)}
           alt={icon.tag}
           title={icon.tag}

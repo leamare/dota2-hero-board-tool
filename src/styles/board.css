@@ -137,8 +137,8 @@
   background-color: var(--cat-color);
 }
 .board.full-labels .category.has-color .cat-title {
-  color: #fff;
-  text-shadow: 0 0 0.4rem #000;
+  color: var(--on-accent);
+  text-shadow: 0 0 0.4rem var(--label-text-shadow);
 }
 
 /* darken on: a moderate dark tint. darken off: the full label colour. */
@@ -272,7 +272,7 @@
   transform: scale(1.25);
 }
 .portrait.empty {
-  background-color: #ffffff0a;
+  background-color: var(--empty-slot-bg);
   box-shadow: inset 0 0 0 0.08rem var(--cat-outline);
 }
 /* on the view board an empty slot is just blank space (keeps its size) */
@@ -300,7 +300,7 @@
 /* connectors drawn in the grid gap toward a linked partner: three thin
    gray lines bridging the gap */
 .chain-conn {
-  --chain-line: #8b9099;
+  /* colour comes from the theme so it stays visible on light backgrounds */
   position: absolute;
   z-index: 3;
   pointer-events: none;

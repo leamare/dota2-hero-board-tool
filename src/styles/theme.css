@@ -60,8 +60,83 @@
   --cat-head-bg: #060606;                /* #05081c */
   --portrait-radius: 0.2rem;
   --separator-color: #4a4a4a;            /* #4b5591 */
+  --chain-line: #8b9099;                 /* connector between chained categories */
+  --empty-slot-bg: #ffffff0a;            /* blank portrait placeholder */
+  --palette-icon-bg: #000;               /* backdrop behind dragged palette icons */
+
+  /* depth + overlays. these flip with the theme, unlike the label colours */
+  --shadow-color: #000a;
+  --shadow-soft: #0007;
+  --scrim: #000a;
+  --header-text-shadow: #000;
+
+  /* always-light ink, used on top of coloured surfaces in both themes */
+  --on-accent: #fff;
+  --label-text-shadow: #000;
 
   --font-main: 'Noto Sans', 'Open Sans', Tahoma, Helvetica, sans-serif;
+}
+
+/*
+ * Light theme. Only the surface/ink tokens flip — label colours are grid
+ * *content*, so a grid looks the same either way (see the block below).
+ */
+:root[data-theme='light'] {
+  --main-bg: #f0f0f0;
+  --main-text-color: #1c1c1c;
+  --header-bg: #dcdcdc;
+  --big-button-color: #c4c4c4;
+  --big-button-color-hover: #9c9c9c;
+  --links-color: #262626;
+
+  --menu-selected-text-shadow: #9a9a9a;
+  --menu-selected: #c6c6c6;
+  --menu-selected-borders: #e6e6e6;
+  --menu-selected-hover: #b2b2b2;
+  --menu-selected-borders-hover: #d2d2d2;
+  --menu-hover: #e6e6e6;
+  --menu-link-active: #000;
+  --menu-link: #565656;
+
+  --sidebar-widget-bg: #eaeaea;
+  --sidebar-trigger: #8a8a8a;
+
+  --mp-block-outline: #d2d2d2;
+  --mp-block-bg: #fafafa;
+  --mp-block-link: #222;
+  --mp-block-link-outline: #fff;
+  --mp-block-desc-bg: #efefef;
+  --mp-block-outline-hover: #80808066;
+
+  --table-hover-color: #80808022;
+  --text-block-bg: #e7e7e7;
+  --text-block-outline: #d6d6d6;
+  /* these are "recessed" overlays (buttons, captions), so they stay darker
+     than the surface in both themes — a white wash would vanish here */
+  --text-block-caption-bg: #0000001f;
+  --text-block-caption-h2-bg: #0000001a;
+  --text-block-caption-h3-bg: #00000016;
+  --text-block-caption-h4-bg: #00000010;
+  --text-block-caption-h5-bg: #0000000a;
+  --text-block-caption-code-bg: #00000014;
+  --text-block-caption-color: #3a3a3a;
+  --footer-color: #9a9a9a;
+  --footer-bg: #e2e2e2;
+
+  --cat-bg: #e6e6e6;
+  --cat-outline: #cfcfcf;
+  --cat-outline-hover: #a4a4a4;
+  --break-line: #7d7d7d;
+  --cat-head-bg: #f7f7f7;
+  --separator-color: #9a9a9a;
+  --chain-line: #6f747c;
+  --empty-slot-bg: #0000000d;
+  --palette-icon-bg: #d8d8d8;
+
+  --shadow-color: #0000002e;
+  --shadow-soft: #00000022;
+  --scrim: #00000066;
+  --header-text-shadow: #fff;
 }
 
 /*

@@ -29,7 +29,7 @@
   object-fit: cover;
   border-radius: var(--portrait-radius);
   cursor: grab;
-  background: #000;
+  background: var(--palette-icon-bg);
   transition: transform 100ms ease, box-shadow 100ms ease;
 }
 .palette-icon.item {
@@ -76,7 +76,7 @@
 
 .drag-overlay-card {
   cursor: grabbing;
-  box-shadow: 0 0.4rem 1.2rem #000b;
+  box-shadow: 0 0.4rem 1.2rem var(--shadow-color);
   opacity: 0.95;
 }
 /* the overlay wrapper carries .board for the colour rules but must not lay out
@@ -124,7 +124,7 @@
   height: 1.15rem;
   border: none;
   border-radius: 50%;
-  color: #fff;
+  color: var(--on-accent);
   cursor: pointer;
   opacity: 0;
   padding: 0;

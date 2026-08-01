@@ -37,7 +37,7 @@ export default function BoardIconModal({ open, onClose }: { open: boolean; onClo
         <div className="picker-grid">
           {facets.map((f) => (
             <button key={f} className="picker-tile item" title={f} onClick={() => set(f)}>
-              <img className="contain" src={imageUrl('facets', f)} alt={f} loading="lazy" />
+              <img className="contain facet" src={imageUrl('facets', f)} alt={f} loading="lazy" />
               <span>{f}</span>
             </button>
           ))}

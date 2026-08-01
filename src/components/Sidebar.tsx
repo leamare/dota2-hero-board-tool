@@ -266,7 +266,7 @@ export default function Sidebar() {
           <h3>{t('sidebar.currentGrid')}</h3>
           <div className="field row">
             <button className="btn icon-btn" title="Grid icon" onClick={() => setIconModal(true)}>
-              <img src={imageUrl('facets', board.icon || DEFAULT_GRID_ICON)} alt="" />
+              <img className="facet" src={imageUrl('facets', board.icon || DEFAULT_GRID_ICON)} alt="" />
             </button>
             <input
               className="input"

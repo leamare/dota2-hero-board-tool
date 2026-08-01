@@ -91,6 +91,32 @@ const en: Dict = {
   'edit.addCategoryHint': 'Add a category to start building your grid.',
 
   'lang.label': 'Language',
+  'theme.toLight': 'Switch to the light theme',
+  'theme.toDark': 'Switch to the dark theme',
+
+  'common.print': 'Print',
+  'print.printBtn': 'Print',
+  'print.back': 'Back to the grid',
+  'print.hint': 'Scaled to fit a single page. Enable background graphics in the print dialog to keep the colours.',
+
+  'sidebar.tabAutogrid': 'Autogrid',
+  'autogrid.gameConfig': 'Game config',
+  'autogrid.generated': 'Generated grids',
+  'autogrid.report': 'Stats report',
+  'autogrid.customTag': 'Custom report tag',
+  'autogrid.customTagPlaceholder': 'e.g. imm_ranked_meta_prev_7',
+  'autogrid.grids': 'Grids to generate',
+  'autogrid.total': 'Total meta (all roles)',
+  'autogrid.generate': 'Generate grids',
+  'autogrid.generating': 'Generating…',
+  'autogrid.replaceSame': 'Replace grids with the same name',
+  'autogrid.done': 'Generated {n} grid(s)',
+  'autogrid.failed': 'Could not load the stats report',
+  'autogrid.pickOne': 'Pick at least one grid to generate',
+  'autogrid.tierList': 'Meta tier list',
+  'autogrid.personalization': 'Personalization',
+  'autogrid.accountId': 'Dota 2 account ID',
+  'autogrid.soon': 'Not available yet',
 };
 
 const ru: Dict = {
@@ -172,6 +198,32 @@ const ru: Dict = {
   'edit.addCategoryHint': 'Добавьте категорию, чтобы начать.',
 
   'lang.label': 'Язык',
+  'theme.toLight': 'Переключить на светлую тему',
+  'theme.toDark': 'Переключить на тёмную тему',
+
+  'common.print': 'Печать',
+  'print.printBtn': 'Печать',
+  'print.back': 'Вернуться к сетке',
+  'print.hint': 'Масштабировано под одну страницу. Включите фоновую графику в диалоге печати, чтобы сохранить цвета.',
+
+  'sidebar.tabAutogrid': 'Автосетка',
+  'autogrid.gameConfig': 'Игровой конфиг',
+  'autogrid.generated': 'Сгенерированные сетки',
+  'autogrid.report': 'Отчёт статистики',
+  'autogrid.customTag': 'Свой тег отчёта',
+  'autogrid.customTagPlaceholder': 'напр. imm_ranked_meta_prev_7',
+  'autogrid.grids': 'Какие сетки создать',
+  'autogrid.total': 'Общая мета (все роли)',
+  'autogrid.generate': 'Создать сетки',
+  'autogrid.generating': 'Создаём…',
+  'autogrid.replaceSame': 'Заменять сетки с тем же названием',
+  'autogrid.done': 'Создано сеток: {n}',
+  'autogrid.failed': 'Не удалось загрузить отчёт статистики',
+  'autogrid.pickOne': 'Выберите хотя бы одну сетку',
+  'autogrid.tierList': 'Тир-лист меты',
+  'autogrid.personalization': 'Персонализация',
+  'autogrid.accountId': 'Account ID в Dota 2',
+  'autogrid.soon': 'Пока недоступно',
 };
 
 const zh: Dict = {
@@ -253,6 +305,32 @@ const zh: Dict = {
   'edit.addCategoryHint': '添加一个类别开始构建你的网格。',
 
   'lang.label': '语言',
+  'theme.toLight': '切换到浅色主题',
+  'theme.toDark': '切换到深色主题',
+
+  'common.print': '打印',
+  'print.printBtn': '打印',
+  'print.back': '返回网格',
+  'print.hint': '已缩放以适应单页。请在打印对话框中启用背景图形以保留颜色。',
+
+  'sidebar.tabAutogrid': '自动网格',
+  'autogrid.gameConfig': '游戏配置',
+  'autogrid.generated': '生成的网格',
+  'autogrid.report': '统计报告',
+  'autogrid.customTag': '自定义报告标签',
+  'autogrid.customTagPlaceholder': '例如 imm_ranked_meta_prev_7',
+  'autogrid.grids': '要生成的网格',
+  'autogrid.total': '总体版本（全部位置）',
+  'autogrid.generate': '生成网格',
+  'autogrid.generating': '生成中…',
+  'autogrid.replaceSame': '替换同名网格',
+  'autogrid.done': '已生成 {n} 个网格',
+  'autogrid.failed': '无法加载统计报告',
+  'autogrid.pickOne': '至少选择一个要生成的网格',
+  'autogrid.tierList': '版本天梯榜',
+  'autogrid.personalization': '个性化',
+  'autogrid.accountId': 'Dota 2 账号 ID',
+  'autogrid.soon': '暂不可用',
 };
 
 const uk: Dict = {
@@ -334,6 +412,32 @@ const uk: Dict = {
   'edit.addCategoryHint': 'Додайте категорію, щоб почати.',
 
   'lang.label': 'Мова',
+  'theme.toLight': 'Перемкнути на світлу тему',
+  'theme.toDark': 'Перемкнути на темну тему',
+
+  'common.print': 'Друк',
+  'print.printBtn': 'Друкувати',
+  'print.back': 'Повернутися до сітки',
+  'print.hint': 'Масштабовано під одну сторінку. Увімкніть фонову графіку в діалозі друку, щоб зберегти кольори.',
+
+  'sidebar.tabAutogrid': 'Автосітка',
+  'autogrid.gameConfig': 'Ігровий конфіг',
+  'autogrid.generated': 'Згенеровані сітки',
+  'autogrid.report': 'Звіт статистики',
+  'autogrid.customTag': 'Власний тег звіту',
+  'autogrid.customTagPlaceholder': 'напр. imm_ranked_meta_prev_7',
+  'autogrid.grids': 'Які сітки створити',
+  'autogrid.total': 'Загальна мета (усі ролі)',
+  'autogrid.generate': 'Створити сітки',
+  'autogrid.generating': 'Створюємо…',
+  'autogrid.replaceSame': 'Замінювати сітки з тією ж назвою',
+  'autogrid.done': 'Створено сіток: {n}',
+  'autogrid.failed': 'Не вдалося завантажити звіт статистики',
+  'autogrid.pickOne': 'Оберіть хоча б одну сітку',
+  'autogrid.tierList': 'Тір-лист мети',
+  'autogrid.personalization': 'Персоналізація',
+  'autogrid.accountId': 'Account ID у Dota 2',
+  'autogrid.soon': 'Поки недоступно',
 };
 
 const pt: Dict = {
@@ -415,6 +519,32 @@ const pt: Dict = {
   'edit.addCategoryHint': 'Adicione uma categoria para começar.',
 
   'lang.label': 'Idioma',
+  'theme.toLight': 'Mudar para o tema claro',
+  'theme.toDark': 'Mudar para o tema escuro',
+
+  'common.print': 'Imprimir',
+  'print.printBtn': 'Imprimir',
+  'print.back': 'Voltar para a grade',
+  'print.hint': 'Redimensionado para caber em uma página. Ative os gráficos de fundo na caixa de impressão para manter as cores.',
+
+  'sidebar.tabAutogrid': 'Autograde',
+  'autogrid.gameConfig': 'Config. do jogo',
+  'autogrid.generated': 'Grades geradas',
+  'autogrid.report': 'Relatório de estatísticas',
+  'autogrid.customTag': 'Tag de relatório personalizada',
+  'autogrid.customTagPlaceholder': 'ex.: imm_ranked_meta_prev_7',
+  'autogrid.grids': 'Grades a gerar',
+  'autogrid.total': 'Meta total (todas as funções)',
+  'autogrid.generate': 'Gerar grades',
+  'autogrid.generating': 'Gerando…',
+  'autogrid.replaceSame': 'Substituir grades com o mesmo nome',
+  'autogrid.done': '{n} grade(s) gerada(s)',
+  'autogrid.failed': 'Não foi possível carregar o relatório',
+  'autogrid.pickOne': 'Escolha ao menos uma grade para gerar',
+  'autogrid.tierList': 'Tier list do meta',
+  'autogrid.personalization': 'Personalização',
+  'autogrid.accountId': 'ID da conta de Dota 2',
+  'autogrid.soon': 'Ainda não disponível',
 };
 
 export const DICTS: Record<LocaleCode, Dict> = { en, ru, zh, uk, pt };

@@ -175,7 +175,7 @@ ul.menu li a {
   transform: skewX(15deg);
   font-size: 1rem;
   text-transform: uppercase;
-  text-shadow: -1px 1px 0.5rem #000;
+  text-shadow: -1px 1px 0.5rem var(--header-text-shadow);
   color: var(--menu-link);
   transition: color 200ms linear;
   white-space: nowrap;
@@ -391,7 +391,7 @@ ul.menu li:has(> a.active):hover::after {
   border-radius: 0.5rem 0 0 0.5rem;
   cursor: pointer;
   opacity: 0.75;
-  box-shadow: -0.2rem 0 0.6rem #0006;
+  box-shadow: -0.2rem 0 0.6rem var(--shadow-soft);
   /* animate `right` too so the tab slides with the sidebar on open AND close */
   transition: width 200ms ease, opacity 200ms ease, right 200ms ease;
   touch-action: pan-y;
@@ -421,7 +421,7 @@ ul.menu li:has(> a.active):hover::after {
   transform: translateX(100%);
   transition: transform 200ms ease;
   overflow-y: auto;
-  box-shadow: -0.3rem 0 1rem #0007;
+  box-shadow: -0.3rem 0 1rem var(--shadow-soft);
   padding: 1rem;
 }
 .sidebar.open {
@@ -430,7 +430,7 @@ ul.menu li:has(> a.active):hover::after {
 .sidebar-scrim {
   position: fixed;
   inset: var(--header-height) 0 0 0;
-  background: #0007;
+  background: var(--scrim);
   z-index: 70;
 }
 /* while dragging a hero/item out of the sidebar, let the drop pass through the
@@ -565,7 +565,7 @@ body.palette-dragging .sidebar-scrim {
   position: fixed;
   inset: 0;
   z-index: 200;
-  background: #000a;
+  background: var(--scrim);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -576,7 +576,7 @@ body.palette-dragging .sidebar-scrim {
   border-radius: 0.5rem;
   padding: 2rem 3rem;
   font-size: 1.3rem;
-  color: #fff;
+  color: var(--on-accent);
   background: var(--main-bg);
 }
 
@@ -627,7 +627,7 @@ body.palette-dragging .sidebar-scrim {
 }
 .switch input:checked + .switch-track::after {
   transform: translateX(1rem);
-  background: #fff;
+  background: var(--on-accent);
 }
 .switch input:focus-visible + .switch-track {
   outline: 0.12rem solid var(--sidebar-trigger);
@@ -718,7 +718,7 @@ body.palette-dragging .sidebar-scrim {
 }
 .sidebar-grid-del:hover {
   background: var(--label-red);
-  color: #fff;
+  color: var(--on-accent);
 }
 .ui-scale {
   display: inline-flex;
@@ -1095,7 +1095,7 @@ body.palette-dragging .sidebar-scrim {
 .modal-container {
   position: fixed;
   inset: 0;
-  background-color: #00000099;
+  background-color: var(--scrim);
   z-index: 99;
   display: flex;
   align-items: center;
@@ -1116,7 +1116,7 @@ body.palette-dragging .sidebar-scrim {
   position: relative;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 0 2rem #000a;
+  box-shadow: 0 0 2rem var(--shadow-color);
 }
 .modal-head {
   display: flex;
@@ -1132,7 +1132,7 @@ body.palette-dragging .sidebar-scrim {
   margin-left: auto;
   border: none;
   background-color: var(--big-button-color);
-  color: #fff;
+  color: var(--on-accent);
   padding: 0.25rem 0.6rem;
   cursor: pointer;
   transition: background 200ms ease;
@@ -1206,7 +1206,7 @@ body.palette-dragging .sidebar-scrim {
    modules stay crisp however dense the code is */
 .qr {
   flex: 0 0 auto;
-  background: #fff;
+  background: var(--on-accent);
   border-radius: 0.3rem;
   image-rendering: pixelated;
   display: block;
@@ -1258,7 +1258,7 @@ body.palette-dragging .sidebar-scrim {
   color: var(--menu-link-active);
   padding: 0.5rem 1rem;
   font-size: 0.9rem;
-  box-shadow: 0 0.2rem 1rem #000a;
+  box-shadow: 0 0.2rem 1rem var(--shadow-color);
   border-left: 0.25rem solid var(--big-button-color-hover);
   animation: toast-in 150ms ease;
 }
@@ -1312,4 +1312,34 @@ body.palette-dragging .sidebar-scrim {
   display: flex;
   gap: 0.3rem;
   flex-wrap: wrap;
+}
+
+/* ========================================== THEME */
+
+/*
+ * Facet icons are white line art on transparency, so they vanish on the light
+ * theme's pale surfaces — invert them back to dark. The exception is a facet
+ * sitting on a filled colour label, where the backdrop stays dark either way.
+ */
+:root[data-theme='light'] img.facet {
+  filter: invert(1);
+}
+:root[data-theme='light'] .board.full-labels .category.has-color img.facet,
+:root[data-theme='light'] .board:not(.darken) .category.has-color img.facet {
+  filter: none;
+}
+
+.theme-toggle {
+  background: none;
+  border: none;
+  color: var(--menu-link);
+  cursor: pointer;
+  font-size: 1.1rem;
+  line-height: 1;
+  padding: 0.2rem 0.4rem;
+  border-radius: 0.2rem;
+}
+.theme-toggle:hover {
+  color: var(--menu-link-active);
+  background: var(--menu-hover);
 }
