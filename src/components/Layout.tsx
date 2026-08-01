@@ -10,6 +10,8 @@ import { useIsMobile } from '../lib/useIsMobile';
 import { MaxColumnsContext, fitColumns } from '../lib/maxColumns';
 import { useI18n, LOCALES, type LocaleCode } from '../lib/i18n';
 import { useHotkeys } from '../lib/useHotkeys';
+import { usePrintMode } from '../lib/usePrintMode';
+import PrintBanner from './board/PrintBanner';
 
 const MENU = [
   { to: '/view', key: 'nav.view', icon: 'grid' },
@@ -44,6 +46,7 @@ export default function Layout() {
   const { pathname } = useLocation();
 
   useHotkeys();
+  usePrintMode();
 
   // remember which board tab you were on, so loading a grid reopens it there
   const setLastBoardTab = useUiStore((s) => s.setLastBoardTab);
@@ -58,10 +61,10 @@ export default function Layout() {
   }, [uiScale]);
 
   // the light palette is a token override set keyed off this attribute.
-  // printing is always light, whatever the app is set to.
+  // usePrintMode flips it to light for the duration of a print job.
   useEffect(() => {
-    document.documentElement.dataset.theme = pathname.startsWith('/print') ? 'light' : theme;
-  }, [theme, pathname]);
+    document.documentElement.dataset.theme = theme;
+  }, [theme]);
 
   // one-time upgrade from the old tool, then the what's-new dialog for this
   // release. runs on mount, after the persisted stores have rehydrated.
@@ -175,8 +178,16 @@ export default function Layout() {
       <Sidebar />
 
       <main className="app-main" ref={mainRef}>
-        <Outlet />
+        {/* usePrintMode scales this inner box; `main` stays unscaled and is
+            sized to the result, so the printer paginates the fitted height */}
+        <div className="print-scale">
+          <PrintBanner />
+          <Outlet />
+        </div>
       </main>
+
+      {/* measured by usePrintMode to learn the printable box in px */}
+      <div className="print-probe" aria-hidden="true" />
 
       <footer className="app-footer">
         <a href={PARENT_URL}>spectral.gg</a> — Dota 2 Hero Grid Tool

@@ -327,9 +327,12 @@ export default function Sidebar() {
             </button>
             <button
               className="btn small"
+              title={t('print.hint')}
               onClick={() => {
-                navigate('/print');
+                // the page reshapes itself for print; get the sidebar out of
+                // the way first so the preview matches what you'll see
                 if (!pinned) setOpen(false);
+                setTimeout(() => window.print(), 50);
               }}
             >
               {t('common.print')}

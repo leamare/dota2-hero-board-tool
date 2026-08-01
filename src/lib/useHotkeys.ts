@@ -13,7 +13,7 @@ export const HOTKEYS: { keys: string; action: string }[] = [
   { keys: 'Alt + Q', action: 'Open the selected category’s settings' },
   { keys: 'Alt + E', action: 'Switch between the View and Edit tabs' },
   { keys: 'Alt + W', action: 'Share the current grid' },
-  { keys: 'Ctrl + P', action: 'Print the grid (opens the single-page print view)' },
+  { keys: 'Ctrl + P', action: 'Print the grid — the page reshapes itself to one printable sheet' },
 ];
 
 /** Typing in a field beats any shortcut. */
@@ -39,14 +39,6 @@ export function useHotkeys(): void {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      // ctrl+P from a board tab: print the grid, not the app around it
-      if ((e.ctrlKey || e.metaKey) && !e.altKey && e.key.toLowerCase() === 'p') {
-        if (pathname.startsWith('/view') || pathname.startsWith('/edit')) {
-          e.preventDefault();
-          navigate('/print?auto=1');
-        }
-        return;
-      }
       if (!e.altKey || e.ctrlKey || e.metaKey || e.repeat) return;
       if (isTyping(e.target)) return;
 

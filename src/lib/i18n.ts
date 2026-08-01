@@ -95,8 +95,6 @@ const en: Dict = {
   'theme.toDark': 'Switch to the dark theme',
 
   'common.print': 'Print',
-  'print.printBtn': 'Print',
-  'print.back': 'Back to the grid',
   'print.hint': 'Scaled to fit a single page. Enable background graphics in the print dialog to keep the colours.',
 
   'sidebar.tabAutogrid': 'Autogrid',
@@ -202,8 +200,6 @@ const ru: Dict = {
   'theme.toDark': 'Переключить на тёмную тему',
 
   'common.print': 'Печать',
-  'print.printBtn': 'Печать',
-  'print.back': 'Вернуться к сетке',
   'print.hint': 'Масштабировано под одну страницу. Включите фоновую графику в диалоге печати, чтобы сохранить цвета.',
 
   'sidebar.tabAutogrid': 'Автосетка',
@@ -309,8 +305,6 @@ const zh: Dict = {
   'theme.toDark': '切换到深色主题',
 
   'common.print': '打印',
-  'print.printBtn': '打印',
-  'print.back': '返回网格',
   'print.hint': '已缩放以适应单页。请在打印对话框中启用背景图形以保留颜色。',
 
   'sidebar.tabAutogrid': '自动网格',
@@ -416,8 +410,6 @@ const uk: Dict = {
   'theme.toDark': 'Перемкнути на темну тему',
 
   'common.print': 'Друк',
-  'print.printBtn': 'Друкувати',
-  'print.back': 'Повернутися до сітки',
   'print.hint': 'Масштабовано під одну сторінку. Увімкніть фонову графіку в діалозі друку, щоб зберегти кольори.',
 
   'sidebar.tabAutogrid': 'Автосітка',
@@ -523,8 +515,6 @@ const pt: Dict = {
   'theme.toDark': 'Mudar para o tema escuro',
 
   'common.print': 'Imprimir',
-  'print.printBtn': 'Imprimir',
-  'print.back': 'Voltar para a grade',
   'print.hint': 'Redimensionado para caber em uma página. Ative os gráficos de fundo na caixa de impressão para manter as cores.',
 
   'sidebar.tabAutogrid': 'Autograde',

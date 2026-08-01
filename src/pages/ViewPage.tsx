@@ -30,9 +30,9 @@ export default function ViewPage() {
             <button className="btn" onClick={() => setImageOpen(true)}>
               Image
             </button>
-            <Link className="btn" to="/print">
+            <button className="btn" title={t('print.hint')} onClick={() => window.print()}>
               {t('common.print')}
-            </Link>
+            </button>
             <button className="btn primary" onClick={() => setShareOpen(true)}>
               Share
             </button>
