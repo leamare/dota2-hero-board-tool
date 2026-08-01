@@ -1,72 +1,44 @@
 /*
- * Print mode. There is no print route — Ctrl+P swaps the app for a hidden,
- * fixed-width copy of the grid (PrintSheet) and scales it onto one page.
+ * Print mode. There is no print route — Ctrl+P swaps the app for a hidden copy
+ * of the grid (PrintSheet) and lets it fill the page.
  *
- * Everything keys off `body.printing`, which `usePrintMode` adds on
- * `beforeprint`, rather than `@media print`. Chrome fires `beforeprint` before
- * print styles take effect, so a media query would leave the hook measuring the
- * on-screen layout and picking the wrong fit.
+ * The sheet is sized in `vw`, which in paged media resolves against the real
+ * page box. That is the only way to fill whatever paper the print dialog is set
+ * to: the page can't be measured from script before the print layout runs, and
+ * forcing `@page size` to a guess makes Chrome tile one page across several
+ * sheets whenever the guess is wrong.
  *
- * `@page` only carries the margin here; the size (and orientation) is injected
- * at print time, chosen to suit the grid's shape.
+ * `--print-root` (published by usePrintMode) is the ratio the root font-size
+ * has to shrink by so every rem inside the sheet scales with it. The default is
+ * the ratio for the reference sheet, so printing still looks sane if the hook
+ * never ran.
  */
 
 @page {
   margin: 10mm;
 }
 
-:root {
-  /* the long edge of A4 minus the margins — the probe's width */
-  --print-page-w: 277mm;
-}
-
-/* measured, never seen: gives the hook this document's px-per-mm */
-.print-probe {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: var(--print-page-w);
-  height: 0;
-  visibility: hidden;
-  pointer-events: none;
-  z-index: -1;
-}
-body.printing .print-probe {
-  display: none;
-}
-
 /* the print copy of the grid, hidden until the browser asks for it */
 .print-sheet-root {
   display: none;
 }
+.print-sheet {
+  background: #fff;
+  --main-bg: #fff;
+}
+
 body.printing .print-sheet-root {
   display: block;
 }
 body.printing .app-shell {
   display: none;
 }
-
 body.printing {
   /* paper is white — the light theme's page grey would print as ink */
   background: #fff;
   /* the shell's full-viewport minimum would otherwise reserve a whole sheet */
   min-height: 0;
   margin: 0;
-}
-.print-sheet {
-  background: #fff;
-  --main-bg: #fff;
-}
-body.printing .category {
-  break-inside: avoid;
-}
-
-/* pin the QR the way the PNG export does, instead of letting it grow with the
-   amount of data until it crowds out the credit block */
-.print-sheet .qr {
-  width: var(--qr-size, 208px);
-  height: var(--qr-size, 208px);
-  min-width: 0 !important;
 }
 
 @media print {
@@ -75,17 +47,33 @@ body.printing .category {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
+
+  html {
+    font-size: calc(100vw * var(--print-root, 0.0075));
+  }
+
   /*
-   * A page printed without the hook running (a route with no grid, or a
-   * browser that never fired beforeprint) still shouldn't carry the chrome.
+   * Also stated without the class, so a browser that never fired `beforeprint`
+   * still prints the grid rather than the app around it.
    */
-  .app-header,
-  .subheader-bar,
-  .sidebar,
-  .sidebar-tab,
-  .sidebar-scrim,
-  .app-footer,
+  .app-shell,
   .toast-stack {
     display: none !important;
   }
+  .print-sheet-root {
+    display: block;
+  }
+  .print-sheet {
+    width: 100vw;
+  }
+  .category {
+    break-inside: avoid;
+  }
+}
+
+/* the QR is sized in rem so it scales with the sheet like everything else */
+.print-sheet .qr {
+  width: 17rem;
+  height: 17rem;
+  min-width: 0 !important;
 }
