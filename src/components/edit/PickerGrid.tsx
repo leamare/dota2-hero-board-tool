@@ -59,7 +59,7 @@ export default function PickerGrid({ onPick, previewType = 0, draggable, autoFoc
   const items = useMemo(() => {
     if (!meta) return [];
     if (!query.trim()) return meta.items;
-    return meta.items.filter((i: Item) => matches(`${i.name} ${i.tag}`.toLowerCase(), query));
+    return meta.items.filter((i: Item) => matches(`${i.name} ${i.alt ?? ''} ${i.tag}`.toLowerCase(), query));
   }, [meta, query]);
 
   // typing "!<tag>" offers a raw courier icon, for heroes and items the

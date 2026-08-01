@@ -26,6 +26,7 @@ import { useUiStore } from '../../state/uiStore';
 import { resolveDisplay } from '../../lib/board';
 import { UNITS_PER_COLUMN, boardLayout, chainLinks } from '../../lib/layout';
 import { useMaxColumns } from '../../lib/maxColumns';
+import { useBoardMetrics } from '../../lib/useBoardMetrics';
 import type { CSSProperties } from 'react';
 
 /** Parse an element drag id "el:<catId>:<index>". */
@@ -46,6 +47,7 @@ export default function EditableBoard() {
   const linkCategories = useBoardStore((s) => s.linkCategories);
   const unlinkCategory = useBoardStore((s) => s.unlinkCategory);
 
+  const [boardRef, metrics] = useBoardMetrics();
   const [pickerCat, setPickerCat] = useState<string | null>(null);
   const [settingsCat, setSettingsCat] = useState<string | null>(null);
   const selectedCategoryId = useUiStore((s) => s.selectedCategoryId);
@@ -179,7 +181,11 @@ export default function EditableBoard() {
   })();
   const cols = Math.min(board.columns, useMaxColumns());
   const displayById = new Map(displayCategories.map((c) => [c.id, c]));
-  const displayLayout = boardLayout({ ...board, categories: displayCategories }, cols);
+  const displayLayout = boardLayout(
+    { ...board, categories: displayCategories },
+    cols,
+    metrics ?? undefined,
+  );
   const displayLinks = chainLinks(displayCategories, displayLayout);
 
   // canvas mode places cards freely, so the sortable grid doesn't apply
@@ -221,6 +227,7 @@ export default function EditableBoard() {
       }}
     >
       <div
+        ref={boardRef}
         className={[
           'board',
           'edit',

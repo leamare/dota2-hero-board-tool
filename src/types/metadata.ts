@@ -18,8 +18,10 @@ export interface Item {
   id: number;
   /** short code used in image paths, e.g. "black_king_bar" */
   tag: string;
-  /** prettified display name, e.g. "Black King Bar" */
+  /** in-game display name, e.g. "Eul's Scepter of Divinity" */
   name: string;
+  /** the prettified tag ("Cyclone"), kept so search finds the code name too */
+  alt?: string;
 }
 
 /** Everything the app needs to render and search a board. */

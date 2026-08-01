@@ -2,6 +2,7 @@ import type { CSSProperties } from 'react';
 import type { Board } from '../../types/board';
 import { UNITS_PER_COLUMN, boardLayout, chainLinks } from '../../lib/layout';
 import { useMaxColumns } from '../../lib/maxColumns';
+import { useBoardMetrics } from '../../lib/useBoardMetrics';
 import CanvasBoard from './CanvasBoard';
 import CategoryCard from './CategoryCard';
 import { useT } from '../../lib/i18n';
@@ -20,16 +21,18 @@ interface Props {
 export default function BoardView({ board, columns }: Props) {
   const t = useT();
   const fitted = useMaxColumns();
+  const [boardRef, metrics] = useBoardMetrics();
   const cols = columns ?? Math.min(board.columns, fitted);
 
   // canvas grids carry their own positions; the column count doesn't apply
   if (board.canvas) return <CanvasBoard board={board} />;
-  const layout = boardLayout(board, cols);
+  const layout = boardLayout(board, cols, metrics ?? undefined);
   const links = chainLinks(board.categories, layout);
   const byId = new Map(board.categories.map((c) => [c.id, c]));
 
   return (
     <div
+      ref={boardRef}
       className={[
         'board',
         board.centered ? 'centered' : '',

@@ -48,6 +48,25 @@ describe('boardLayout in sub-column units', () => {
     categories: cats,
   });
 
+  it('sizes a "one portrait" category to hold a single portrait', () => {
+    const one = WIDENESS.findIndex((w) => w.label === 'One portrait');
+    // 900px board, 3 columns of 24 units, no gaps: 12.5px per unit
+    const metrics = { boardPx: 900, gapPx: 0, rootPx: 16 };
+    const p = boardLayout(board([cat('p', { wideness: one })]), 3, metrics);
+    // a Small horizontal portrait is 2.4rem tall at 256/144, plus card chrome
+    const wanted = 2.4 * (256 / 144) * 16 + 0.9 * 16;
+    expect(p[0].colSpan).toBe(Math.ceil(wanted / 12.5));
+    // ...and it is far narrower than a whole column
+    expect(p[0].colSpan).toBeLessThan(UNITS_PER_COLUMN);
+  });
+
+  it('estimates a "one portrait" width before the board is measured', () => {
+    const one = WIDENESS.findIndex((w) => w.label === 'One portrait');
+    const p = boardLayout(board([cat('p', { wideness: one })]));
+    expect(p[0].colSpan).toBeGreaterThan(0);
+    expect(p[0].colSpan).toBeLessThan(UNITS_PER_COLUMN);
+  });
+
   it('keeps a chained category at its own width', () => {
     const half = WIDENESS.findIndex((w) => w.label === 'Half');
     const p = boardLayout(

@@ -1,5 +1,11 @@
 import type { Board, Category } from '../types/board';
 import { WIDENESS } from './constants';
+import { resolveDisplay } from './board';
+
+/** Padding + outline a category card adds around its portraits, in rem. */
+const CARD_CHROME_REM = 0.9;
+/** Fallback column width when the board hasn't been measured yet. */
+const ASSUMED_COLUMN_REM = 16;
 
 /** A category's resolved position on the 2D board grid. */
 export interface Placement {
@@ -264,13 +270,46 @@ export const UNITS_PER_COLUMN = 24;
 /** Signals "stretch to the end of the row" to the placement engine. */
 export const FILL_SPAN = 0;
 
+/**
+ * How wide the board is rendered, so a category asking for "one portrait" can
+ * be resolved into layout units. Optional — without it that preset falls back
+ * to a sensible guess.
+ */
+export interface BoardMetrics {
+  /** the board element's content width, in px */
+  boardPx: number;
+  /** gap between sub-columns, in px */
+  gapPx: number;
+  /** root font size, in px */
+  rootPx: number;
+}
+
+/** Units needed to hold a box of `px` wide, given the measured board. */
+function unitsForPx(px: number, total: number, m: BoardMetrics): number {
+  // a span of n units covers n tracks plus the n-1 gaps between them
+  const perUnit = (m.boardPx + m.gapPx) / total;
+  return Math.min(total, Math.max(1, Math.ceil((px + m.gapPx) / perUnit)));
+}
+
 /** Width of a category in layout units, honouring its preset exactly. */
-export function categoryUnits(category: Category, board: Board): number {
+export function categoryUnits(category: Category, board: Board, metrics?: BoardMetrics): number {
   const total = board.columns * UNITS_PER_COLUMN;
   // no preset (or a chained member) = exactly one column
   if (!category.wideness) return UNITS_PER_COLUMN;
   const preset = WIDENESS[category.wideness];
   if (preset?.fill) return FILL_SPAN;
+
+  if (preset?.portrait) {
+    const { aspect, heightRem } = resolveDisplay(category, board);
+    const rootPx = metrics?.rootPx ?? 16;
+    // one portrait, plus the body padding either side and the card's outline
+    const needed = heightRem * aspect * rootPx + CARD_CHROME_REM * rootPx;
+    if (metrics) return unitsForPx(needed, total, metrics);
+    // unmeasured (tests, first paint): assume columns of MIN_CATEGORY_REM
+    const assumed = board.columns * ASSUMED_COLUMN_REM * rootPx;
+    return Math.min(total, Math.max(1, Math.ceil((needed / assumed) * total)));
+  }
+
   const basis = preset?.basis ?? 100 / board.columns;
   return Math.min(total, Math.max(1, Math.round((basis / 100) * total)));
 }
@@ -280,9 +319,13 @@ export function categoryUnits(category: Category, board: Board): number {
  * to the board's own, but callers pass the fitted count so a narrow screen
  * uses fewer columns). Placements come back in sub-column units.
  */
-export function boardLayout(board: Board, columns = board.columns): Placement[] {
+export function boardLayout(
+  board: Board,
+  columns = board.columns,
+  metrics?: BoardMetrics,
+): Placement[] {
   return computeLayout(board.categories, columns * UNITS_PER_COLUMN, (c) => {
-    const units = categoryUnits(c, board);
+    const units = categoryUnits(c, board, metrics);
     // "remaining space" has no meaning inside a chain — the chain decides the
     // shape — so a chained member falls back to one column
     return units === FILL_SPAN && (c.hGroup || c.vGroup) ? UNITS_PER_COLUMN : units;

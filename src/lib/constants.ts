@@ -27,7 +27,7 @@ export const colorIndex = (key: string): number => {
  * The index is persisted (share codes, saved grids), so new presets are
  * appended and `WIDENESS_OPTIONS` holds the order menus show them in.
  */
-export const WIDENESS: { label: string; basis: number; fill?: boolean }[] = [
+export const WIDENESS: { label: string; basis: number; fill?: boolean; portrait?: boolean }[] = [
   { label: 'Default', basis: 100 / 3 },
   { label: 'Full', basis: 100 },
   { label: 'Half', basis: 50 },
@@ -39,13 +39,15 @@ export const WIDENESS: { label: string; basis: number; fill?: boolean }[] = [
   { label: 'Remaining space', basis: 100, fill: true },
   { label: 'Sixth', basis: 100 / 6 },
   { label: 'Eighth', basis: 12.5 },
+  // as narrow as a single portrait — a stack of one per row
+  { label: 'One portrait', basis: 0, portrait: true },
 ];
 
 /** Index of the "stretch to the end of the row" width. */
 export const WIDENESS_FILL = WIDENESS.findIndex((w) => w.fill);
 
 /** Menu order — widest first, with the two open-ended options at the ends. */
-export const WIDENESS_OPTIONS: number[] = [0, 1, 6, 5, 2, 3, 4, 8, 9, 7];
+export const WIDENESS_OPTIONS: number[] = [0, 1, 6, 5, 2, 3, 4, 8, 9, 10, 7];
 
 /**
  * Preset name with the share of the board it takes, so picking a width doesn't
@@ -55,7 +57,7 @@ export const WIDENESS_OPTIONS: number[] = [0, 1, 6, 5, 2, 3, 4, 8, 9, 7];
 export function widenessLabel(index: number, columns?: number): string {
   const preset = WIDENESS[index];
   if (!preset) return '';
-  if (preset.fill) return preset.label;
+  if (preset.fill || preset.portrait) return preset.label;
   if (index === 0) {
     return columns ? `${preset.label} (${Math.round(100 / columns)}%)` : preset.label;
   }

@@ -54,11 +54,32 @@ const prettify = (tag: string): string =>
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join(' ');
 
-function normalizeItems(raw: Record<string, string>): Item[] {
+interface RawItem {
+  id: number;
+  /** internal name, e.g. "item_cyclone" */
+  name: string;
+  localized_name?: string;
+  recipe?: number;
+}
+
+/**
+ * `items_full` carries the in-game display name, which is often nothing like
+ * the internal one — "item_cyclone" is Eul's Scepter of Divinity. The tag is
+ * kept for the image path and for searching, since plenty of people know items
+ * by their code name.
+ */
+function normalizeItems(raw: Record<string, RawItem>): Item[] {
   const items: Item[] = [];
-  for (const [idStr, tag] of Object.entries(raw)) {
-    if (tag.startsWith('recipe_')) continue; // recipes aren't useful on a grid
-    items.push({ id: Number(idStr), tag, name: prettify(tag) });
+  for (const entry of Object.values(raw)) {
+    const tag = entry.name.replace(/^item_/, '');
+    if (!tag || tag.startsWith('recipe_')) continue; // recipes aren't useful on a grid
+    items.push({
+      id: entry.id,
+      tag,
+      name: entry.localized_name?.trim() || prettify(tag),
+      // only worth keeping when it isn't just the display name again
+      alt: entry.localized_name ? prettify(tag) : undefined,
+    });
   }
   items.sort((a, b) => a.name.localeCompare(b.name));
   return items;
@@ -70,7 +91,8 @@ async function fetchJson<T>(url: string): Promise<T> {
   return (await res.json()) as T;
 }
 
-const CACHE_KEY = 'hgt.metadata';
+// v2: items carry their in-game names, so a v1 cache is stale by shape
+const CACHE_KEY = 'hgt.metadata.v2';
 const CACHE_TTL = 6 * 60 * 60 * 1000; // 6 hours
 
 interface CachedMetadata {
@@ -114,11 +136,11 @@ export function loadMetadata(): Promise<Metadata> {
   cached = (async () => {
     const [heroesRes, itemsRes] = await Promise.all([
       fetchJson<RawResult<{ heroes: Record<string, RawHero> }>>(metadataUrl('heroes')),
-      fetchJson<RawResult<{ items: Record<string, string> }>>(metadataUrl('items')),
+      fetchJson<RawResult<{ items_full: Record<string, RawItem> }>>(metadataUrl('items_full')),
     ]);
 
     const heroes = normalizeHeroes(heroesRes.result.heroes);
-    const items = normalizeItems(itemsRes.result.items);
+    const items = normalizeItems(itemsRes.result.items_full);
 
     try {
       localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: now, heroes, items } satisfies CachedMetadata));

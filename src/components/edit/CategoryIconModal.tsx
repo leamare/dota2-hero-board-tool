@@ -62,7 +62,7 @@ export default function CategoryIconModal({ categoryId, onClose }: Props) {
   const items = useMemo(() => {
     if (!meta) return [];
     if (!query.trim()) return meta.items;
-    return meta.items.filter((i) => matches(`${i.name} ${i.tag}`.toLowerCase(), query));
+    return meta.items.filter((i) => matches(`${i.name} ${i.alt ?? ''} ${i.tag}`.toLowerCase(), query));
   }, [meta, query]);
 
   if (!categoryId || !category) return null;
