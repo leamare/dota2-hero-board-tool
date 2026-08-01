@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   DndContext,
   DragOverlay,
@@ -22,6 +22,7 @@ import AltIconModal from './AltIconModal';
 import CategoryCard from '../board/CategoryCard';
 import ElementPortrait from '../board/ElementPortrait';
 import { useBoardStore } from '../../state/boardStore';
+import { useUiStore } from '../../state/uiStore';
 import { resolveDisplay } from '../../lib/board';
 import { UNITS_PER_COLUMN, boardLayout, chainLinks } from '../../lib/layout';
 import { useMaxColumns } from '../../lib/maxColumns';
@@ -47,6 +48,14 @@ export default function EditableBoard() {
 
   const [pickerCat, setPickerCat] = useState<string | null>(null);
   const [settingsCat, setSettingsCat] = useState<string | null>(null);
+  const selectedCategoryId = useUiStore((s) => s.selectedCategoryId);
+  const setSelectedCategory = useUiStore((s) => s.setSelectedCategory);
+  const openCategorySettingsAt = useUiStore((s) => s.openCategorySettingsAt);
+
+  // alt+q asks for the selected category's settings from outside this tree
+  useEffect(() => {
+    if (openCategorySettingsAt) setSettingsCat(useUiStore.getState().selectedCategoryId);
+  }, [openCategorySettingsAt]);
   const [altTarget, setAltTarget] = useState<{ catId: string; index: number } | null>(null);
   const [pendingLink, setPendingLink] = useState<{ catId: string; orient: 'v' | 'h' } | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -242,6 +251,8 @@ export default function EditableBoard() {
                 cellStyle={cell}
                 chain={displayLinks.get(category.id)}
                 linkPending={pendingLink?.catId === category.id}
+                selected={category.id === selectedCategoryId}
+                onSelect={() => setSelectedCategory(category.id)}
                 onOpenSettings={() => setSettingsCat(category.id)}
                 onAdd={() => setPickerCat(category.id)}
                 onElementAlt={(index) => setAltTarget({ catId: category.id, index })}

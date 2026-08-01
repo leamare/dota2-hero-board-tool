@@ -355,8 +355,9 @@
   flex: 1;
 }
 
-/* edit affordances */
-.canvas-card.selected {
+/* edit affordances. the classic board marks the hotkey target the same way */
+.canvas-card.selected,
+.board .category.selected {
   outline: 0.12rem solid var(--sidebar-trigger);
   outline-offset: 0.1rem;
 }

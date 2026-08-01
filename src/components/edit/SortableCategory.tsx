@@ -20,6 +20,9 @@ interface Props {
   cellStyle?: CSSProperties;
   chain?: ChainSides;
   linkPending?: boolean;
+  /** highlighted as the hotkey target */
+  selected?: boolean;
+  onSelect: () => void;
   onOpenSettings: () => void;
   onAdd: () => void;
   onElementAlt: (index: number) => void;
@@ -40,6 +43,8 @@ export default function SortableCategory({
   cellStyle,
   chain,
   linkPending,
+  selected,
+  onSelect,
   onOpenSettings,
   onAdd,
   onElementAlt,
@@ -103,11 +108,14 @@ export default function SortableCategory({
         grouped ? 'grouped' : '',
         hasColor ? 'has-color' : '',
         linkPending ? 'link-pending' : '',
+        selected ? 'selected' : '',
         dropActive ? 'drop-active' : '',
         HEADER_SIZE_CLASS[category.headerSize ?? 1],
       ]
         .filter(Boolean)
         .join(' ')}
+      data-category-id={category.id}
+      onPointerDownCapture={onSelect}
       onDragOver={onDragOver}
       onDragLeave={() => setDropActive(false)}
       onDrop={onDrop}

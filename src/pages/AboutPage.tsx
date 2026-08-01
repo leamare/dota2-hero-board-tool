@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { APP_VERSION } from '../lib/config';
+import { HOTKEYS } from '../lib/useHotkeys';
 
 export default function AboutPage() {
   return (
@@ -49,6 +50,21 @@ export default function AboutPage() {
               The column count adapts to the window: a narrow screen caps the number of columns so
               categories stay readable.
             </li>
+          </ul>
+        </section>
+
+        <section className="docs-section">
+          <h2>Keyboard shortcuts</h2>
+          <p>
+            Every shortcut is <b>Alt</b> plus one key, and none of them fire while you are typing in
+            a field.
+          </p>
+          <ul className="docs-format">
+            {HOTKEYS.map((h) => (
+              <li key={h.keys}>
+                <code>{h.keys}</code> — {h.action}
+              </li>
+            ))}
           </ul>
         </section>
 

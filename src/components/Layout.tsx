@@ -9,6 +9,7 @@ import { useUiStore, UI_SCALE_STEPS } from '../state/uiStore';
 import { useIsMobile } from '../lib/useIsMobile';
 import { MaxColumnsContext, fitColumns } from '../lib/maxColumns';
 import { useI18n, LOCALES, type LocaleCode } from '../lib/i18n';
+import { useHotkeys } from '../lib/useHotkeys';
 
 const MENU = [
   { to: '/view', key: 'nav.view', icon: 'grid' },
@@ -41,6 +42,8 @@ export default function Layout() {
   const pinned = sidebarPinned && !isMobile;
   const { t, locale, setLocale } = useI18n();
   const { pathname } = useLocation();
+
+  useHotkeys();
 
   // remember which board tab you were on, so loading a grid reopens it there
   const setLastBoardTab = useUiStore((s) => s.setLastBoardTab);

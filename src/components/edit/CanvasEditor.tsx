@@ -5,6 +5,7 @@ import CategoryLabel from '../board/CategoryLabel';
 import ElementPortrait from '../board/ElementPortrait';
 import { useCanvasDrag, HANDLES } from './useCanvasDrag';
 import { useBoardStore } from '../../state/boardStore';
+import { useUiStore } from '../../state/uiStore';
 import { colorIndex, LABEL_COLORS } from '../../lib/constants';
 import type { Board } from '../../types/board';
 
@@ -24,7 +25,9 @@ export default function CanvasEditor({ board, onOpenSettings, onAdd }: Props) {
   const setCategoryRect = useBoardStore((s) => s.setCategoryRect);
   const removeCategory = useBoardStore((s) => s.removeCategory);
   const removeElement = useBoardStore((s) => s.removeElement);
-  const [selected, setSelected] = useState<string | null>(null);
+  // selection is shared with the classic editor so the hotkeys act on one thing
+  const selected = useUiStore((s) => s.selectedCategoryId);
+  const setSelected = useUiStore((s) => s.setSelectedCategory);
   const [unit, setUnit] = useState(0);
 
   const { onPointerDown, onPointerMove, endDrag, activeId } = useCanvasDrag({
@@ -69,6 +72,7 @@ export default function CanvasEditor({ board, onOpenSettings, onAdd }: Props) {
             <div
               key={category.id}
               className={classes}
+              data-category-id={category.id}
               style={
                 {
                   ...style,

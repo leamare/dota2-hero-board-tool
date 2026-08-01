@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { DndContext, PointerSensor, closestCenter, useSensor, useSensors } from '@dnd-kit/core';
 import type { DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
@@ -20,17 +20,19 @@ import ShareModal from './edit/ShareModal';
 import GameGridModal from './edit/GameGridModal';
 import NameDialog from './ui/NameDialog';
 import ConfirmDialog from './ui/ConfirmDialog';
+import { useLoadLayout } from '../lib/useLoadLayout';
 
 const AUTOSAVE_KEY = 'hgt.autosave';
 
 export default function Sidebar() {
   const navigate = useNavigate();
-  const { pathname } = useLocation();
   const toast = useToast();
   const t = useT();
   const maxColumns = useMaxColumns();
+  const loadLayout = useLoadLayout();
 
-  const { sidebarOpen, sidebarPinned, setOpen, toggleOpen, setPinned, lastBoardTab } = useUiStore();
+  const { sidebarOpen, sidebarPinned, setOpen, toggleOpen, setPinned } = useUiStore();
+  const openShareAt = useUiStore((s) => s.openShareAt);
   const isMobile = useIsMobile();
   // on mobile the sidebar is always a plain overlay; pinning only affects desktop
   const pinned = sidebarPinned && !isMobile;
@@ -74,6 +76,11 @@ export default function Sidebar() {
     localStorage.setItem(AUTOSAVE_KEY, autosave ? '1' : '0');
   }, [autosave]);
 
+  // alt+w lives in the global hotkey handler, which can't reach this modal
+  useEffect(() => {
+    if (openShareAt) setShareOpen(true);
+  }, [openShareAt]);
+
   // autosave to the tracked layout shortly after any change
   useEffect(() => {
     if (firstRun.current) {
@@ -108,14 +115,6 @@ export default function Sidebar() {
     toast(`Saved "${name}"`);
   };
 
-  const loadLayout = (id: string) => {
-    const l = layouts.find((x) => x.id === id);
-    if (!l) return;
-    setBoard({ ...l.board }, l.id);
-    // switching grids while editing keeps you in the editor
-    navigate(pathname.startsWith('/edit') || (!pathname.startsWith('/view') && lastBoardTab === 'edit') ? '/edit' : '/view');
-    if (!pinned) setOpen(false);
-  };
 
   const newGrid = () => {
     setBoard(emptyBoard(), null);
