@@ -6,8 +6,10 @@ import ShareModal from '../components/edit/ShareModal';
 import ShareImageModal from '../components/board/ShareImageModal';
 import { useBoardStore } from '../state/boardStore';
 import { useMetadataState } from '../state/MetadataProvider';
+import { useT } from '../lib/i18n';
 
 export default function ViewPage() {
+  const t = useT();
   const board = useBoardStore((s) => s.board);
   const { data, error } = useMetadataState();
   const [shareOpen, setShareOpen] = useState(false);
@@ -28,6 +30,9 @@ export default function ViewPage() {
             <button className="btn" onClick={() => setImageOpen(true)}>
               Image
             </button>
+            <Link className="btn" to="/print">
+              {t('common.print')}
+            </Link>
             <button className="btn primary" onClick={() => setShareOpen(true)}>
               Share
             </button>

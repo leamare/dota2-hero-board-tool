@@ -3,8 +3,8 @@ import { toPng } from 'html-to-image';
 import QRCodeLib from 'qrcode';
 import Modal from '../ui/Modal';
 import BoardView from './BoardView';
-import GridIcon from '../GridIcon';
-import { buildShareUrl, siteBaseLabel } from '../../lib/shareUrl';
+import BoardImageHead from './BoardImageHead';
+import { buildShareUrl } from '../../lib/shareUrl';
 import { downloadDataUrl } from '../../lib/gridFile';
 import type { Board } from '../../types/board';
 
@@ -114,28 +114,14 @@ export default function ShareImageModal({ open, onClose, board }: Props) {
       {open && (
         <div className="image-stage-wrap" aria-hidden="true">
           <div className="board-image" ref={stageRef} style={{ width: IMAGE_WIDTH }}>
-            <div className="board-image-head">
-              <div className="board-image-titles">
-                <h2 className="board-image-name">
-                  <GridIcon tag={board.icon} />
-                  {board.name}
-                </h2>
-                {board.author && <div className="board-image-author">by {board.author}</div>}
-                {board.description && (
-                  <p className="board-image-desc">{board.description}</p>
-                )}
-              </div>
-              <div className="board-image-brand">
-                {qr && (
+            <BoardImageHead
+              board={board}
+              qr={
+                qr ? (
                   <img className="board-image-qr" src={qr} alt="" width={QR_SIZE} height={QR_SIZE} />
-                )}
-                <div className="board-image-credit">
-                  <b>Dota 2 Hero Grid Tool</b>
-                  <span>{siteBaseLabel()}</span>
-                  <span className="muted">Scan to open this grid</span>
-                </div>
-              </div>
-            </div>
+                ) : null
+              }
+            />
 
             <BoardView board={board} columns={board.columns} />
           </div>

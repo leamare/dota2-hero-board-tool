@@ -5,6 +5,7 @@ import ViewPage from './pages/ViewPage';
 import EditPage from './pages/EditPage';
 import ImportPage from './pages/ImportPage';
 import LayoutsPage from './pages/LayoutsPage';
+import PrintPage from './pages/PrintPage';
 import { MetadataProvider } from './state/MetadataProvider';
 import { ToastProvider } from './state/ToastProvider';
 import { I18nProvider } from './state/I18nProvider';
@@ -18,6 +19,7 @@ const router = createBrowserRouter([
       { path: 'edit', element: <EditPage /> },
       { path: 'import', element: <ImportPage /> },
       { path: 'layouts', element: <LayoutsPage /> },
+      { path: 'print', element: <PrintPage /> },
       { path: 'about', element: <AboutPage /> },
       { path: '*', element: <Navigate to="/view" replace /> },
     ],

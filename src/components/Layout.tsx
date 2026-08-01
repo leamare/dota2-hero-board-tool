@@ -54,10 +54,11 @@ export default function Layout() {
     document.documentElement.style.setProperty('--ui-scale', String(uiScale));
   }, [uiScale]);
 
-  // the light palette is a token override set keyed off this attribute
+  // the light palette is a token override set keyed off this attribute.
+  // printing is always light, whatever the app is set to.
   useEffect(() => {
-    document.documentElement.dataset.theme = theme;
-  }, [theme]);
+    document.documentElement.dataset.theme = pathname.startsWith('/print') ? 'light' : theme;
+  }, [theme, pathname]);
 
   // one-time upgrade from the old tool, then the what's-new dialog for this
   // release. runs on mount, after the persisted stores have rehydrated.

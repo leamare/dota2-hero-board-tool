@@ -1,0 +1,108 @@
+/*
+ * Print mode. The page box is pinned to A4 landscape minus 10mm margins, so the
+ * on-screen preview and the printed sheet are the same box and the fit scale is
+ * deterministic in both.
+ */
+
+@page {
+  size: A4 landscape;
+  margin: 10mm;
+}
+
+:root {
+  --print-page-w: 277mm;
+  --print-page-h: 190mm;
+}
+
+/* the app chrome has no business on paper */
+body.printing .app-header,
+body.printing .subheader-bar,
+body.printing .sidebar,
+body.printing .sidebar-tab,
+body.printing .sidebar-scrim,
+body.printing .app-footer {
+  display: none;
+}
+body.printing .app-main {
+  padding: 0;
+}
+
+.print-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+/* measured, never seen: reports the printable box in css pixels */
+.print-probe {
+  position: absolute;
+  width: var(--print-page-w);
+  height: var(--print-page-h);
+  visibility: hidden;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.print-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  max-width: var(--print-page-w);
+}
+
+.print-sheet {
+  width: var(--print-page-w);
+  /* the page is the ceiling, not the target: a short grid gets a short sheet
+     rather than a screenful of blank paper in the preview */
+  height: auto;
+  max-height: var(--print-page-h);
+  overflow: hidden;
+  background: var(--main-bg);
+  box-shadow: 0 0 0 0.1rem var(--cat-outline), 0 0.4rem 1.2rem var(--shadow-color);
+}
+
+.print-content {
+  width: var(--print-page-w);
+}
+
+@media print {
+  /* keep category colours — browsers drop backgrounds by default */
+  body.printing * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  body.printing .print-controls {
+    display: none;
+  }
+  body.printing .print-page {
+    padding: 0;
+    gap: 0;
+  }
+  body.printing .print-sheet {
+    box-shadow: none;
+  }
+  body.printing .category {
+    break-inside: avoid;
+  }
+}
+
+/*
+ * The banner is authored for the 1600px PNG export, so on a page-width sheet
+ * the QR has to be pinned down or it crowds out the credit block. It is still
+ * generated at full module size, so print resolution stays crisp.
+ */
+.print-content .board-image-head .qr {
+  width: 7rem;
+  height: 7rem;
+  min-width: 0 !important;
+}
+.print-content .board-image-name {
+  font-size: 1.6rem;
+}
+.print-content .board-image-credit {
+  font-size: 0.8rem;
+  white-space: nowrap;
+}

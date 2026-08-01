@@ -303,6 +303,15 @@ export default function Sidebar() {
             <button className="btn small" onClick={() => setShareOpen(true)}>
               {t('common.share')}
             </button>
+            <button
+              className="btn small"
+              onClick={() => {
+                navigate('/print');
+                if (!pinned) setOpen(false);
+              }}
+            >
+              {t('common.print')}
+            </button>
           </div>
           <div className="sidebar-actions">
             <button
