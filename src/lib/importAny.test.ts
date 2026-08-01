@@ -97,3 +97,47 @@ describe('parseImport', () => {
     expect(() => parseImport('{"nope":1}')).toThrow();
   });
 });
+
+describe('game config shapes', () => {
+  const config = (name: string) => ({
+    config_name: name,
+    categories: [
+      {
+        category_name: 'Cores',
+        x_position: 0,
+        y_position: 0,
+        width: 400,
+        height: 100,
+        hero_ids: [1, 2, 3],
+      },
+    ],
+  });
+
+  it('imports the whole file', () => {
+    const out = parseImport(JSON.stringify({ version: 3, configs: [config('A'), config('B')] }));
+    expect(out.map((l) => l.name)).toEqual(['A', 'B']);
+  });
+
+  it('imports a bare configs array', () => {
+    const out = parseImport(JSON.stringify([config('A'), config('B')]));
+    expect(out.map((l) => l.name)).toEqual(['A', 'B']);
+  });
+
+  it('imports a single config object on its own', () => {
+    const out = parseImport(JSON.stringify(config('Solo')));
+    expect(out.map((l) => l.name)).toEqual(['Solo']);
+    expect(out[0].board.canvas).toBe(true);
+  });
+
+  it('recovers a slice cut out of the configs array', () => {
+    // objects in a row, with the array's trailing comma left behind — what you
+    // get copying a couple of grids out of hero_grid_config.json
+    const text = `${JSON.stringify(config('A'))},\n${JSON.stringify(config('B'))},`;
+    const out = parseImport(text);
+    expect(out.map((l) => l.name)).toEqual(['A', 'B']);
+  });
+
+  it('still rejects json that is simply broken', () => {
+    expect(() => parseImport('{ "config_name": "x", ')).toThrow(/could not be parsed/);
+  });
+});

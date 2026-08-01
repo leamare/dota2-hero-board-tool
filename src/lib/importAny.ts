@@ -11,6 +11,20 @@ import { genId } from './board';
  * code, an "all grids" link or code, a JSON export from this tool, or a JSON
  * export from the original AngularJS tool.
  */
+/**
+ * Parse a run of JSON objects that isn't wrapped in an array — `{…},{…},` and
+ * friends. Returns the list, or null if it isn't that either.
+ */
+function parseObjectSequence(text: string): unknown[] | null {
+  const body = text.replace(/,\s*$/, '');
+  try {
+    const list = JSON.parse(`[${body}]`) as unknown[];
+    return Array.isArray(list) && list.length ? list : null;
+  } catch {
+    return null;
+  }
+}
+
 export function parseImport(input: string, legacy: LegacySettings = {}): SavedLayout[] {
   const text = input.trim();
   if (!text) throw new Error('Nothing to import.');
@@ -21,7 +35,11 @@ export function parseImport(input: string, legacy: LegacySettings = {}): SavedLa
     try {
       parsed = JSON.parse(text);
     } catch {
-      throw new Error('That looks like JSON but could not be parsed.');
+      // a hand-made file is often a slice out of hero_grid_config.json's
+      // `configs` array: several objects in a row, sometimes with a trailing
+      // comma. That is not valid JSON on its own, but the array around it is.
+      parsed = parseObjectSequence(text);
+      if (parsed === null) throw new Error('That looks like JSON but could not be parsed.');
     }
     if (isGameGrid(parsed)) return fromGameGrid(parsed);
     if (isLegacyLayouts(parsed)) return convertLegacyLayouts(parsed, legacy);

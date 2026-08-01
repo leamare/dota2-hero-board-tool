@@ -57,14 +57,28 @@ export interface GameGridFile {
   configs: GameConfig[];
 }
 
-/** Does this parsed JSON look like the game's hero grid config? */
+const isConfig = (c: unknown): c is GameConfig =>
+  !!c && typeof c === 'object' && 'config_name' in c && Array.isArray((c as GameConfig).categories);
+
+/**
+ * Does this parsed JSON look like the game's hero grid config?
+ *
+ * Accepts the whole file, a bare `configs` array, or a single config object —
+ * people routinely share one grid by copying it out of the array.
+ */
 export function isGameGrid(parsed: unknown): parsed is GameGridFile {
   if (!parsed || typeof parsed !== 'object') return false;
+  if (Array.isArray(parsed)) return parsed.length > 0 && parsed.every(isConfig);
+  if (isConfig(parsed)) return true;
   const f = parsed as Partial<GameGridFile>;
-  if (!Array.isArray(f.configs)) return false;
-  return f.configs.every(
-    (c) => c && typeof c === 'object' && 'config_name' in c && Array.isArray(c.categories),
-  );
+  return Array.isArray(f.configs) && f.configs.every(isConfig);
+}
+
+/** Normalise any of the accepted shapes into the full file shape. */
+export function asGameGrid(parsed: GameGridFile | GameConfig | GameConfig[]): GameGridFile {
+  if (Array.isArray(parsed)) return { version: 3, configs: parsed };
+  if (isConfig(parsed)) return { version: 3, configs: [parsed] };
+  return parsed;
 }
 
 /**
@@ -218,7 +232,8 @@ export const importStamp = (d = new Date()): string =>
  * category icons again, and a run of `------` boxes is folded back into the
  * category above it as row breaks, restoring the original single card.
  */
-export function fromGameGrid(file: GameGridFile): SavedLayout[] {
+export function fromGameGrid(input: GameGridFile | GameConfig | GameConfig[]): SavedLayout[] {
+  const file = asGameGrid(input);
   return file.configs.map((cfg) => {
     const categories: Category[] = [];
     for (const c of cfg.categories) {
