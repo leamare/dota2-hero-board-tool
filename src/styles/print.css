@@ -14,7 +14,10 @@
   --print-page-h: 190mm;
 }
 
-/* the app chrome has no business on paper */
+/*
+ * The app chrome has no business on paper — on the print page, and equally when
+ * Ctrl+P is used straight from a board tab.
+ */
 body.printing .app-header,
 body.printing .subheader-bar,
 body.printing .sidebar,
@@ -70,10 +73,39 @@ body.printing .app-main {
 
 @media print {
   /* keep category colours — browsers drop backgrounds by default */
-  body.printing * {
+  * {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
+
+  /*
+   * Ctrl+P from a board tab is routed to the print page, but the browser can
+   * also be asked to print any other route (About, Grids, or the board itself
+   * before the redirect lands). Strip the chrome and the editing affordances
+   * there too, so no page ever prints with a sidebar and a row of buttons.
+   */
+  .app-header,
+  .subheader-bar,
+  .sidebar,
+  .sidebar-tab,
+  .sidebar-scrim,
+  .app-footer,
+  .toast-stack,
+  .view-actions,
+  .add-tile,
+  .portrait-remove,
+  .cat-controls,
+  .drag-handle,
+  .canvas-handle {
+    display: none !important;
+  }
+  .app-main {
+    padding: 0;
+  }
+  .category {
+    break-inside: avoid;
+  }
+
   body.printing .print-controls {
     display: none;
   }

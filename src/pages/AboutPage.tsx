@@ -67,16 +67,17 @@ export default function AboutPage() {
           <ul>
             <li>
               <b>Tiers</b> — heroes picked less than 90% as often as the median for that position are
-              dropped, and the rest are cut into six tiers of equal <code>rank</code> range, S down to
-              E. Tier sizes are therefore uneven by design: the top tier is whoever is genuinely at
-              the top of the scale.
+              dropped, and the rest are ordered by their <code>rank</code> score and split into six
+              tiers taking 8 / 14 / 20 / 22 / 18 / 18% of the pool. Every grid's description lists
+              the rank window each tier ended up covering.
             </li>
             <li>
               <b>Role grids</b> — one tier per row, coloured by tier.
             </li>
             <li>
               <b>Total meta</b> — a column per role, a tier per row, each column chained vertically
-              and coloured by role.
+              and coloured by role, with the strongest heroes overall and the most-banned ones above
+              it and the heroes to avoid this patch underneath.
             </li>
           </ul>
           <p className="muted">

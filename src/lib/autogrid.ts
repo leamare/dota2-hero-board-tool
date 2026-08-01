@@ -1,6 +1,6 @@
 import { LRG2_API } from './config';
-import { VERTICAL_PORTRAITS } from './images';
-import { WIDENESS } from './constants';
+import { SIZES, VERTICAL_PORTRAITS } from './images';
+import { WIDENESS, presetLabel } from './constants';
 import type { Board, Category, GridElement } from '../types/board';
 
 /*
@@ -20,6 +20,10 @@ export interface ReportOption {
   tag: string;
   label: string;
 }
+
+/** Portrait sizes the generated grids use — dense grids get the smaller one. */
+export const MEDIUM_SIZE = SIZES.findIndex((s) => s.label === 'Medium');
+export const LARGE_SIZE = SIZES.findIndex((s) => s.label === 'Large');
 
 export const REPORTS: ReportOption[] = [
   { tag: 'imm_ranked_meta_last_7', label: 'Ranked Meta (last week)' },
@@ -57,6 +61,17 @@ export const TIERS: { preset: number; color: string }[] = [
 
 export const TIER_COUNT = TIERS.length;
 
+/**
+ * Share of the ranked pool each tier takes, top first.
+ *
+ * Cutting the *rank span* into equal bands sounds right but the rank scale is
+ * lumpy and lumpy in a different way per position — one role ends up with 26
+ * heroes in S while another has 1. Splitting by share of the pool instead keeps
+ * the pyramid shape everywhere; the rank values at the cuts are reported in the
+ * grid description so the numbers behind a tier are still visible.
+ */
+export const TIER_SHARES = [0.08, 0.14, 0.2, 0.22, 0.18, 0.18];
+
 /** Heroes below this share of the median pick count are dropped as noise. */
 export const MEDIAN_FLOOR = 0.9;
 
@@ -68,6 +83,13 @@ export interface HeroStat {
 
 export type PositionStats = Record<string, HeroStat | null>;
 
+/** A tier's hero ids plus the rank window they landed in. */
+export interface TierSplit {
+  buckets: number[][];
+  /** `[highest, lowest]` rank in each tier; `null` for an empty tier */
+  ranges: ([number, number] | null)[];
+}
+
 const median = (values: number[]): number => {
   if (!values.length) return 0;
   const sorted = [...values].sort((a, b) => a - b);
@@ -75,34 +97,50 @@ const median = (values: number[]): number => {
   return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
 };
 
+/** Slice a rank-sorted list into tiers by `TIER_SHARES`. */
+function splitByShare(ranked: { id: number; rank: number }[]): TierSplit {
+  const buckets: number[][] = [];
+  const ranges: ([number, number] | null)[] = [];
+  let at = 0;
+  let acc = 0;
+  for (let i = 0; i < TIER_COUNT; i++) {
+    acc += TIER_SHARES[i];
+    const end = i === TIER_COUNT - 1 ? ranked.length : Math.round(ranked.length * acc);
+    const band = ranked.slice(at, Math.max(at, end));
+    at = Math.max(at, end);
+    buckets.push(band.map((h) => h.id));
+    ranges.push(band.length ? [band[0].rank, band[band.length - 1].rank] : null);
+  }
+  return { buckets, ranges };
+}
+
 /**
- * Split one position's heroes into six tiers.
+ * Split one position's heroes into six tiers, best first within each.
  *
- * Heroes picked less than `MEDIAN_FLOOR` of the median are dropped, then the
- * survivors' rank span is cut into six equal-width bands — so tiers mean "this
- * far down the rank scale", not "this many heroes". Returns hero ids, best
- * first within each tier.
+ * Heroes picked less than `MEDIAN_FLOOR` of the median are dropped first, so a
+ * hero with three games and a freak win rate can't top the list.
  */
-export function tierBuckets(stats: PositionStats): number[][] {
+export function tierSplit(stats: PositionStats): TierSplit {
   const rows = Object.entries(stats)
     .filter((entry): entry is [string, HeroStat] => !!entry[1])
     .map(([id, s]) => ({ id: Number(id), matches: s.matches_s, rank: s.rank }));
 
   const floor = median(rows.map((r) => r.matches)) * MEDIAN_FLOOR;
   const kept = rows.filter((r) => r.matches >= floor).sort((a, b) => b.rank - a.rank);
+  return splitByShare(kept);
+}
 
-  const buckets: number[][] = Array.from({ length: TIER_COUNT }, () => []);
-  if (!kept.length) return buckets;
+export const tierBuckets = (stats: PositionStats): number[][] => tierSplit(stats).buckets;
 
-  const hi = kept[0].rank;
-  const lo = kept[kept.length - 1].rank;
-  const span = (hi - lo) / TIER_COUNT;
-  for (const hero of kept) {
-    // span 0 means every survivor tied on rank — they all belong in the top tier
-    const offset = span > 0 ? Math.floor((hi - hero.rank) / span) : 0;
-    buckets[Math.min(TIER_COUNT - 1, offset)].push(hero.id);
-  }
-  return buckets;
+/** "S 100–95, A 94–91, …" for the grid description. */
+export function tierBreakpoints(ranges: TierSplit['ranges']): string {
+  const round = (n: number) => Math.round(n);
+  return ranges
+    .map((r, i) => {
+      const name = presetLabel(TIERS[i].preset).replace(/ Tier$/, '');
+      return r ? `${name} ${round(r[0])}–${round(r[1])}` : `${name} —`;
+    })
+    .join(', ');
 }
 
 /** All five positions of a report, keyed by position code. */
@@ -137,16 +175,90 @@ export async function fetchPositions(report: string): Promise<ReportPositions> {
   return out;
 }
 
+/* ---------------------------------------------------------------- overall */
+
+/** The per-hero fields read out of the report-wide pick/ban table. */
+export interface PickbanStat {
+  rank: number | string;
+  picks_to_median: number | string;
+  banrate: number | string;
+}
+
+/** How many heroes the recommended-bans block lists. */
+export const BAN_COUNT = 10;
+
+export interface OverallGroups {
+  /** strongest heroes across all positions */
+  meta: number[];
+  /** most contested bans */
+  bans: number[];
+  /** the bottom of the ranked pool — heroes to leave alone this patch */
+  avoid: number[];
+}
+
+export const pickbanUrl = (report: string): string =>
+  `${LRG2_API}?league=${encodeURIComponent(report)}&mod=heroes/pickban`;
+
+/**
+ * Report-wide pick/ban numbers, used for the meta / bans / avoid blocks.
+ * Unlike the positions report this one already carries `picks_to_median`, so
+ * that is the pick-volume filter here.
+ */
+export async function fetchPickban(report: string): Promise<Record<string, PickbanStat>> {
+  const res = await fetch(pickbanUrl(report));
+  if (!res.ok) throw new Error(`Pick/ban request failed (${res.status})`);
+  const body = (await res.json()) as { result?: { pickban?: Record<string, PickbanStat> } };
+  return body.result?.pickban ?? {};
+}
+
+/** Split the report-wide table into the three summary blocks. */
+export function overallGroups(pickban: Record<string, PickbanStat>): OverallGroups {
+  const rows = Object.entries(pickban).map(([id, s]) => ({
+    id: Number(id),
+    rank: Number(s.rank),
+    picks: Number(s.picks_to_median),
+    banrate: Number(s.banrate),
+  }));
+
+  const ranked = rows
+    .filter((r) => r.picks >= MEDIAN_FLOOR && Number.isFinite(r.rank))
+    .sort((a, b) => b.rank - a.rank);
+
+  // the top two tier shares make a block wide enough to be worth a row
+  const topShare = TIER_SHARES[0] + TIER_SHARES[1];
+  const meta = ranked.slice(0, Math.round(ranked.length * topShare)).map((r) => r.id);
+  const avoid = ranked
+    .slice(Math.round(ranked.length * (1 - TIER_SHARES[TIER_COUNT - 1])))
+    .map((r) => r.id);
+  const bans = [...rows]
+    .sort((a, b) => b.banrate - a.banrate)
+    .slice(0, BAN_COUNT)
+    .map((r) => r.id);
+
+  return { meta, bans, avoid };
+}
+
+/* ----------------------------------------------------------------- grids */
+
 const heroElements = (ids: number[], known: (id: number) => boolean): GridElement[] =>
   ids.filter(known).map((refId) => ({ kind: 'hero', refId }) as GridElement);
 
-const baseBoard = (name: string, categories: Category[], columns: number): Board => ({
+const width = (label: string): number => WIDENESS.findIndex((w) => w.label === label);
+
+interface BoardOpts {
+  columns: number;
+  size: number;
+  description: string;
+}
+
+const baseBoard = (name: string, categories: Category[], opts: BoardOpts): Board => ({
   name,
   icon: 'rng',
-  columns,
+  description: opts.description,
+  columns: opts.columns,
   portraitType: VERTICAL_PORTRAITS,
   itemStyle: 0,
-  size: 0,
+  size: opts.size,
   colorfulLabels: true,
   centered: false,
   darkenedBg: true,
@@ -168,7 +280,7 @@ export const totalGridName = (report: ReportOption, at?: Date): string =>
  */
 export function buildRoleGrid(
   role: RoleDef,
-  buckets: number[][],
+  split: TierSplit,
   report: ReportOption,
   known: (id: number) => boolean,
   at?: Date,
@@ -177,36 +289,77 @@ export function buildRoleGrid(
     id: `${role.code.replace('.', '')}-t${i}`,
     preset: tier.preset,
     color: tier.color,
-    wideness: WIDENESS.findIndex((w) => w.label === 'Full'),
-    elements: heroElements(buckets[i] ?? [], known),
+    wideness: width('Full'),
+    elements: heroElements(split.buckets[i] ?? [], known),
   }));
-  return baseBoard(roleGridName(role, report, at), categories, 1);
+  return baseBoard(roleGridName(role, report, at), categories, {
+    columns: 1,
+    size: LARGE_SIZE,
+    description: `${report.label} · hero rank per tier: ${tierBreakpoints(split.ranges)}`,
+  });
 }
 
 /**
- * All five roles side by side: a column per role, a row per tier. Each column's
- * categories are chained vertically and share the role's colour; only the top
- * one carries the role name, so tiers read S→E downward.
+ * All five roles side by side: a column per role, a row per tier, with the
+ * report-wide meta / bans block above and the heroes to avoid below.
+ *
+ * Each column is chained vertically and carries the role's colour. The top
+ * category is the role name (which is also the S tier); the ones below it are
+ * labelled by tier, so a column reads "Mid Lane, A, B, C, D, E".
  */
 export function buildTotalGrid(
-  byRole: Record<string, number[][]>,
+  byRole: Record<string, TierSplit>,
+  overall: OverallGroups,
   report: ReportOption,
   known: (id: number) => boolean,
   at?: Date,
 ): Board {
-  const categories: Category[] = [];
+  const categories: Category[] = [
+    {
+      id: 'meta',
+      preset: 29, // "Meta"
+      color: 'purple',
+      wideness: width('Two thirds'),
+      elements: heroElements(overall.meta, known),
+    },
+    {
+      id: 'bans',
+      text: 'Bans',
+      color: 'red',
+      wideness: width('Third'),
+      elements: heroElements(overall.bans, known),
+    },
+  ];
+
   // row-major, so the classic layout places tier 0 across the top
   for (let tier = 0; tier < TIER_COUNT; tier++) {
     for (const role of ROLES) {
       categories.push({
         id: `${role.code.replace('.', '')}-t${tier}`,
-        ...(tier === 0 ? { preset: role.preset } : {}),
+        preset: tier === 0 ? role.preset : TIERS[tier].preset,
         color: role.color,
         wideness: 0,
         vGroup: `col-${role.code}`,
-        elements: heroElements(byRole[role.code]?.[tier] ?? [], known),
+        elements: heroElements(byRole[role.code]?.buckets[tier] ?? [], known),
       });
     }
   }
-  return baseBoard(totalGridName(report, at), categories, ROLES.length);
+
+  categories.push({
+    id: 'avoid',
+    text: 'Not recommended',
+    color: 'black',
+    wideness: width('Full'),
+    elements: heroElements(overall.avoid, known),
+  });
+
+  const breakpoints = ROLES.map(
+    (r) => `${r.name}: ${tierBreakpoints(byRole[r.code]?.ranges ?? [])}`,
+  ).join('\n');
+
+  return baseBoard(totalGridName(report, at), categories, {
+    columns: ROLES.length,
+    size: MEDIUM_SIZE,
+    description: `${report.label} · hero rank per tier —\n${breakpoints}`,
+  });
 }

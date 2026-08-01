@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import BoardView from '../components/board/BoardView';
 import BoardImageHead from '../components/board/BoardImageHead';
 import QRCode from '../components/ui/QRCode';
@@ -24,6 +24,11 @@ export default function PrintPage() {
     document.body.classList.add('printing');
     return () => document.body.classList.remove('printing');
   }, []);
+
+  // arriving via ctrl+P: open the browser's print dialog once the page settles
+  const [params] = useSearchParams();
+  const auto = params.get('auto') === '1';
+  const printed = useRef(false);
 
   // shrink to a single page: the probe reports the printable box in px, and the
   // sheet is the paper itself, so both axes have to fit
@@ -57,6 +62,14 @@ export default function PrintPage() {
       window.removeEventListener('resize', recompute);
     };
   }, [board, data]);
+
+  // wait for the fit to be computed, or the dialog previews an unscaled page
+  useEffect(() => {
+    if (!auto || printed.current || !fit.h || !data) return;
+    printed.current = true;
+    const id = setTimeout(() => window.print(), 400);
+    return () => clearTimeout(id);
+  }, [auto, fit.h, data]);
 
   if (error) return <div className="text-panel">Failed to load metadata: {error}</div>;
   if (!data) return <div className="text-panel">Loading hero metadata…</div>;

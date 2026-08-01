@@ -4,9 +4,11 @@ import {
   ROLES,
   buildRoleGrid,
   buildTotalGrid,
+  fetchPickban,
   fetchPositions,
+  overallGroups,
   roleGridName,
-  tierBuckets,
+  tierSplit,
   totalGridName,
   type ReportOption,
 } from '../../lib/autogrid';
@@ -54,9 +56,13 @@ export default function AutogridPanel() {
     }
     setBusy(true);
     try {
-      const positions = await fetchPositions(report.tag);
+      // the total grid needs the report-wide table too, so fetch both at once
+      const [positions, pickban] = await Promise.all([
+        fetchPositions(report.tag),
+        total ? fetchPickban(report.tag) : Promise.resolve({}),
+      ]);
       const byRole = Object.fromEntries(
-        ROLES.map((r) => [r.code, tierBuckets(positions[r.code] ?? {})]),
+        ROLES.map((r) => [r.code, tierSplit(positions[r.code] ?? {})]),
       );
       // a hero the metadata doesn't list would render as a broken portrait
       const known = (id: number) => !!meta?.heroById.has(id);
@@ -66,7 +72,7 @@ export default function AutogridPanel() {
         grids.push({
           id: genId(),
           name: totalGridName(report),
-          board: buildTotalGrid(byRole, report, known),
+          board: buildTotalGrid(byRole, overallGroups(pickban), report, known),
         });
       }
       for (const role of chosenRoles) {
