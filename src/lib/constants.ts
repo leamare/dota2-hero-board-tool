@@ -21,7 +21,12 @@ export const colorIndex = (key: string): number => {
   return i < 0 ? 0 : i;
 };
 
-/** Width presets. `basis` is the flex-basis percentage a category occupies. */
+/**
+ * Width presets. `basis` is the percentage of the board a category occupies.
+ *
+ * The index is persisted (share codes, saved grids), so new presets are
+ * appended and `WIDENESS_OPTIONS` holds the order menus show them in.
+ */
 export const WIDENESS: { label: string; basis: number; fill?: boolean }[] = [
   { label: 'Default', basis: 100 / 3 },
   { label: 'Full', basis: 100 },
@@ -32,10 +37,30 @@ export const WIDENESS: { label: string; basis: number; fill?: boolean }[] = [
   { label: 'Three fourths', basis: 75 },
   // stretches to whatever is left in its row — handy for the last category
   { label: 'Remaining space', basis: 100, fill: true },
+  { label: 'Sixth', basis: 100 / 6 },
+  { label: 'Eighth', basis: 12.5 },
 ];
 
 /** Index of the "stretch to the end of the row" width. */
 export const WIDENESS_FILL = WIDENESS.findIndex((w) => w.fill);
+
+/** Menu order — widest first, with the two open-ended options at the ends. */
+export const WIDENESS_OPTIONS: number[] = [0, 1, 6, 5, 2, 3, 4, 8, 9, 7];
+
+/**
+ * Preset name with the share of the board it takes, so picking a width doesn't
+ * mean translating "Two thirds" into a number in your head. "Default" follows
+ * the grid's column count, so its share depends on the board.
+ */
+export function widenessLabel(index: number, columns?: number): string {
+  const preset = WIDENESS[index];
+  if (!preset) return '';
+  if (preset.fill) return preset.label;
+  if (index === 0) {
+    return columns ? `${preset.label} (${Math.round(100 / columns)}%)` : preset.label;
+  }
+  return `${preset.label} (${Math.round(preset.basis)}%)`;
+}
 
 /** Preset category names, carried over from the original tool. */
 export const PRESET_NAMES: { value: number; label: string }[] = [

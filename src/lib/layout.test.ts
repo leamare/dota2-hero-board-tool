@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { UNITS_PER_COLUMN, boardLayout, computeLayout } from './layout';
-import { WIDENESS_FILL } from './constants';
+import { WIDENESS, WIDENESS_FILL } from './constants';
 import type { Board, Category } from '../types/board';
 
 /** minimal category */
@@ -48,16 +48,68 @@ describe('boardLayout in sub-column units', () => {
     categories: cats,
   });
 
+  it('keeps a chained category at its own width', () => {
+    const half = WIDENESS.findIndex((w) => w.label === 'Half');
+    const p = boardLayout(
+      board([
+        cat('parent', { vGroup: 'v', wideness: half }),
+        cat('child', { vGroup: 'v' }),
+      ]),
+    );
+    const by = new Map(p.map((x) => [x.id, x]));
+    // a wide parent with a narrower child stacked underneath it
+    expect(by.get('parent')!.colSpan).toBe((3 * UNITS_PER_COLUMN) / 2);
+    expect(by.get('child')!.colSpan).toBe(UNITS_PER_COLUMN);
+    expect(by.get('child')!.row).toBe(by.get('parent')!.row + 1);
+    expect(by.get('child')!.col).toBe(by.get('parent')!.col);
+  });
+
+  it('resolves an eighth exactly', () => {
+    const eighth = WIDENESS.findIndex((w) => w.label === 'Eighth');
+    const p = boardLayout(board([cat('e', { wideness: eighth })]));
+    expect(p[0].colSpan).toBe((3 * UNITS_PER_COLUMN) / 8);
+  });
+
+  it('never backfills a gap left in an earlier row', () => {
+    const full = WIDENESS.findIndex((w) => w.label === 'Full');
+    // one plain category, then a full-width one: the third must not slot into
+    // the two columns still free on the first row
+    const p = boardLayout(board([cat('a'), cat('wide', { wideness: full }), cat('c')]));
+    const by = new Map(p.map((x) => [x.id, x]));
+    expect(by.get('a')!.row).toBe(0);
+    expect(by.get('wide')!.row).toBe(1);
+    expect(by.get('c')!.row).toBe(2);
+  });
+
+  it('starts a category on a new row when asked', () => {
+    const p = boardLayout(board([cat('a'), cat('b', { newRow: true }), cat('c')]));
+    const by = new Map(p.map((x) => [x.id, x]));
+    expect(by.get('a')!.row).toBe(0);
+    expect(by.get('b')!.row).toBe(1);
+    expect(by.get('b')!.col).toBe(0);
+    // the one after it carries on filling the new row
+    expect(by.get('c')!.row).toBe(1);
+  });
+
+  it('starts a chain on a new row when its first member asks', () => {
+    const p = boardLayout(
+      board([cat('a'), cat('x', { newRow: true, hGroup: 'h' }), cat('y', { hGroup: 'h' })]),
+    );
+    const by = new Map(p.map((x) => [x.id, x]));
+    expect(by.get('x')!.row).toBe(1);
+    expect(by.get('y')!.row).toBe(1);
+  });
+
   it('gives a plain category exactly one column of units', () => {
     const p = boardLayout(board([cat('a'), cat('b'), cat('c')]));
     p.forEach((x) => expect(x.colSpan).toBe(UNITS_PER_COLUMN));
-    expect(p.map((x) => x.col)).toEqual([0, 12, 24]);
+    expect(p.map((x) => x.col)).toEqual([0, UNITS_PER_COLUMN, UNITS_PER_COLUMN * 2]);
   });
 
   it('honours a width preset exactly, not rounded to whole columns', () => {
-    // "Fourth" is index 4 in WIDENESS (25%) — a quarter of 3*12 = 9 units
+    // "Fourth" is index 4 in WIDENESS (25%) — a quarter of the board's units
     const p = boardLayout(board([{ ...cat('q'), wideness: 4 }]));
-    expect(p[0].colSpan).toBe(9);
+    expect(p[0].colSpan).toBe((3 * UNITS_PER_COLUMN) / 4);
   });
 
   it('gives chained members a full column each, not a single unit', () => {

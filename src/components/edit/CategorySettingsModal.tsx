@@ -2,7 +2,7 @@ import { useState } from 'react';
 import Modal from '../ui/Modal';
 import CategoryIconModal from './CategoryIconModal';
 import { useBoardStore } from '../../state/boardStore';
-import { LABEL_COLORS, PRESET_NAMES, WIDENESS } from '../../lib/constants';
+import { LABEL_COLORS, PRESET_NAMES, WIDENESS_OPTIONS, widenessLabel } from '../../lib/constants';
 import { ITEM_STYLES, PORTRAIT_TYPES, SIZE_OPTIONS } from '../../lib/images';
 import { useMetadata } from '../../state/MetadataProvider';
 import type { CategoryIcon } from '../../types/board';
@@ -21,6 +21,7 @@ const HEADER_SIZES = [
 
 export default function CategorySettingsModal({ categoryId, onClose }: Props) {
   const category = useBoardStore((s) => s.board.categories.find((c) => c.id === categoryId));
+  const columns = useBoardStore((s) => s.board.columns);
   const patchCategory = useBoardStore((s) => s.patchCategory);
   const meta = useMetadata();
   const [iconPicker, setIconPicker] = useState(false);
@@ -169,9 +170,9 @@ export default function CategorySettingsModal({ categoryId, onClose }: Props) {
               value={category.wideness}
               onChange={(e) => patchCategory(category.id, { wideness: Number(e.target.value) })}
             >
-              {WIDENESS.map((w, i) => (
+              {WIDENESS_OPTIONS.map((i) => (
                 <option key={i} value={i}>
-                  {w.label}
+                  {widenessLabel(i, columns)}
                 </option>
               ))}
             </select>

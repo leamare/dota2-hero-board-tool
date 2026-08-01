@@ -8,7 +8,7 @@ export interface Placement {
   row: number;
   /** 0-based grid column */
   col: number;
-  /** number of columns the cell spans (wideness; chained members are always 1) */
+  /** number of columns the cell spans (the category's own width preset) */
   colSpan: number;
 }
 
@@ -27,8 +27,9 @@ interface Cell {
  *    one row; a vertical chain (`vGroup`) stacks them down one column; a
  *    category in both is the crossing point.
  *  - chains that don't fit the column count wrap like text.
- *  - standalone categories fill the remaining cells in reading order; cells
- *    with no filler stay blank.
+ *  - categories are placed in reading order and never move backwards: a gap
+ *    left in an earlier row stays a gap rather than swallowing whatever comes
+ *    next. `newRow` starts a fresh row below everything placed so far.
  *
  * Order within a chain follows the order of `board.categories`.
  */
@@ -162,11 +163,20 @@ export function computeLayout(
       for (let u = 0; u < w; u++) if (taken(R + r, C + c + u)) return false;
       return true;
     });
-  const findSpot = (cells: Cell[]): { R: number; C: number } => {
+  const findSpot = (cells: Cell[], from = 0): { R: number; C: number } => {
     const width = Math.max(...cells.map((c) => c.c + c.w));
-    for (let R = 0; ; R++)
+    for (let R = from; ; R++)
       for (let C = 0; C <= cols - width; C++) if (fits(cells, R, C)) return { R, C };
   };
+
+  /*
+   * Placement only ever moves forward. Without this a category would drop into
+   * whatever hole an earlier row still had — so adding one full-width category
+   * would send the next few back up to finish off the row above it.
+   */
+  let cursor = 0;
+  let lastRow = -1;
+  const nextFreeRow = () => lastRow + 1;
 
   const placements: Placement[] = [];
   const placed = new Set<string>();
@@ -175,17 +185,21 @@ export function computeLayout(
     if (placed.has(c.id)) continue;
     const isChained = !!(c.hGroup || c.vGroup);
 
+    const from = c.newRow ? nextFreeRow() : cursor;
+
     if (!isChained) {
       const want = spanOf(c);
       // find the earliest free cell, then take either the requested width or —
       // for a "remaining space" category — everything left in that row
       const probe: Cell[] = [{ id: c.id, r: 0, c: 0, w: 1 }];
-      const { R, C } = findSpot(want > 0 ? [{ ...probe[0], w: Math.min(cols, want) }] : probe);
+      const { R, C } = findSpot(want > 0 ? [{ ...probe[0], w: Math.min(cols, want) }] : probe, from);
       let span = want > 0 ? Math.min(cols, want) : 1;
       if (want <= 0) while (C + span < cols && !taken(R, C + span)) span++;
       for (let u = 0; u < span; u++) take(R, C + u);
       placements.push({ id: c.id, row: R, col: C, colSpan: span });
       placed.add(c.id);
+      cursor = R;
+      lastRow = Math.max(lastRow, R);
       continue;
     }
 
@@ -194,12 +208,14 @@ export function computeLayout(
     let cells = localCells(members);
     const w = Math.max(...cells.map((x) => x.c + x.w));
     if (w > cols) cells = wrap(cells);
-    const { R, C } = findSpot(cells);
+    const { R, C } = findSpot(cells, from);
     for (const cell of cells) {
       for (let u = 0; u < cell.w; u++) take(R + cell.r, C + cell.c + u);
       placements.push({ id: cell.id, row: R + cell.r, col: C + cell.c, colSpan: cell.w });
       placed.add(cell.id);
+      lastRow = Math.max(lastRow, R + cell.r);
     }
+    cursor = R;
   }
 
   // keep placements in board order for stable rendering
@@ -240,10 +256,10 @@ export function chainLinks(
 /**
  * Sub-columns per real column. The grid is laid out in these finer units so a
  * width preset means exactly what it says: a "Fourth" is 25% of the board even
- * when the column count isn't a multiple of four. 12 divides by 2, 3, 4 and 6,
- * so every preset lands on a whole number of units.
+ * when the column count isn't a multiple of four. 24 divides by 2, 3, 4, 6 and
+ * 8, so every preset — down to an eighth — lands on a whole number of units.
  */
-export const UNITS_PER_COLUMN = 12;
+export const UNITS_PER_COLUMN = 24;
 
 /** Signals "stretch to the end of the row" to the placement engine. */
 export const FILL_SPAN = 0;
@@ -265,7 +281,10 @@ export function categoryUnits(category: Category, board: Board): number {
  * uses fewer columns). Placements come back in sub-column units.
  */
 export function boardLayout(board: Board, columns = board.columns): Placement[] {
-  return computeLayout(board.categories, columns * UNITS_PER_COLUMN, (c) =>
-    c.hGroup || c.vGroup ? UNITS_PER_COLUMN : categoryUnits(c, board),
-  );
+  return computeLayout(board.categories, columns * UNITS_PER_COLUMN, (c) => {
+    const units = categoryUnits(c, board);
+    // "remaining space" has no meaning inside a chain — the chain decides the
+    // shape — so a chained member falls back to one column
+    return units === FILL_SPAN && (c.hGroup || c.vGroup) ? UNITS_PER_COLUMN : units;
+  });
 }
