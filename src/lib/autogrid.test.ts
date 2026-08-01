@@ -7,6 +7,7 @@ import {
   TIER_COUNT,
   buildRoleGrid,
   buildTotalGrid,
+  GENERATED_AUTHOR,
   overallGroups,
   positionsUrl,
   tierBreakpoints,
@@ -133,6 +134,7 @@ describe('grid building', () => {
     expect(grid.name).toBe('Mid Lane tiers — Ranked Meta (last week) (2026-08-01)');
     expect(grid.categories.flatMap((c) => c.elements)).toHaveLength(20);
     expect(grid.description).toContain('S 100–95');
+    expect(grid.author).toBe(GENERATED_AUTHOR);
   });
 
   it('builds a total grid as five vertical chains of six', () => {
@@ -142,6 +144,7 @@ describe('grid building', () => {
     // the tier block, plus meta + bans on top and the avoid row underneath
     expect(grid.categories).toHaveLength(ROLES.length * TIER_COUNT + 3);
     expect(grid.name).toBe(totalGridName(report, at));
+    expect(grid.author).toBe(GENERATED_AUTHOR);
 
     for (const role of ROLES) {
       const column = grid.categories.filter((c) => c.vGroup === `col-${role.code}`);

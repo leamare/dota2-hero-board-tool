@@ -251,9 +251,13 @@ interface BoardOpts {
   description: string;
 }
 
+/** Credited on every generated grid, so a shared one says where it came from. */
+export const GENERATED_AUTHOR = 'Spectrebot - spectral.gg';
+
 const baseBoard = (name: string, categories: Category[], opts: BoardOpts): Board => ({
   name,
   icon: 'rng',
+  author: GENERATED_AUTHOR,
   description: opts.description,
   columns: opts.columns,
   portraitType: VERTICAL_PORTRAITS,
