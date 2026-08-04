@@ -17,6 +17,13 @@ describe('locale files', () => {
     for (const code of Object.keys(DICTS)) expect(DICTS[code]).not.toHaveProperty('_label');
   });
 
+  it('flattens the grouped files back to dotted keys', () => {
+    // the files nest by prefix; nothing downstream should see the groups
+    expect(DICTS.en['sidebar.title']).toBeTruthy();
+    expect(DICTS.en).not.toHaveProperty('sidebar');
+    for (const value of Object.values(DICTS.en)) expect(typeof value).toBe('string');
+  });
+
   it('translates every English key in every language', () => {
     const keys = Object.keys(DICTS[DEFAULT_LOCALE]);
     expect(keys.length).toBeGreaterThan(90);
