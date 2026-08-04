@@ -42,6 +42,28 @@ describe('ranksFromSplit', () => {
 describe('personalise', () => {
   const ranks = new Map([[1, 60], [2, 60], [3, 60]]);
 
+  it('rewards a deep hero pool, but only while the record holds up', () => {
+    // same win rate, wildly different mileage
+    const heroes = player([[1, 400, 240], [2, 30, 18]]);
+    const scored = personalise(new Map([[1, 60], [2, 60]]), heroes);
+    expect(scored[0].id).toBe(1);
+
+    // hundreds of games on a hero they lose on earns nothing
+    const losing = player([[1, 400, 120], [2, 400, 260]]);
+    const bad = personalise(new Map([[1, 60], [2, 60]]), losing);
+    expect(bad.find((h) => h.id === 1)!.shift).toBeLessThan(0);
+  });
+
+  it('discounts an unplayed hero unless the report rates it near the top', () => {
+    const heroes = player([[9, 100, 50]]);
+    const scored = personalise(new Map([[1, 100], [2, 50]]), heroes);
+    const top = scored.find((h) => h.id === 1)!;
+    const mid = scored.find((h) => h.id === 2)!;
+    // neither is played: the strong one keeps its rank, the middling one drops
+    expect(top.shift).toBe(0);
+    expect(mid.shift).toBeLessThan(-5);
+  });
+
   it('lifts a hero the player wins on and drops one they lose on', () => {
     // baseline is 50%: hero 1 well above it, hero 3 well below
     const heroes = player([[1, 50, 40], [2, 50, 25], [3, 50, 10]]);

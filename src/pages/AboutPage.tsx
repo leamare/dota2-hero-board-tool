@@ -94,11 +94,14 @@ export default function AboutPage() {
 
           <h3>Personalized grid</h3>
           <p>
-            Give it a Dota 2 account id with a public match history and it builds a grid around how{' '}
-            <i>you</i> play: the report's tiers are re-scored by your record on each hero, so a hero
-            you win on climbs and one you keep losing on drops. Form is measured against your own
-            overall win rate rather than 50%, and both form and the credit for simply knowing a hero
-            are damped by games played, so a couple of lucky games move nothing.
+            Give it a Steam account id (the Dota friend id) with a public match history and it
+            builds a grid around how <i>you</i> play: the report's tiers are re-scored by your
+            record on each hero. Three things move a hero — how you do on it, measured against your
+            own overall win rate rather than 50%; how much you play it, since a hero with hundreds
+            of games behind it is one you can actually pilot, though only while the record holds up;
+            and how little you play it, which drags a hero down unless the report already rates it
+            near the top. All of it is damped by games played, so a couple of lucky games move
+            nothing.
           </p>
           <ul>
             <li>

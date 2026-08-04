@@ -327,13 +327,6 @@ export default function AutogridPanel() {
         </button>
       </div>
 
-      {/* not wired to anything yet — shown so the shape of the feature is clear */}
-      <div className="field row">
-        <label>{t('autogrid.tierList')}</label>
-        <select className="select" disabled>
-          <option>{t('autogrid.soon')}</option>
-        </select>
-      </div>
     </>
   );
 }

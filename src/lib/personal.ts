@@ -39,12 +39,22 @@ export type PlayerHeroes = Map<number, PlayerHero>;
 export const GAMES_FOR_TRUST = 25;
 /** Rank points a hero moves at a full-weight ±100% win rate swing. */
 export const FORM_SWING = 60;
+/** Rank points a deep hero pool is worth, at `EXPERIENCE_GAMES` games. */
+export const EXPERIENCE = 18;
+/** Games at which the experience credit is full. */
+export const EXPERIENCE_GAMES = 150;
 /**
- * Rank points for simply knowing a hero well, at full weight. Deliberately
- * small next to `FORM_SWING`: time on a hero is worth something, but it
- * shouldn't outrank actually winning on it.
+ * How far below the player's own win rate a hero can sit and still earn the
+ * experience credit — plenty of games on a hero you lose on isn't a
+ * recommendation.
  */
-export const FAMILIARITY = 4;
+export const DECENT_MARGIN = 0.04;
+/**
+ * Rank points knocked off a hero the player hasn't played, at its worst. Scaled
+ * by how far the hero is from the top of the report's own list, so a genuinely
+ * great hero survives not being in the pool and a mediocre one doesn't.
+ */
+export const UNFAMILIAR_PENALTY = 30;
 /** Fewest games before a hero can be called a signature pick. */
 export const SIGNATURE_MIN_GAMES = 15;
 /** Signature list size when nothing stands out on its own. */
@@ -56,8 +66,13 @@ export const PRACTICE_SIZE = 9;
 /** Games faced before a hero's record against the player means anything. */
 export const BAN_MIN_FACED = 15;
 export const BAN_SIZE = 7;
-/** Heroes listed per role. */
-export const ROLE_SIZE = 12;
+/** Heroes listed per role — roughly a tier more than the obvious picks. */
+export const ROLE_SIZE = 18;
+/**
+ * Roles are laid out three to a row on a three-column grid, so the trailing
+ * ones get half the row to themselves rather than leaving a third empty.
+ */
+export const WIDE_TAIL_ROLES = 2;
 
 export const playerHeroesUrl = (accountId: string | number): string =>
   `${OPENDOTA_API}/players/${encodeURIComponent(String(accountId))}/heroes`;
@@ -132,15 +147,39 @@ export function personalise(
   heroes: PlayerHeroes,
   baseline = playerBaseline(heroes),
 ): ScoredHero[] {
+  const top = Math.max(...ranks.values(), 1);
   const out: ScoredHero[] = [];
+
   for (const [id, base] of ranks) {
     const rec = heroes.get(id);
     const games = Number(rec?.games ?? 0);
     const winrate = games ? Number(rec!.win) / games : 0;
     const trust = Math.min(1, games / GAMES_FOR_TRUST);
+
+    // how they do on it, against their own bar rather than 50%
     const form = games ? (winrate - baseline) * FORM_SWING * trust : 0;
-    const known = trust * FAMILIARITY;
-    const shift = form + known;
+
+    /*
+     * How much they play it. Games are a recommendation in their own right —
+     * a hero with hundreds of games behind it is one they can actually pilot —
+     * but only while the record holds up, with diminishing returns so the
+     * one-trick at the top doesn't bury everything else, and damped by the same
+     * trust factor so a handful of games earns almost nothing.
+     */
+    const decent = games > 0 && winrate >= baseline - DECENT_MARGIN;
+    const volume = decent
+      ? EXPERIENCE * trust * Math.min(1, Math.log1p(games) / Math.log1p(EXPERIENCE_GAMES))
+      : 0;
+
+    /*
+     * And how much they *don't* play it. A hero they have barely touched is a
+     * shakier suggestion — unless the report rates it near the top anyway, in
+     * which case it is worth picking up regardless.
+     */
+    const strength = Math.max(0, Math.min(1, base / top));
+    const unfamiliar = (1 - trust) * UNFAMILIAR_PENALTY * (1 - strength);
+
+    const shift = form + volume - unfamiliar;
     out.push({ id, base, shift, score: base + shift, games, winrate });
   }
   return out.sort((a, b) => b.score - a.score);
@@ -322,18 +361,19 @@ export function buildPersonalGrid(
       })
     : ROLES;
 
-  for (const role of order) {
+  order.forEach((role, i) => {
+    const tail = i >= order.length - WIDE_TAIL_ROLES;
     categories.push({
       id: `role-${role.code.replace('.', '')}`,
       preset: role.preset,
       color: role.color,
-      wideness: 0,
+      wideness: tail ? width('Half') : 0,
       elements: heroElements(
         (byRole[role.code]?.buckets ?? []).flat().slice(0, ROLE_SIZE),
         known,
       ),
     });
-  }
+  });
 
   return {
     name: personalGridName(accountId, at),
