@@ -6,10 +6,14 @@ import {
   TIERS,
   TIER_COUNT,
   buildRoleGrid,
+  buildMetaLevelsGrid,
   buildTotalGrid,
   GENERATED_AUTHOR,
   overallGroups,
   positionsUrl,
+  tierListUrl,
+  tierSplitFromApi,
+  TIER_KEYS,
   tierBreakpoints,
   tierBuckets,
   tierSplit,
@@ -195,10 +199,65 @@ describe('grid building', () => {
   });
 });
 
-describe('positionsUrl', () => {
+describe('endpoint urls', () => {
+  const base = 'https://example.test/api/';
+
   it('asks for every position in one repeater request', () => {
-    expect(positionsUrl('imm_ranked_meta_last_7')).toBe(
-      'https://stats.spectral.gg/lrg2/api/?league=imm_ranked_meta_last_7&mod=heroes-positions-position_*',
+    expect(positionsUrl('imm_ranked_meta_last_7', base)).toBe(
+      `${base}?league=imm_ranked_meta_last_7&mod=heroes-positions-position_*`,
     );
+  });
+
+  it('asks for the overall tier list, or one position of it', () => {
+    expect(tierListUrl('r', undefined, base)).toBe(`${base}?league=r&mod=tierlists`);
+    expect(tierListUrl('r', '1.2', base)).toBe(`${base}?league=r&mod=tierlists-position_1.2`);
+  });
+});
+
+describe('tierSplitFromApi', () => {
+  it('reads the S..E buckets in order and drops what the report left untiered', () => {
+    const split = tierSplitFromApi({
+      tiers: { S: [1, 2], A: [3], B: [], C: [4], D: [5], E: [6], not_meta: [99] },
+      ranges: { S: { min: 90, max: 100 }, A: { min: 80, max: 89 } },
+    });
+    expect(split.buckets).toEqual([[1, 2], [3], [], [4], [5], [6]]);
+    expect(split.buckets.flat()).not.toContain(99);
+    // the api reports a min/max pair; the grid wants it best-first
+    expect(split.ranges[0]).toEqual([100, 90]);
+    expect(split.ranges[2]).toBeNull();
+  });
+
+  it('covers every tier the grid renders', () => {
+    expect(TIER_KEYS).toHaveLength(TIER_COUNT);
+  });
+});
+
+describe('buildMetaLevelsGrid', () => {
+  const report = REPORTS[0];
+  const at = new Date('2026-08-04T12:00:00Z');
+  const levels = {
+    layers: [
+      { core: [1, 2, 3], combo: [4] },
+      { core: [5, 6], combo: [] },
+    ],
+    projections: [{ method: 'loop', core: [7], combo: [8] }],
+  };
+
+  it('gives every layer a core row and a combo row beside it', () => {
+    const grid = buildMetaLevelsGrid(levels, report, () => true, at);
+    expect(grid.name).toBe('Meta levels — Ranked Meta (last week) (2026-08-04)');
+    // two layers + one projection, each a linked pair
+    expect(grid.categories).toHaveLength(6);
+    expect(grid.categories[0].text).toBe('Meta 0');
+    expect(grid.categories[1].text).toBe('Meta 0 combos');
+    expect(grid.categories[0].hGroup).toBe(grid.categories[1].hGroup);
+    expect(grid.categories[0].elements).toHaveLength(3);
+    expect(grid.categories[4].text).toBe('Projected (loop)');
+    expect(grid.description).toContain('projected');
+  });
+
+  it('skips heroes the metadata does not know', () => {
+    const grid = buildMetaLevelsGrid(levels, report, (id) => id !== 1, at);
+    expect(grid.categories[0].elements).toHaveLength(2);
   });
 });

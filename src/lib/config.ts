@@ -9,7 +9,15 @@
 /** Bumped when there is something worth showing in the what's-new dialog. */
 export const APP_VERSION = '2.0.0';
 
-export const LRG2_API = 'https://stats.spectral.gg/lrg2/api/';
+/**
+ * TEMPORARY: pointed at a local LRG2 build while the tier-list and meta-level
+ * endpoints are still on a branch. Put `LRG2_API_PUBLIC` back here once they
+ * are live.
+ */
+export const LRG2_API = 'http://localhost/rg_webapi.php';
+
+/** The deployed API, used to fall back when the local one can't answer. */
+export const LRG2_API_PUBLIC = 'https://stats.spectral.gg/lrg2/api/';
 
 export const COURIER_BASE = 'https://courier.spectral.gg/images/dota';
 

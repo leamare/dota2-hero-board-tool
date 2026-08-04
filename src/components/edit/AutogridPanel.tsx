@@ -2,15 +2,23 @@ import { useState } from 'react';
 import {
   REPORTS,
   ROLES,
+  buildMetaLevelsGrid,
   buildRoleGrid,
   buildTotalGrid,
+  fetchMetaLevels,
   fetchPickban,
   fetchPositions,
+  fetchTierList,
+  metaLevelsGridName,
   overallGroups,
   roleGridName,
   tierSplit,
+  tierSplitFromApi,
   totalGridName,
+  withApiFallback,
   type ReportOption,
+  type TierSource,
+  type TierSplit,
 } from '../../lib/autogrid';
 import { genId } from '../../lib/board';
 import { presetLabel } from '../../lib/constants';
@@ -38,6 +46,7 @@ export default function AutogridPanel() {
   const [customTag, setCustomTag] = useState('');
   const [replaceSameName, setReplaceSameName] = useState(true);
   const [total, setTotal] = useState(true);
+  const [metaLevels, setMetaLevels] = useState(false);
   const [roles, setRoles] = useState<Record<string, boolean>>({});
   const [busy, setBusy] = useState(false);
 
@@ -50,36 +59,64 @@ export default function AutogridPanel() {
 
   const generate = async () => {
     if (!report.tag) return;
-    if (!total && !chosenRoles.length) {
+    if (!total && !metaLevels && !chosenRoles.length) {
       toast(t('autogrid.pickOne'), 'info');
       return;
     }
     setBusy(true);
     try {
-      // the total grid needs the report-wide table too, so fetch both at once
-      const [positions, pickban] = await Promise.all([
-        fetchPositions(report.tag),
-        total ? fetchPickban(report.tag) : Promise.resolve({}),
-      ]);
-      const byRole = Object.fromEntries(
-        ROLES.map((r) => [r.code, tierSplit(positions[r.code] ?? {})]),
-      );
       // a hero the metadata doesn't list would render as a broken portrait
       const known = (id: number) => !!meta?.heroById.has(id);
-
       const grids: SavedLayout[] = [];
+      const wantTiers = total || chosenRoles.length > 0;
+
+      /*
+       * Prefer the report's own tier lists: they are filtered and weighted by
+       * meta-level membership server-side, which is more than ranking the
+       * positions table here can do. Reports without that endpoint (or without
+       * the sections it needs) answer with nothing, and then the positions are
+       * ranked locally as before.
+       */
+      let source: TierSource = 'ranking';
+      let byRole: Record<string, TierSplit> = {};
+
+      if (wantTiers) {
+        const lists = await Promise.all(ROLES.map((r) => fetchTierList(report.tag, r.code)));
+        if (lists.every((l) => l)) {
+          source = 'tierlist';
+          byRole = Object.fromEntries(
+            ROLES.map((r, i) => [r.code, tierSplitFromApi(lists[i]!)]),
+          );
+        } else {
+          const positions = await withApiFallback((base) => fetchPositions(report.tag, base));
+          byRole = Object.fromEntries(
+            ROLES.map((r) => [r.code, tierSplit(positions[r.code] ?? {})]),
+          );
+        }
+      }
+
       if (total) {
+        const pickban = await withApiFallback((base) => fetchPickban(report.tag, base));
         grids.push({
           id: genId(),
           name: totalGridName(report),
-          board: buildTotalGrid(byRole, overallGroups(pickban), report, known),
+          board: buildTotalGrid(byRole, overallGroups(pickban), report, known, undefined, source),
         });
       }
       for (const role of chosenRoles) {
         grids.push({
           id: genId(),
           name: roleGridName(role, report),
-          board: buildRoleGrid(role, byRole[role.code], report, known),
+          board: buildRoleGrid(role, byRole[role.code], report, known, undefined, source),
+        });
+      }
+      if (metaLevels) {
+        const levels = await fetchMetaLevels(report.tag);
+        if (!levels) throw new Error(t('autogrid.noMetaLevels'));
+        grids.push({
+          id: genId(),
+          name: metaLevelsGridName(report),
+          board: buildMetaLevelsGrid(levels, report, known),
         });
       }
 
@@ -126,6 +163,14 @@ export default function AutogridPanel() {
       <label className="checkbox">
         <input type="checkbox" checked={total} onChange={(e) => setTotal(e.target.checked)} />
         {t('autogrid.total')}
+      </label>
+      <label className="checkbox">
+        <input
+          type="checkbox"
+          checked={metaLevels}
+          onChange={(e) => setMetaLevels(e.target.checked)}
+        />
+        {t('autogrid.metaLevels')}
       </label>
       {ROLES.map((role) => (
         <label className="checkbox" key={role.code}>

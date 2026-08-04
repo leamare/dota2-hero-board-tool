@@ -1,4 +1,4 @@
-import { LRG2_API } from './config';
+import { LRG2_API, LRG2_API_PUBLIC } from './config';
 import { SIZES, VERTICAL_PORTRAITS } from './images';
 import { WIDENESS, presetLabel } from './constants';
 import type { Board, Category, GridElement } from '../types/board';
@@ -143,6 +143,105 @@ export function tierBreakpoints(ranges: TierSplit['ranges']): string {
     .join(', ');
 }
 
+/**
+ * Run a request against the local API, falling back to the deployed one.
+ *
+ * The local build is where the new endpoints live; everything else it serves is
+ * the same data, so if it is simply not running the public API can answer.
+ */
+export async function withApiFallback<T>(fn: (base: string) => Promise<T>): Promise<T> {
+  try {
+    return await fn(LRG2_API);
+  } catch {
+    return await fn(LRG2_API_PUBLIC);
+  }
+}
+
+/* ------------------------------------------------------------- tier lists */
+
+/**
+ * The report's own tier list: the same S..E buckets stats.spectral.gg shows,
+ * already filtered and boosted for meta-level membership on the server. Heroes
+ * below the pick floor come back under `not_meta` and are left off the grid.
+ */
+export interface TierListResult {
+  tiers: Record<string, number[]>;
+  ranges?: Record<string, { min: number; max: number }>;
+}
+
+export const tierListUrl = (report: string, position?: string, base = LRG2_API): string => {
+  const mod = position ? `tierlists-position_${position}` : 'tierlists';
+  return `${base}?league=${encodeURIComponent(report)}&mod=${mod}`;
+};
+
+/**
+ * Fetch a tier list, or null when this report has none.
+ *
+ * The endpoint is new, so a deployment without it answers with an error rather
+ * than data — which is a plain "no tier list here", not a failure worth
+ * reporting. Callers fall back to ranking the positions themselves.
+ */
+export async function fetchTierList(
+  report: string,
+  position?: string,
+  base?: string,
+): Promise<TierListResult | null> {
+  try {
+    const res = await fetch(tierListUrl(report, position, base));
+    if (!res.ok) return null;
+    const body = (await res.json()) as { result?: TierListResult; errors?: unknown[] };
+    const tiers = body.result?.tiers;
+    if (!tiers || !Object.keys(tiers).length) return null;
+    // an empty list is the same as no list
+    if (!TIERS.some((_, i) => (tiers[TIER_KEYS[i]] ?? []).length)) return null;
+    return body.result ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/** Tier keys the API uses, best first — the order `TIERS` is in. */
+export const TIER_KEYS = ['S', 'A', 'B', 'C', 'D', 'E'];
+
+/** Turn the API's tier map into the bucket list the grid builders take. */
+export function tierSplitFromApi(list: TierListResult): TierSplit {
+  return {
+    buckets: TIER_KEYS.map((k) => (list.tiers[k] ?? []).map(Number)),
+    ranges: TIER_KEYS.map((k) => {
+      const r = list.ranges?.[k];
+      return r ? ([r.max, r.min] as [number, number]) : null;
+    }),
+  };
+}
+
+/* ---------------------------------------------------------- meta levels */
+
+export interface MetaLayer {
+  core: number[];
+  combo: number[];
+}
+
+export interface MetaLevelsResult {
+  layers: MetaLayer[];
+  projections: (MetaLayer & { method?: string })[];
+}
+
+export const metaLevelsUrl = (report: string, base = LRG2_API): string =>
+  `${base}?league=${encodeURIComponent(report)}&mod=meta_levels`;
+
+/** The report's meta layers, or null when it can't produce them. */
+export async function fetchMetaLevels(
+  report: string,
+  base?: string,
+): Promise<MetaLevelsResult | null> {
+  const res = await fetch(metaLevelsUrl(report, base));
+  if (!res.ok) throw new Error(`Meta levels request failed (${res.status})`);
+  const body = (await res.json()) as { result?: MetaLevelsResult };
+  const layers = body.result?.layers;
+  if (!layers?.length) return null;
+  return { layers, projections: body.result?.projections ?? [] };
+}
+
 /** All five positions of a report, keyed by position code. */
 export type ReportPositions = Record<string, PositionStats>;
 
@@ -150,16 +249,16 @@ interface RepeaterResult {
   results?: Record<string, Record<string, PositionStats>>;
 }
 
-export const positionsUrl = (report: string): string =>
-  `${LRG2_API}?league=${encodeURIComponent(report)}&mod=heroes-positions-position_*`;
+export const positionsUrl = (report: string, base = LRG2_API): string =>
+  `${base}?league=${encodeURIComponent(report)}&mod=heroes-positions-position_*`;
 
 /**
  * Fetch every position of a report in one request. The repeater nests each
  * block under its own code twice (`results['1.2']['1.2']`), which is flattened
  * here so callers just index by role code.
  */
-export async function fetchPositions(report: string): Promise<ReportPositions> {
-  const res = await fetch(positionsUrl(report));
+export async function fetchPositions(report: string, base?: string): Promise<ReportPositions> {
+  const res = await fetch(positionsUrl(report, base));
   if (!res.ok) throw new Error(`Report request failed (${res.status})`);
   const body = (await res.json()) as { result?: RepeaterResult };
   const results = body.result?.results;
@@ -196,16 +295,19 @@ export interface OverallGroups {
   avoid: number[];
 }
 
-export const pickbanUrl = (report: string): string =>
-  `${LRG2_API}?league=${encodeURIComponent(report)}&mod=heroes/pickban`;
+export const pickbanUrl = (report: string, base = LRG2_API): string =>
+  `${base}?league=${encodeURIComponent(report)}&mod=heroes/pickban`;
 
 /**
  * Report-wide pick/ban numbers, used for the meta / bans / avoid blocks.
  * Unlike the positions report this one already carries `picks_to_median`, so
  * that is the pick-volume filter here.
  */
-export async function fetchPickban(report: string): Promise<Record<string, PickbanStat>> {
-  const res = await fetch(pickbanUrl(report));
+export async function fetchPickban(
+  report: string,
+  base?: string,
+): Promise<Record<string, PickbanStat>> {
+  const res = await fetch(pickbanUrl(report, base));
   if (!res.ok) throw new Error(`Pick/ban request failed (${res.status})`);
   const body = (await res.json()) as { result?: { pickban?: Record<string, PickbanStat> } };
   return body.result?.pickban ?? {};
@@ -269,6 +371,14 @@ const baseBoard = (name: string, categories: Category[], opts: BoardOpts): Board
   categories,
 });
 
+/** Where a grid's tiers came from, named in its description. */
+export type TierSource = 'tierlist' | 'ranking';
+
+const SOURCE_NOTE: Record<TierSource, string> = {
+  tierlist: "the report's tier lists",
+  ranking: "the report's hero rankings",
+};
+
 /** `YYYY-MM-DD` for the grid name, so regenerating doesn't clobber yesterday's. */
 export const stamp = (at: Date = new Date()): string => at.toISOString().slice(0, 10);
 
@@ -277,6 +387,9 @@ export const roleGridName = (role: RoleDef, report: ReportOption, at?: Date): st
 
 export const totalGridName = (report: ReportOption, at?: Date): string =>
   `Meta tiers — ${report.label} (${stamp(at)})`;
+
+export const metaLevelsGridName = (report: ReportOption, at?: Date): string =>
+  `Meta levels — ${report.label} (${stamp(at)})`;
 
 /**
  * One role, one tier per row: six full-width categories labelled S..E Tier and
@@ -288,6 +401,7 @@ export function buildRoleGrid(
   report: ReportOption,
   known: (id: number) => boolean,
   at?: Date,
+  source: TierSource = 'ranking',
 ): Board {
   const categories = TIERS.map((tier, i) => ({
     id: `${role.code.replace('.', '')}-t${i}`,
@@ -299,7 +413,9 @@ export function buildRoleGrid(
   return baseBoard(roleGridName(role, report, at), categories, {
     columns: 1,
     size: LARGE_SIZE,
-    description: `${report.label} · hero rank per tier: ${tierBreakpoints(split.ranges)}`,
+    description:
+      `${report.label} · from ${SOURCE_NOTE[source]}` +
+      ` · hero rank per tier: ${tierBreakpoints(split.ranges)}`,
   });
 }
 
@@ -317,6 +433,7 @@ export function buildTotalGrid(
   report: ReportOption,
   known: (id: number) => boolean,
   at?: Date,
+  source: TierSource = 'ranking',
 ): Board {
   const categories: Category[] = [
     {
@@ -364,6 +481,58 @@ export function buildTotalGrid(
   return baseBoard(totalGridName(report, at), categories, {
     columns: ROLES.length,
     size: MEDIUM_SIZE,
-    description: `${report.label} · hero rank per tier —\n${breakpoints}`,
+    description:
+      `${report.label} · from ${SOURCE_NOTE[source]} · hero rank per tier —\n${breakpoints}`,
+  });
+}
+
+/**
+ * The report's meta layers, one row each: the heroes that define the layer and
+ * the combo pieces that go with them. Layers run oldest first, the way the
+ * report builds them, with any projected layers after the real ones.
+ */
+export function buildMetaLevelsGrid(
+  levels: MetaLevelsResult,
+  report: ReportOption,
+  known: (id: number) => boolean,
+  at?: Date,
+): Board {
+  const categories: Category[] = [];
+
+  const row = (id: string, title: string, color: string, layer: MetaLayer) => {
+    categories.push({
+      id: `${id}-core`,
+      text: title,
+      color,
+      wideness: width('Two thirds'),
+      hGroup: id,
+      elements: heroElements(layer.core, known),
+    });
+    categories.push({
+      id: `${id}-combo`,
+      text: `${title} combos`,
+      color,
+      wideness: width('Third'),
+      hGroup: id,
+      elements: heroElements(layer.combo ?? [], known),
+    });
+  };
+
+  // the colour ladder doubles as a "how current is this" cue
+  const shades = ['grey', 'teal', 'olive', 'yellow', 'orange', 'red'];
+  levels.layers.forEach((layer, i) =>
+    row(`meta${i}`, `Meta ${i}`, shades[Math.min(i, shades.length - 1)], layer),
+  );
+  levels.projections.forEach((p, i) =>
+    row(`proj${i}`, `Projected${p.method ? ` (${p.method})` : ''}`, 'violet', p),
+  );
+
+  return baseBoard(metaLevelsGridName(report, at), categories, {
+    columns: 2,
+    size: MEDIUM_SIZE,
+    description:
+      `${report.label} · meta layers, oldest first. Each row is the heroes that` +
+      ` define a layer and the combo pieces that go with them` +
+      (levels.projections.length ? `, followed by the projected layers.` : `.`),
   });
 }

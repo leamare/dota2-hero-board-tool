@@ -66,10 +66,13 @@ export default function AboutPage() {
           </p>
           <ul>
             <li>
-              <b>Tiers</b> — heroes picked less than 90% as often as the median for that position are
-              dropped, and the rest are ordered by their <code>rank</code> score and split into six
-              tiers taking 8 / 14 / 20 / 22 / 18 / 18% of the pool. Every grid's description lists
-              the rank window each tier ended up covering.
+              <b>Tiers</b> — taken from the report's own tier lists where it has them, which are
+              filtered and weighted by meta-level membership on the server. Reports without them
+              fall back to ranking the positions table here: heroes picked less than 90% as often as
+              the median for that position are dropped, and the rest are ordered by their{' '}
+              <code>rank</code> score and split into six tiers taking 8 / 14 / 20 / 22 / 18 / 18% of
+              the pool. Every grid's description says which of the two it used and lists the rank
+              window each tier covers.
             </li>
             <li>
               <b>Role grids</b> — one tier per row, coloured by tier.
@@ -78,6 +81,11 @@ export default function AboutPage() {
               <b>Total meta</b> — a column per role, a tier per row, each column chained vertically
               and coloured by role, with the strongest heroes overall and the most-banned ones above
               it and the heroes to avoid this patch underneath.
+            </li>
+            <li>
+              <b>Meta levels</b> — the report's meta layers, oldest first: each row is the heroes
+              that define a layer beside the combo pieces that go with them, followed by any layers
+              the report projects.
             </li>
           </ul>
           <p className="muted">
