@@ -132,6 +132,10 @@ export function tierSplit(stats: PositionStats): TierSplit {
 
 export const tierBuckets = (stats: PositionStats): number[][] => tierSplit(stats).buckets;
 
+/** Cut an already rank-sorted list into the six tiers. */
+export const splitRanked = (ranked: { id: number; rank: number }[]): TierSplit =>
+  splitByShare(ranked);
+
 /** "S 100–95, A 94–91, …" for the grid description. */
 export function tierBreakpoints(ranges: TierSplit['ranges']): string {
   const round = (n: number) => Math.round(n);
@@ -391,6 +395,9 @@ export const totalGridName = (report: ReportOption, at?: Date): string =>
 export const metaLevelsGridName = (report: ReportOption, at?: Date): string =>
   `Meta levels — ${report.label} (${stamp(at)})`;
 
+export const overallGridName = (report: ReportOption, at?: Date): string =>
+  `Tier list — ${report.label} (${stamp(at)})`;
+
 /**
  * One role, one tier per row: six full-width categories labelled S..E Tier and
  * coloured by tier.
@@ -534,5 +541,31 @@ export function buildMetaLevelsGrid(
       `${report.label} · meta layers, oldest first. Each row is the heroes that` +
       ` define a layer and the combo pieces that go with them` +
       (levels.projections.length ? `, followed by the projected layers.` : `.`),
+  });
+}
+
+/**
+ * The whole roster in one tier list, no roles: six full-width rows, best first.
+ */
+export function buildOverallGrid(
+  split: TierSplit,
+  report: ReportOption,
+  known: (id: number) => boolean,
+  at?: Date,
+  source: TierSource = 'ranking',
+): Board {
+  const categories = TIERS.map((tier, i) => ({
+    id: `all-t${i}`,
+    preset: tier.preset,
+    color: tier.color,
+    wideness: width('Full'),
+    elements: heroElements(split.buckets[i] ?? [], known),
+  }));
+  return baseBoard(overallGridName(report, at), categories, {
+    columns: 1,
+    size: MEDIUM_SIZE,
+    description:
+      `${report.label} · every hero, from ${SOURCE_NOTE[source]}` +
+      ` · hero rank per tier: ${tierBreakpoints(split.ranges)}`,
   });
 }

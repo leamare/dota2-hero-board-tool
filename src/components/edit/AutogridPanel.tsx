@@ -3,15 +3,19 @@ import {
   REPORTS,
   ROLES,
   buildMetaLevelsGrid,
+  buildOverallGrid,
   buildRoleGrid,
   buildTotalGrid,
   fetchMetaLevels,
   fetchPickban,
   fetchPositions,
   fetchTierList,
+  MEDIAN_FLOOR,
   metaLevelsGridName,
+  overallGridName,
   overallGroups,
   roleGridName,
+  splitRanked,
   tierSplit,
   tierSplitFromApi,
   totalGridName,
@@ -20,12 +24,21 @@ import {
   type TierSource,
   type TierSplit,
 } from '../../lib/autogrid';
+import {
+  buildPersonalGrid,
+  fetchPlayerHeroes,
+  personalGridName,
+  personalise,
+  ranksFromSplit,
+  retier,
+} from '../../lib/personal';
 import { genId } from '../../lib/board';
 import { presetLabel } from '../../lib/constants';
 import { useT } from '../../lib/i18n';
 import { useBoardStore } from '../../state/boardStore';
 import { useLayoutsStore, type SavedLayout } from '../../state/layoutsStore';
 import { useMetadata } from '../../state/MetadataProvider';
+import { useUiStore } from '../../state/uiStore';
 import { useToast } from '../../state/ToastProvider';
 
 const CUSTOM = '__custom__';
@@ -47,8 +60,13 @@ export default function AutogridPanel() {
   const [replaceSameName, setReplaceSameName] = useState(true);
   const [total, setTotal] = useState(true);
   const [metaLevels, setMetaLevels] = useState(false);
+  const [overall, setOverall] = useState(false);
   const [roles, setRoles] = useState<Record<string, boolean>>({});
   const [busy, setBusy] = useState(false);
+  const accountId = useUiStore((s) => s.accountId);
+  const setAccountId = useUiStore((s) => s.setAccountId);
+  const [sortRoles, setSortRoles] = useState(false);
+  const [busyPersonal, setBusyPersonal] = useState(false);
 
   const report: ReportOption =
     reportTag === CUSTOM
@@ -57,9 +75,78 @@ export default function AutogridPanel() {
 
   const chosenRoles = ROLES.filter((r) => roles[r.code]);
 
+  /** Per-role tiers, from the report's own lists when it has them. */
+  const roleTiers = async (): Promise<{ byRole: Record<string, TierSplit>; source: TierSource }> => {
+    const lists = await Promise.all(ROLES.map((r) => fetchTierList(report.tag, r.code)));
+    if (lists.every((l) => l)) {
+      return {
+        source: 'tierlist',
+        byRole: Object.fromEntries(ROLES.map((r, i) => [r.code, tierSplitFromApi(lists[i]!)])),
+      };
+    }
+    const positions = await withApiFallback((base) => fetchPositions(report.tag, base));
+    return {
+      source: 'ranking',
+      byRole: Object.fromEntries(ROLES.map((r) => [r.code, tierSplit(positions[r.code] ?? {})])),
+    };
+  };
+
+  /**
+   * The personal grid: the report's tiers, re-scored against what this account
+   * actually plays. Needs the overall list for the practice block and the per
+   * role ones for the role blocks.
+   */
+  const generatePersonal = async () => {
+    const id = accountId.trim();
+    if (!id) return;
+    setBusyPersonal(true);
+    try {
+      const [heroes, overallList, roles] = await Promise.all([
+        fetchPlayerHeroes(id),
+        fetchTierList(report.tag),
+        roleTiers(),
+      ]);
+
+      const known = (hid: number) => !!meta?.heroById.has(hid);
+      const overallSplit = overallList
+        ? tierSplitFromApi(overallList)
+        : // no overall list: pool every role's tiers as a stand-in
+          retier(
+            personalise(
+              new Map(
+                ROLES.flatMap((r) => [...ranksFromSplit(roles.byRole[r.code] ?? { buckets: [], ranges: [] })]),
+              ),
+              heroes,
+            ),
+          );
+
+      const scoredOverall = personalise(ranksFromSplit(overallSplit), heroes);
+      const byRole = Object.fromEntries(
+        ROLES.map((r) => [
+          r.code,
+          retier(personalise(ranksFromSplit(roles.byRole[r.code] ?? { buckets: [], ranges: [] }), heroes)),
+        ]),
+      );
+
+      const board = buildPersonalGrid(
+        { accountId: id, report, heroes, overall: scoredOverall, byRole, source: roles.source, sortRoles },
+        known,
+      );
+      const grid = { id: genId(), name: personalGridName(id), board };
+      importLayouts([grid], { replaceSameName });
+      const saved = useLayoutsStore.getState().layouts.find((l) => l.name === grid.name);
+      setBoard({ ...board }, saved?.id ?? null);
+      toast(t('autogrid.done').replace('{n}', '1'));
+    } catch (err) {
+      toast(`${t('autogrid.failed')}: ${err instanceof Error ? err.message : String(err)}`, 'info');
+    } finally {
+      setBusyPersonal(false);
+    }
+  };
+
   const generate = async () => {
     if (!report.tag) return;
-    if (!total && !metaLevels && !chosenRoles.length) {
+    if (!total && !metaLevels && !overall && !chosenRoles.length) {
       toast(t('autogrid.pickOne'), 'info');
       return;
     }
@@ -81,17 +168,29 @@ export default function AutogridPanel() {
       let byRole: Record<string, TierSplit> = {};
 
       if (wantTiers) {
-        const lists = await Promise.all(ROLES.map((r) => fetchTierList(report.tag, r.code)));
-        if (lists.every((l) => l)) {
-          source = 'tierlist';
-          byRole = Object.fromEntries(
-            ROLES.map((r, i) => [r.code, tierSplitFromApi(lists[i]!)]),
-          );
+        ({ byRole, source } = await roleTiers());
+      }
+
+      if (overall) {
+        const list = await fetchTierList(report.tag);
+        if (list) {
+          grids.push({
+            id: genId(),
+            name: overallGridName(report),
+            board: buildOverallGrid(tierSplitFromApi(list), report, known, undefined, 'tierlist'),
+          });
         } else {
-          const positions = await withApiFallback((base) => fetchPositions(report.tag, base));
-          byRole = Object.fromEntries(
-            ROLES.map((r) => [r.code, tierSplit(positions[r.code] ?? {})]),
-          );
+          // no tier list for this report — rank the report-wide table instead
+          const pickban = await withApiFallback((base) => fetchPickban(report.tag, base));
+          const ranked = Object.entries(pickban)
+            .map(([id, st]) => ({ id: Number(id), rank: Number(st.rank), picks: Number(st.picks_to_median) }))
+            .filter((r) => r.picks >= MEDIAN_FLOOR && Number.isFinite(r.rank))
+            .sort((a, b) => b.rank - a.rank);
+          grids.push({
+            id: genId(),
+            name: overallGridName(report),
+            board: buildOverallGrid(splitRanked(ranked), report, known, undefined, 'ranking'),
+          });
         }
       }
 
@@ -165,6 +264,10 @@ export default function AutogridPanel() {
         {t('autogrid.total')}
       </label>
       <label className="checkbox">
+        <input type="checkbox" checked={overall} onChange={(e) => setOverall(e.target.checked)} />
+        {t('autogrid.overall')}
+      </label>
+      <label className="checkbox">
         <input
           type="checkbox"
           checked={metaLevels}
@@ -198,6 +301,32 @@ export default function AutogridPanel() {
         </button>
       </div>
 
+      <h3>{t('autogrid.personalization')}</h3>
+      <p className="field-hint">{t('autogrid.personalHint')}</p>
+      <div className="field row">
+        <label>{t('autogrid.accountId')}</label>
+        <input
+          className="input"
+          value={accountId}
+          placeholder="123456789"
+          inputMode="numeric"
+          onChange={(e) => setAccountId(e.target.value.replace(/[^0-9]/g, ''))}
+        />
+      </div>
+      <label className="checkbox">
+        <input type="checkbox" checked={sortRoles} onChange={(e) => setSortRoles(e.target.checked)} />
+        {t('autogrid.sortRoles')}
+      </label>
+      <div className="sidebar-actions">
+        <button
+          className="btn small primary"
+          disabled={busyPersonal || !accountId.trim() || !report.tag}
+          onClick={generatePersonal}
+        >
+          {busyPersonal ? t('autogrid.generating') : t('autogrid.generatePersonal')}
+        </button>
+      </div>
+
       {/* not wired to anything yet — shown so the shape of the feature is clear */}
       <div className="field row">
         <label>{t('autogrid.tierList')}</label>
@@ -205,11 +334,6 @@ export default function AutogridPanel() {
           <option>{t('autogrid.soon')}</option>
         </select>
       </div>
-      <div className="field row">
-        <label>{t('autogrid.accountId')}</label>
-        <input className="input" disabled placeholder={t('autogrid.soon')} />
-      </div>
-      <p className="field-hint">{t('autogrid.personalization')} — {t('autogrid.soon')}</p>
     </>
   );
 }

@@ -35,6 +35,10 @@ interface UiStore {
   setTheme: (theme: Theme) => void;
   toggleTheme: () => void;
 
+  /** Dota 2 account id the personalised grids are built for, remembered */
+  accountId: string;
+  setAccountId: (id: string) => void;
+
   /* --- transient, not persisted (see `partialize`) --- */
 
   /** the category hotkeys act on, shared by the classic and canvas editors */
@@ -76,6 +80,9 @@ export const useUiStore = create<UiStore>()(
       lastBoardTab: 'view',
       setLastBoardTab: (tab) => set({ lastBoardTab: tab }),
 
+      accountId: '',
+      setAccountId: (accountId) => set({ accountId }),
+
       theme: 'dark',
       setTheme: (theme) => set({ theme }),
       toggleTheme: () => set((s) => ({ theme: s.theme === 'dark' ? 'light' : 'dark' })),
@@ -91,13 +98,22 @@ export const useUiStore = create<UiStore>()(
     {
       name: 'hgt.ui',
       // selection and the modal-open counters are per-session UI state
-      partialize: ({ sidebarOpen, sidebarPinned, uiScale, lastSeenVersion, lastBoardTab, theme }) => ({
+      partialize: ({
         sidebarOpen,
         sidebarPinned,
         uiScale,
         lastSeenVersion,
         lastBoardTab,
         theme,
+        accountId,
+      }) => ({
+        sidebarOpen,
+        sidebarPinned,
+        uiScale,
+        lastSeenVersion,
+        lastBoardTab,
+        theme,
+        accountId,
       }),
     },
   ),

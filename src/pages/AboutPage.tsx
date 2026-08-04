@@ -83,15 +83,42 @@ export default function AboutPage() {
               it and the heroes to avoid this patch underneath.
             </li>
             <li>
+              <b>Overall tier list</b> — the same six tiers with no role split, one row each.
+            </li>
+            <li>
               <b>Meta levels</b> — the report's meta layers, oldest first: each row is the heroes
               that define a layer beside the combo pieces that go with them, followed by any layers
               the report projects.
             </li>
           </ul>
-          <p className="muted">
-            Rank-bracket selection, meta tier lists and OpenDota personalization are not wired up
-            yet.
+
+          <h3>Personalized grid</h3>
+          <p>
+            Give it a Dota 2 account id with a public match history and it builds a grid around how{' '}
+            <i>you</i> play: the report's tiers are re-scored by your record on each hero, so a hero
+            you win on climbs and one you keep losing on drops. Form is measured against your own
+            overall win rate rather than 50%, and both form and the credit for simply knowing a hero
+            are damped by games played, so a couple of lucky games move nothing.
           </p>
+          <ul>
+            <li>
+              <b>Best heroes</b> — the ones you are known for: enough games to mean something and a
+              win rate that stands out from the rest of your pool. If nothing stands out you get a
+              top few instead.
+            </li>
+            <li>
+              <b>Practice</b> — strong heroes you have hardly played. If you have played everything,
+              it relaxes to the strong heroes you play least.
+            </li>
+            <li>
+              <b>Bans</b> — the heroes with the best record against you.
+            </li>
+            <li>
+              <b>Roles</b> — one block each, best-for-you first, optionally ordered by how much you
+              play them (judged by your games on each role's heroes).
+            </li>
+          </ul>
+          <p className="muted">Rank-bracket selection and meta tier lists are not wired up yet.</p>
         </section>
 
         <section className="docs-section">
