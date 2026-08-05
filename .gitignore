@@ -10,3 +10,6 @@ dist-ssr
 .env.*
 !.env.example
 *.tsbuildinfo
+build
+config.json
+dota/
