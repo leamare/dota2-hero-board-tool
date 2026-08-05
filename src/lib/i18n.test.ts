@@ -24,12 +24,32 @@ describe('locale files', () => {
     for (const value of Object.values(DICTS.en)) expect(typeof value).toBe('string');
   });
 
-  it('translates every English key in every language', () => {
-    const keys = Object.keys(DICTS[DEFAULT_LOCALE]);
-    expect(keys.length).toBeGreaterThan(90);
+  it('translates every interface string in every language', () => {
+    // docs prose (about.*) is long-form and may lag behind — it falls back to
+    // English per key. Everything that labels a control may not.
+    const keys = Object.keys(DICTS[DEFAULT_LOCALE]).filter((k) => !k.startsWith('about.'));
+    expect(keys.length).toBeGreaterThan(140);
     for (const code of Object.keys(DICTS)) {
       const missing = keys.filter((k) => !DICTS[code][k]);
       expect({ code, missing }).toEqual({ code, missing: [] });
+    }
+  });
+
+  it('names every category preset in every language', () => {
+    const presets = Object.keys(DICTS[DEFAULT_LOCALE]).filter((k) => k.startsWith('preset.'));
+    expect(presets).toHaveLength(43);
+    for (const code of Object.keys(DICTS)) {
+      expect(presets.filter((k) => !DICTS[code][k])).toEqual([]);
+    }
+  });
+
+  it('keeps docs keys consistent where a language has them', () => {
+    const docs = Object.keys(DICTS[DEFAULT_LOCALE]).filter((k) => k.startsWith('about.'));
+    expect(docs.length).toBeGreaterThan(40);
+    for (const code of Object.keys(DICTS)) {
+      const translated = docs.filter((k) => DICTS[code][k]);
+      // a language either documents the page or leaves it to the fallback
+      expect([0, docs.length]).toContain(translated.length);
     }
   });
 

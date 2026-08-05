@@ -33,7 +33,7 @@ import {
   retier,
 } from '../../lib/personal';
 import { genId } from '../../lib/board';
-import { presetLabel } from '../../lib/constants';
+
 import { useT } from '../../lib/i18n';
 import { useBoardStore } from '../../state/boardStore';
 import { useLayoutsStore, type SavedLayout } from '../../state/layoutsStore';
@@ -282,7 +282,7 @@ export default function AutogridPanel() {
             checked={!!roles[role.code]}
             onChange={(e) => setRoles((r) => ({ ...r, [role.code]: e.target.checked }))}
           />
-          {presetLabel(role.preset)}
+          {t(`preset.${role.preset}`)}
         </label>
       ))}
 

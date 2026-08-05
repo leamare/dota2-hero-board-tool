@@ -1,5 +1,5 @@
 import { heroImageUrl, imageUrl, itemImageUrl } from '../../lib/images';
-import { presetLabel } from '../../lib/constants';
+import { useT } from '../../lib/i18n';
 import type { Category, CategoryIcon } from '../../types/board';
 import { useMetadata } from '../../state/MetadataProvider';
 
@@ -43,7 +43,9 @@ function IconImg({ icon }: { icon: CategoryIcon }) {
 
 /** Renders a category header: optional icon then the text/preset label. */
 export default function CategoryLabel({ category }: { category: Category }) {
-  const text = category.preset !== undefined ? presetLabel(category.preset) : category.text ?? '';
+  const t = useT();
+  // preset labels are stored as ids, so the shown name follows the language
+  const text = category.preset !== undefined ? t(`preset.${category.preset}`) : category.text ?? '';
   return (
     <>
       {category.icon && <IconImg icon={category.icon} />}

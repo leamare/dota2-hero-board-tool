@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { useT } from '../../lib/i18n';
 import type { Board } from '../../types/board';
 import GridIcon from '../GridIcon';
 
@@ -15,6 +16,7 @@ interface Props {
  * shared by the view and edit tabs so both match the exported image.
  */
 export default function BoardHeading({ board, fallbackName, actions }: Props) {
+  const t = useT();
   return (
     <div className={`view-head${board.centered ? ' centered' : ''}`}>
       <div className="board-titles">
@@ -22,7 +24,7 @@ export default function BoardHeading({ board, fallbackName, actions }: Props) {
           <GridIcon tag={board.icon} />
           {board.name || fallbackName}
         </h1>
-        {board.author && <div className="board-author">by {board.author}</div>}
+        {board.author && <div className="board-author">{t('common.byAuthor').replace('{name}', board.author)}</div>}
         {board.description && <p className="board-desc">{board.description}</p>}
       </div>
       {actions && <div className="view-actions">{actions}</div>}

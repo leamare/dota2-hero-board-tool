@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import GridIcon from '../GridIcon';
 import { siteBaseLabel } from '../../lib/shareUrl';
+import { useT } from '../../lib/i18n';
 import type { Board } from '../../types/board';
 
 interface Props {
@@ -15,6 +16,7 @@ interface Props {
  * page so the two look the same.
  */
 export default function BoardImageHead({ board, qr }: Props) {
+  const t = useT();
   return (
     <div className="board-image-head">
       <div className="board-image-titles">
@@ -22,7 +24,7 @@ export default function BoardImageHead({ board, qr }: Props) {
           <GridIcon tag={board.icon} />
           {board.name}
         </h2>
-        {board.author && <div className="board-image-author">by {board.author}</div>}
+        {board.author && <div className="board-image-author">{t('common.byAuthor').replace('{name}', board.author)}</div>}
         {board.description && <p className="board-image-desc">{board.description}</p>}
       </div>
       <div className="board-image-brand">

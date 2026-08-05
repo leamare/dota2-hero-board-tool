@@ -3,6 +3,7 @@ import Modal from '../ui/Modal';
 import CategoryIconModal from './CategoryIconModal';
 import { useBoardStore } from '../../state/boardStore';
 import { LABEL_COLORS, PRESET_NAMES, WIDENESS_OPTIONS, widenessLabel } from '../../lib/constants';
+import { useT } from '../../lib/i18n';
 import { ITEM_STYLES, PORTRAIT_TYPES, SIZE_OPTIONS } from '../../lib/images';
 import { useMetadata } from '../../state/MetadataProvider';
 import type { CategoryIcon } from '../../types/board';
@@ -20,6 +21,7 @@ const HEADER_SIZES = [
 ];
 
 export default function CategorySettingsModal({ categoryId, onClose }: Props) {
+  const t = useT();
   const category = useBoardStore((s) => s.board.categories.find((c) => c.id === categoryId));
   const columns = useBoardStore((s) => s.board.columns);
   const patchCategory = useBoardStore((s) => s.patchCategory);
@@ -65,7 +67,7 @@ export default function CategorySettingsModal({ categoryId, onClose }: Props) {
               >
                 {PRESET_NAMES.map((p) => (
                   <option key={p.value} value={p.value}>
-                    {p.label}
+                    {t(`preset.${p.value}`)}
                   </option>
                 ))}
               </select>

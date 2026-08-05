@@ -14,6 +14,7 @@ import GameGridModal from '../components/edit/GameGridModal';
 import { useBoardStore } from '../state/boardStore';
 import { useLayoutsStore, type SavedLayout } from '../state/layoutsStore';
 import { useToast } from '../state/ToastProvider';
+import { useT } from '../lib/i18n';
 import { encodeLayouts, layoutsShareUrl } from '../lib/layoutsShare';
 import { parseImport } from '../lib/importAny';
 import { downloadJson, downloadText, gridCode } from '../lib/gridFile';
@@ -22,6 +23,7 @@ export default function LayoutsPage() {
   const navigate = useNavigate();
   const lastTab = useUiStore((s) => s.lastBoardTab);
   const toast = useToast();
+  const t = useT();
   const [params, setParams] = useSearchParams();
   const board = useBoardStore((s) => s.board);
   const setBoard = useBoardStore((s) => s.setBoard);
@@ -95,41 +97,41 @@ export default function LayoutsPage() {
     <div className="layouts-page">
       <div className="toolbar">
         <button className="btn primary" onClick={saveCurrent}>
-          Save current grid
+          {t('layouts.saveCurrent')}
         </button>
         <div className="sep" />
         <button className="btn" onClick={() => setShareOpen(true)}>
-          Share all
+          {t('layouts.shareAll')}
         </button>
         <button className="btn" onClick={() => setImportOpen(true)}>
-          Import
+          {t('common.import')}
         </button>
         <button className="btn" onClick={() => downloadJson('hero-grids', layouts)}>
-          Export .json
+          {t('layouts.exportJson')}
         </button>
         <button
           className="btn"
-          title="All grids as one base64 code"
+          title={t('layouts.exportCodeTitle')}
           onClick={() => downloadText('hero-grids', encodeLayouts(layouts))}
         >
-          Export code
+          {t('layouts.exportCode')}
         </button>
         <button className="btn" onClick={() => fileRef.current?.click()}>
-          Import file
+          {t('layouts.importFile')}
         </button>
         <button
           className="btn"
-          title="Import Dota 2's hero_grid_config.json"
+          title={t('sidebar.gameFileHint')}
           onClick={() => setGameMode('import')}
         >
-          Import game config
+          {t('sidebar.gameImport')}
         </button>
         <button
           className="btn"
-          title="Export as Dota 2's hero_grid_config.json"
+          title={t('sidebar.gameFileHint')}
           onClick={() => setGameMode('export')}
         >
-          Export game config
+          {t('sidebar.gameExport')}
         </button>
         <input
           ref={fileRef}
@@ -145,7 +147,7 @@ export default function LayoutsPage() {
       </div>
 
       {layouts.length === 0 ? (
-        <p className="board-empty">No saved grids yet. Save the current one to get started.</p>
+        <p className="board-empty">{t('layouts.empty')}</p>
       ) : (
         <DndContext sensors={dndSensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={layouts.map((l) => l.id)} strategy={verticalListSortingStrategy}>
@@ -158,38 +160,38 @@ export default function LayoutsPage() {
                   actions={
                     <>
                       <button className="btn small primary" onClick={() => load(l)}>
-                        Load
+                        {t('common.load')}
                       </button>
                       <button className="btn small" onClick={() => setShareGrid(l)}>
-                        Share
+                        {t('common.share')}
                       </button>
                       <button className="btn small" onClick={() => overwrite(l.id, board)}>
-                        Update
+                        {t('common.update')}
                       </button>
                       <button
                         className="btn small"
                         onClick={() => {
-                          const n = prompt('Rename to:', l.name);
+                          const n = prompt(t('layouts.renamePrompt'), l.name);
                           if (n?.trim()) rename(l.id, n.trim());
                         }}
                       >
-                        Rename
+                        {t('common.rename')}
                       </button>
                       <button className="btn small" onClick={() => downloadJson(l.name, l)}>
-                        Export
+                        {t('common.export')}
                       </button>
                       <button
                         className="btn small"
-                        title="Save this grid as a base64 code"
+                        title={t('layouts.gridCodeTitle')}
                         onClick={() => downloadText(l.name, gridCode(l.board))}
                       >
-                        Code
+                        {t('common.code')}
                       </button>
                       <button
                         className="btn small danger"
                         onClick={() => setConfirmDelete(l)}
                       >
-                        Delete
+                        {t('common.delete')}
                       </button>
                     </>
                   }
@@ -208,8 +210,8 @@ export default function LayoutsPage() {
 
       <ConfirmDialog
         open={confirmDelete !== null}
-        title="Delete this grid?"
-        confirmLabel="Delete"
+        title={t('confirm.deleteGridTitle')}
+        confirmLabel={t('confirm.deleteGridConfirm')}
         danger
         onCancel={() => setConfirmDelete(null)}
         onConfirm={() => {
@@ -218,7 +220,7 @@ export default function LayoutsPage() {
         }}
       >
         <p>
-          "{confirmDelete?.name}" will be removed from your saved grids. This cannot be undone.
+          {t('confirm.deleteGridBody').replace('{name}', confirmDelete?.name ?? '')}
         </p>
       </ConfirmDialog>
 
@@ -228,7 +230,7 @@ export default function LayoutsPage() {
         onClose={() => setShareGrid(null)}
       />
 
-      <Modal open={shareOpen} onClose={() => setShareOpen(false)} title="Share all grids" width="48rem">
+      <Modal open={shareOpen} onClose={() => setShareOpen(false)} title={t('layouts.shareAllTitle')} width="48rem">
         <div className="share-body">
           <div className="share-main">
             <textarea
@@ -240,10 +242,10 @@ export default function LayoutsPage() {
             />
             <div style={{ marginTop: '0.75rem', display: 'flex', gap: '0.5rem' }}>
               <button className="btn primary" onClick={() => navigator.clipboard?.writeText(shareUrl)}>
-                Copy link
+                {t('common.copyLink')}
               </button>
               <span className="muted" style={{ alignSelf: 'center' }}>
-                {layouts.length} grids
+                {t('layouts.gridsCount').replace('{n}', String(layouts.length))}
               </span>
             </div>
           </div>
@@ -257,27 +259,26 @@ export default function LayoutsPage() {
           setImportOpen(false);
           setScanning(false);
         }}
-        title="Import grids"
+        title={t('layouts.importTitle')}
         width="34rem"
       >
         <p className="muted">
-          Paste a share link, a grid code, JSON from this tool or from the old version — or scan a
-          QR code.
+          {t('layouts.importHint')}
         </p>
         <textarea
           className="input"
           style={{ width: '100%' }}
           rows={4}
-          placeholder="Paste here…"
+          placeholder={t('layouts.pastePlaceholder')}
           value={importText}
           onChange={(e) => setImportText(e.target.value)}
         />
         <div style={{ marginTop: '0.75rem', display: 'flex', gap: '0.5rem' }}>
           <button className="btn primary" disabled={!importText.trim()} onClick={() => doImport(importText)}>
-            Import
+            {t('common.import')}
           </button>
           <button className="btn" onClick={() => setScanning((s) => !s)}>
-            {scanning ? 'Stop camera' : 'Scan QR'}
+            {scanning ? t('common.stopCamera') : t('common.scanQr')}
           </button>
         </div>
         {scanning && (
