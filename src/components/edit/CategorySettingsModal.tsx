@@ -39,10 +39,10 @@ export default function CategorySettingsModal({ categoryId, onClose }: Props) {
 
   return (
     <>
-      <Modal open onClose={onClose} title="Category settings" width="32rem">
+      <Modal open onClose={onClose} title={t('cat.settings')} width="32rem">
         <div className="settings-grid">
           <div className="field">
-            <label>Label</label>
+            <label>{t('cat.label')}</label>
             <select
               className="select"
               value={usePreset ? 'preset' : 'text'}
@@ -52,14 +52,14 @@ export default function CategorySettingsModal({ categoryId, onClose }: Props) {
                   : patchCategory(category.id, { preset: undefined, text: category.text ?? '' })
               }
             >
-              <option value="text">Text</option>
-              <option value="preset">Preset</option>
+              <option value="text">{t('cat.text')}</option>
+              <option value="preset">{t('cat.preset')}</option>
             </select>
           </div>
 
           {usePreset ? (
             <div className="field">
-              <label>Preset</label>
+              <label>{t('cat.preset')}</label>
               <select
                 className="select"
                 value={category.preset ?? 1}
@@ -74,7 +74,7 @@ export default function CategorySettingsModal({ categoryId, onClose }: Props) {
             </div>
           ) : (
             <div className="field">
-              <label>Label text</label>
+              <label>{t('cat.labelText')}</label>
               <input
                 className="input"
                 value={category.text ?? ''}
@@ -84,7 +84,7 @@ export default function CategorySettingsModal({ categoryId, onClose }: Props) {
           )}
 
           <div className="field">
-            <label>Icon</label>
+            <label>{t('cat.icon')}</label>
             <div style={{ display: 'flex', gap: '0.4rem' }}>
               <button className="btn" onClick={() => setIconPicker(true)}>
                 {icon ? 'Change…' : 'Set icon…'}
@@ -102,7 +102,7 @@ export default function CategorySettingsModal({ categoryId, onClose }: Props) {
 
           {(icon?.kind === 'hero' || icon?.kind === 'item') && (
             <div className="field">
-              <label>Icon style</label>
+              <label>{t('cat.iconStyle')}</label>
               <select
                 className="select"
                 value={icon.iconType ?? 2}
@@ -119,13 +119,13 @@ export default function CategorySettingsModal({ categoryId, onClose }: Props) {
 
           {icon?.kind === 'hero' && (iconHero?.alticons.length ?? 0) > 0 && (
             <div className="field">
-              <label>Icon variant</label>
+              <label>{t('cat.iconVariant')}</label>
               <select
                 className="select"
                 value={icon.alticon ?? ''}
                 onChange={(e) => patchIcon({ alticon: e.target.value || null })}
               >
-                <option value="">Default</option>
+                <option value="">{t('cat.default')}</option>
                 {iconHero!.alticons.map((a) => (
                   <option key={a} value={a}>
                     {a}
@@ -136,7 +136,7 @@ export default function CategorySettingsModal({ categoryId, onClose }: Props) {
           )}
 
           <div className="field">
-            <label>Header size</label>
+            <label>{t('cat.headerSize')}</label>
             <select
               className="select"
               value={category.headerSize ?? 1}
@@ -151,7 +151,7 @@ export default function CategorySettingsModal({ categoryId, onClose }: Props) {
           </div>
 
           <div className="field">
-            <label>Label colour</label>
+            <label>{t('cat.labelColour')}</label>
             <select
               className="select"
               value={category.color}
@@ -166,7 +166,7 @@ export default function CategorySettingsModal({ categoryId, onClose }: Props) {
           </div>
 
           <div className="field">
-            <label>Width</label>
+            <label>{t('cat.width')}</label>
             <select
               className="select"
               value={category.wideness}
@@ -181,7 +181,7 @@ export default function CategorySettingsModal({ categoryId, onClose }: Props) {
           </div>
 
           <div className="field">
-            <label>Heroes type</label>
+            <label>{t('sidebar.portraits')}</label>
             <select
               className="select"
               value={category.portraitType ?? ''}
@@ -191,7 +191,7 @@ export default function CategorySettingsModal({ categoryId, onClose }: Props) {
                 })
               }
             >
-              <option value="">Board default</option>
+              <option value="">{t('cat.boardDefault')}</option>
               {PORTRAIT_TYPES.map((t) => (
                 <option key={t.id} value={t.id}>
                   {t.label}
@@ -201,7 +201,7 @@ export default function CategorySettingsModal({ categoryId, onClose }: Props) {
           </div>
 
           <div className="field">
-            <label>Size</label>
+            <label>{t('sidebar.size')}</label>
             <select
               className="select"
               value={category.size ?? ''}
@@ -211,7 +211,7 @@ export default function CategorySettingsModal({ categoryId, onClose }: Props) {
                 })
               }
             >
-              <option value="">Board default</option>
+              <option value="">{t('cat.boardDefault')}</option>
               {SIZE_OPTIONS.map((s) => (
                 <option key={s.id} value={s.id}>
                   {s.label}
@@ -221,7 +221,7 @@ export default function CategorySettingsModal({ categoryId, onClose }: Props) {
           </div>
 
           <div className="field">
-            <label>Items type</label>
+            <label>{t('sidebar.items')}</label>
             <select
               className="select"
               value={category.itemStyle ?? ''}
@@ -231,7 +231,7 @@ export default function CategorySettingsModal({ categoryId, onClose }: Props) {
                 })
               }
             >
-              <option value="">Board default</option>
+              <option value="">{t('cat.boardDefault')}</option>
               {ITEM_STYLES.map((s) => (
                 <option key={s.id} value={s.id}>
                   {s.label}

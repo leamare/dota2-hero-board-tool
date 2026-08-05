@@ -54,7 +54,7 @@ export default function LayoutsPage() {
     try {
       const incoming = parseImport(code);
       importLayouts(incoming);
-      toast(`Imported ${incoming.length} grid${incoming.length === 1 ? '' : 's'}`);
+      toast(t('toast.imported').replace('{n}', String(incoming.length)));
     } catch {
       toast('Could not read that import link', 'info');
     }
@@ -68,7 +68,7 @@ export default function LayoutsPage() {
     try {
       const incoming = parseImport(text);
       importLayouts(incoming);
-      toast(`Imported ${incoming.length} grid${incoming.length === 1 ? '' : 's'}`);
+      toast(t('toast.imported').replace('{n}', String(incoming.length)));
       setImportOpen(false);
       setScanning(false);
       setImportText('');

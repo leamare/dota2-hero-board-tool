@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useT } from '../../lib/i18n';
 import type { CSSProperties } from 'react';
 import CanvasBoard from '../board/CanvasBoard';
 import CategoryLabel from '../board/CategoryLabel';
@@ -22,6 +23,7 @@ const HEADER_SIZE_CLASS = ['hs-small', 'hs-normal', 'hs-large', 'hs-huge'];
  * eight handles. Positions live in the board as percentages of the canvas width.
  */
 export default function CanvasEditor({ board, onOpenSettings, onAdd }: Props) {
+  const t = useT();
   const setCategoryRect = useBoardStore((s) => s.setCategoryRect);
   const removeCategory = useBoardStore((s) => s.removeCategory);
   const removeElement = useBoardStore((s) => s.removeElement);
@@ -85,7 +87,7 @@ export default function CanvasEditor({ board, onOpenSettings, onAdd }: Props) {
               <div className="cat-head">
                 <button
                   className="drag-handle"
-                  title="Drag to move"
+                  title={t('ui.dragMove')}
                   onPointerDown={onPointerDown(category.id, rect, '')}
                 >
                   ⠿
@@ -94,15 +96,15 @@ export default function CanvasEditor({ board, onOpenSettings, onAdd }: Props) {
                   <CategoryLabel category={category} />
                 </span>
                 <span className="cat-controls">
-                  <button className="btn small" title="Add hero or item" onClick={() => onAdd(category.id)}>
+                  <button className="btn small" title={t('ui.addHeroItem')} onClick={() => onAdd(category.id)}>
                     ＋
                   </button>
-                  <button className="btn small" title="Settings" onClick={() => onOpenSettings(category.id)}>
+                  <button className="btn small" title={t('ui.settings')} onClick={() => onOpenSettings(category.id)}>
                     ⚙
                   </button>
                   <button
                     className="btn small danger"
-                    title="Delete category"
+                    title={t('ui.deleteCategory')}
                     onClick={() => removeCategory(category.id)}
                   >
                     ✕
@@ -124,14 +126,14 @@ export default function CanvasEditor({ board, onOpenSettings, onAdd }: Props) {
                     />
                     <button
                       className="portrait-remove"
-                      title="Remove"
+                      title={t('ui.remove')}
                       onClick={() => removeElement(category.id, i)}
                     />
                   </div>
                 ))}
                 <button
                   className="portrait add-tile"
-                  title="Add hero or item"
+                  title={t('ui.addHeroItem')}
                   style={{ width: portraitPx, height: portraitPx }}
                   onClick={() => onAdd(category.id)}
                 >

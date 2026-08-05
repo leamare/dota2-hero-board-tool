@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useT } from '../../lib/i18n';
 import { useLayoutsStore } from '../../state/layoutsStore';
 import { useToast } from '../../state/ToastProvider';
 import { parseImport } from '../../lib/importAny';
@@ -10,6 +11,7 @@ import { importStamp } from '../../lib/gameGrid';
  * hero_grid_config.json. `parseImport` works out which it is.
  */
 export default function GlobalFileDrop() {
+  const t = useT();
   const [over, setOver] = useState(false);
   const importLayouts = useLayoutsStore((s) => s.importLayouts);
   const toast = useToast();
@@ -42,7 +44,7 @@ export default function GlobalFileDrop() {
       try {
         const incoming = parseImport(await file.text());
         importLayouts(incoming, { stamp: importStamp() });
-        toast(`Imported ${incoming.length} grid${incoming.length === 1 ? '' : 's'} from ${file.name}`);
+        toast(t('toast.imported').replace('{n}', String(incoming.length)));
       } catch (err) {
         toast(err instanceof Error ? err.message : 'Could not read that file', 'info');
       }
@@ -63,7 +65,7 @@ export default function GlobalFileDrop() {
   if (!over) return null;
   return (
     <div className="global-drop" aria-hidden="true">
-      <div className="global-drop-inner">Drop a grid file to import it</div>
+      <div className="global-drop-inner">{t('ui.dropFile')}</div>
     </div>
   );
 }

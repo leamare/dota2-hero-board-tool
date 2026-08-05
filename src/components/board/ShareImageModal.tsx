@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useT } from '../../lib/i18n';
 import { toPng } from 'html-to-image';
 import QRCodeLib from 'qrcode';
 import Modal from '../ui/Modal';
@@ -36,6 +37,7 @@ interface Props {
  * markup keeps the image identical to the view tab.
  */
 export default function ShareImageModal({ open, onClose, board }: Props) {
+  const t = useT();
   const stageRef = useRef<HTMLDivElement>(null);
 
   /*
@@ -122,7 +124,7 @@ export default function ShareImageModal({ open, onClose, board }: Props) {
   };
 
   return (
-    <Modal open={open} onClose={onClose} title="Grid image" width="52rem">
+    <Modal open={open} onClose={onClose} title={t('cat.gridImage')} width="52rem">
       {/* off-screen stage: real board markup at the export width */}
       {open && (
         <div className="image-stage-wrap" aria-hidden="true">

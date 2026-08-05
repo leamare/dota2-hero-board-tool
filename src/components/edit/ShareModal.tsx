@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useT } from '../../lib/i18n';
 import Modal from '../ui/Modal';
 import QRCode from '../ui/QRCode';
 import { buildShareUrl } from '../../lib/shareUrl';
@@ -14,6 +15,7 @@ interface Props {
 }
 
 export default function ShareModal({ open, onClose, board: given }: Props) {
+  const t = useT();
   const current = useBoardStore((s) => s.board);
   const board = given ?? current;
   const url = useMemo(() => (open ? buildShareUrl(board) : ''), [open, board]);
@@ -53,7 +55,7 @@ export default function ShareModal({ open, onClose, board: given }: Props) {
             <button className="btn primary" onClick={() => copy('link')}>
               {copied === 'link' ? 'Copied!' : 'Copy link'}
             </button>
-            <button className="btn" title="Just the grid code, without the link" onClick={() => copy('code')}>
+            <button className="btn" title={t('cat.codeOnly')} onClick={() => copy('code')}>
               {copied === 'code' ? 'Copied!' : 'Copy code'}
             </button>
             <span className="muted" style={{ alignSelf: 'center' }}>{url.length} characters</span>

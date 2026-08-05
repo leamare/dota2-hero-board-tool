@@ -5,6 +5,7 @@ import { useBoardStore } from '../../state/boardStore';
 import { useLayoutsStore } from '../../state/layoutsStore';
 import { useMetadata } from '../../state/MetadataProvider';
 import { useToast } from '../../state/ToastProvider';
+import { useT } from '../../lib/i18n';
 import { downloadJson } from '../../lib/gridFile';
 import {
   GAME_CONFIG_FILENAME,
@@ -31,6 +32,7 @@ interface Props {
 export default function GameGridModal({ open, onClose, mode, currentOnly }: Props) {
   const meta = useMetadata();
   const toast = useToast();
+  const t = useT();
   const board = useBoardStore((s) => s.board);
   const currentLayoutId = useBoardStore((s) => s.currentLayoutId);
   const { layouts, importLayouts } = useLayoutsStore();
@@ -60,10 +62,10 @@ export default function GameGridModal({ open, onClose, mode, currentOnly }: Prop
       if (!isGameGrid(parsed)) throw new Error('not a hero grid config');
       const incoming = fromGameGrid(parsed);
       importLayouts(incoming, { replaceSameName, stamp: importStamp() });
-      toast(`Imported ${incoming.length} grid${incoming.length === 1 ? '' : 's'} from the game`);
+      toast(t('game.imported').replace('{n}', String(incoming.length)));
       onClose();
     } catch {
-      toast('That file is not a hero_grid_config.json', 'info');
+      toast(t('game.notConfig'), 'info');
     }
   };
 
@@ -71,13 +73,11 @@ export default function GameGridModal({ open, onClose, mode, currentOnly }: Prop
     <Modal
       open={open}
       onClose={onClose}
-      title={mode === 'import' ? 'Import game grids' : 'Export game grids'}
+      title={t(mode === 'import' ? 'sidebar.gameImport' : 'sidebar.gameExport')}
       width="40rem"
     >
       <p className="muted">
-        {mode === 'import'
-          ? 'The game keeps every hero grid in one config file. Import it to bring your in-game grids here.'
-          : 'Save your grids as the game\'s own config file, then drop it in next to the one the game wrote.'}
+        {t(mode === 'import' ? 'game.importIntro' : 'game.exportIntro')}
       </p>
       <p className="path-hint">
         <code>{GAME_CONFIG_PATH}</code>
@@ -86,9 +86,11 @@ export default function GameGridModal({ open, onClose, mode, currentOnly }: Prop
       {mode === 'import' ? (
         <>
       <FileDropZone accept="application/json,.json" onFile={(f) => f.text().then(doImport)}>
-        Drop <code>{GAME_CONFIG_FILENAME}</code> here, or{' '}
+        {t('game.dropHere').split('{file}')[0]}
+        <code>{GAME_CONFIG_FILENAME}</code>
+        {t('game.dropHere').split('{file}')[1]}{' '}
         <button className="link-btn" onClick={() => fileRef.current?.click()}>
-          choose a file
+          {t('game.chooseFile')}
         </button>
         .
       </FileDropZone>
@@ -109,23 +111,15 @@ export default function GameGridModal({ open, onClose, mode, currentOnly }: Prop
           checked={replaceSameName}
           onChange={(e) => setReplaceSameName(e.target.checked)}
         />
-        Replace grids with the same name
+        {t('game.replaceSame')}
       </label>
-      <p className="field-hint">
-        Otherwise an imported grid whose name already exists is kept alongside it, stamped with the
-        import time.
-      </p>
+      <p className="field-hint">{t('game.replaceHint')}</p>
         </>
       ) : (
         <>
-          <p className="muted">
-            In-game grids only store hero positions, so items, alternate portraits and colours are
-            dropped. A category icon travels as <code>{'{S:spectre}'}</code>, and a row break splits
-            the category into blocks named <code>------</code> — both are restored if you import the
-            file back here.
-          </p>
+          <p className="muted">{t('game.exportNote')}</p>
           <button className="btn primary" onClick={doExport}>
-            Download {GAME_CONFIG_FILENAME}
+            {t('game.download').replace('{file}', GAME_CONFIG_FILENAME)}
           </button>
         </>
       )}

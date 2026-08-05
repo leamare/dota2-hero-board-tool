@@ -1,4 +1,5 @@
 import { useSortable } from '@dnd-kit/sortable';
+import { useT } from '../../lib/i18n';
 import { CSS } from '@dnd-kit/utilities';
 import ElementPortrait from '../board/ElementPortrait';
 import type { Board, Category } from '../../types/board';
@@ -15,6 +16,7 @@ interface Props {
 export const elementDragId = (catId: string, index: number) => `el:${catId}:${index}`;
 
 export default function SortableElement({ category, board, index, onRemove, onAlt }: Props) {
+  const t = useT();
   const el = category.elements[index];
   const meta = useMetadata();
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
@@ -35,7 +37,7 @@ export default function SortableElement({ category, board, index, onRemove, onAl
       {hasAlticons && (
         <button
           className="portrait-alt"
-          title="Change portrait variant"
+          title={t('ui.changeVariant')}
           onPointerDown={(e) => e.stopPropagation()}
           onClick={onAlt}
         >
@@ -44,7 +46,7 @@ export default function SortableElement({ category, board, index, onRemove, onAl
       )}
       <button
         className="portrait-remove"
-        title="Remove"
+        title={t('ui.remove')}
         onPointerDown={(e) => e.stopPropagation()}
         onClick={onRemove}
       />

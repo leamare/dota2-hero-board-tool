@@ -102,14 +102,14 @@ export default function PickerGrid({ onPick, previewType = 0, draggable, autoFoc
           {t('picker.items')}
         </button>
         {onPick && (
-          <button className="btn small" title="Add a blank block" onClick={() => onPick({ kind: 'empty' })}>
+          <button className="btn small" title={t('cat.addBlank')} onClick={() => onPick({ kind: 'empty' })}>
             ＋ {t('picker.empty')}
           </button>
         )}
         {onPick && (
           <button
             className="btn small"
-            title="Add a line break (starts a new row inside the category)"
+            title={t('cat.addBreak')}
             onClick={() => onPick({ kind: 'break' })}
           >
             ＋ {t('picker.break')}

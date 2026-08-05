@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useT } from '../lib/i18n';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import BoardView from '../components/board/BoardView';
 import { decodeBoard } from '../lib/share';
@@ -7,6 +8,7 @@ import { useMetadataState } from '../state/MetadataProvider';
 import type { Board } from '../types/board';
 
 export default function ImportPage() {
+  const t = useT();
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const setBoard = useBoardStore((s) => s.setBoard);
@@ -34,10 +36,10 @@ export default function ImportPage() {
   return (
     <div className="import-page">
       <div className="toolbar">
-        <span className="import-title">Imported grid: <strong>{board.name}</strong></span>
+        <span className="import-title">{t('ui.importedGrid')} <strong>{board.name}</strong></span>
         <div className="sep" />
-        <button className="btn primary" onClick={load}>Load this grid</button>
-        <button className="btn" onClick={() => navigate('/view')}>Cancel</button>
+        <button className="btn primary" onClick={load}>{t('ui.loadThisGrid')}</button>
+        <button className="btn" onClick={() => navigate('/view')}>{t('common.cancel')}</button>
       </div>
       <BoardView board={board} />
     </div>

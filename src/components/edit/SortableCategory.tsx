@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useT } from '../../lib/i18n';
 import { useSortable, SortableContext, rectSortingStrategy } from '@dnd-kit/sortable';
 import type { CSSProperties } from 'react';
 import type { Board, Category, GridElement } from '../../types/board';
@@ -50,6 +51,7 @@ export default function SortableCategory({
   onElementAlt,
   onLink,
 }: Props) {
+  const t = useT();
   const removeCategory = useBoardStore((s) => s.removeCategory);
   const removeElement = useBoardStore((s) => s.removeElement);
   const addElement = useBoardStore((s) => s.addElement);
@@ -121,7 +123,7 @@ export default function SortableCategory({
       onDrop={onDrop}
     >
       <div className="cat-head">
-        <button className="drag-handle" title="Drag to reorder" {...attributes} {...listeners}>
+        <button className="drag-handle" title={t('ui.dragReorder')} {...attributes} {...listeners}>
           ⠿
         </button>
         <span className={`cat-title${isEmptyLabel(category) ? ' empty' : ''}`}>
@@ -130,29 +132,29 @@ export default function SortableCategory({
         <span className="cat-controls">
           {/* the body's add tile disappears with the body, so the header keeps
               its own way into the picker */}
-          <button className="btn small" title="Add hero or item" onClick={onAdd}>
+          <button className="btn small" title={t('ui.addHeroItem')} onClick={onAdd}>
             ＋
           </button>
           <button
             className={`btn small${linkPending ? ' primary' : ''}${vLinked ? ' active' : ''}`}
-            title={vLinked ? 'Unlink vertically' : 'Link vertically'}
+            title={t(vLinked ? 'ui.unlinkV' : 'ui.linkV')}
             onClick={() => onLink('v')}
           >
             ↕
           </button>
           <button
             className={`btn small${linkPending ? ' primary' : ''}${hLinked ? ' active' : ''}`}
-            title={hLinked ? 'Unlink horizontally' : 'Link horizontally'}
+            title={t(hLinked ? 'ui.unlinkH' : 'ui.linkH')}
             onClick={() => onLink('h')}
           >
             ↔
           </button>
-          <button className="btn small" title="Settings" onClick={onOpenSettings}>
+          <button className="btn small" title={t('ui.settings')} onClick={onOpenSettings}>
             ⚙
           </button>
           <button
             className="btn small danger"
-            title="Delete category"
+            title={t('ui.deleteCategory')}
             onClick={() => removeCategory(category.id)}
           >
             ✕
@@ -178,7 +180,7 @@ export default function SortableCategory({
                 <ElementPortrait element={el} category={category} board={board} />
                 <button
                   className="portrait-remove"
-                  title="Remove"
+                  title={t('ui.remove')}
                   onClick={() => removeElement(category.id, i)}
                 />
               </div>
@@ -196,7 +198,7 @@ export default function SortableCategory({
         </SortableContext>
         <button
           className="portrait add-tile"
-          title="Add hero or item"
+          title={t('ui.addHeroItem')}
           style={{ aspectRatio: aspect, height: `${heightRem}rem` }}
           onClick={onAdd}
         >

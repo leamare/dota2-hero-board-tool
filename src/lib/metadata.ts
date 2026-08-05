@@ -1,4 +1,4 @@
-import { metadataUrl } from './config';
+import { METADATA_CACHE_TTL, metadataUrl } from './config';
 import type { Hero, Item, Metadata } from '../types/metadata';
 import localAliases from '../data/heroes-aliases.json';
 
@@ -111,7 +111,7 @@ async function fetchJson<T>(url: string): Promise<T> {
 
 // bumped whenever the normalised shape changes, so stale caches are dropped
 const CACHE_KEY = 'hgt.metadata.v3';
-const CACHE_TTL = 6 * 60 * 60 * 1000; // 6 hours
+
 
 interface CachedMetadata {
   ts: number;
@@ -131,7 +131,7 @@ function readCache(now: number): Metadata | null {
     const raw = localStorage.getItem(CACHE_KEY);
     if (!raw) return null;
     const c = JSON.parse(raw) as CachedMetadata;
-    if (!c.ts || now - c.ts > CACHE_TTL || !c.heroes?.length) return null;
+    if (!c.ts || now - c.ts > METADATA_CACHE_TTL || !c.heroes?.length) return null;
     return build(c.heroes, c.items);
   } catch {
     return null;

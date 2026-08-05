@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useT } from '../../lib/i18n';
 import Modal from '../ui/Modal';
 import { heroImageUrl, imageUrl, itemImageUrl } from '../../lib/images';
 import { FACET_ICONS } from '../../lib/constants';
@@ -21,6 +22,7 @@ const matches = (haystack: string, query: string): boolean =>
  * lets power users point at any courier image.
  */
 export default function CategoryIconModal({ categoryId, onClose }: Props) {
+  const t = useT();
   const meta = useMetadata();
   const category = useBoardStore((s) => s.board.categories.find((c) => c.id === categoryId));
   const patchCategory = useBoardStore((s) => s.patchCategory);
@@ -73,7 +75,7 @@ export default function CategoryIconModal({ categoryId, onClose }: Props) {
   };
 
   return (
-    <Modal open onClose={onClose} title="Category icon" width="54rem">
+    <Modal open onClose={onClose} title={t('cat.categoryIcon')} width="54rem">
       <div className="picker">
         <div className="picker-tabs">
           {(['facet', 'hero', 'item'] as Tab[]).map((t) => (
@@ -89,7 +91,7 @@ export default function CategoryIconModal({ categoryId, onClose }: Props) {
             ref={searchRef}
             className="input picker-search"
             type="search"
-            placeholder="Search…"
+            placeholder={t('common.search')}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />

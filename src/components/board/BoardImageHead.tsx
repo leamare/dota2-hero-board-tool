@@ -32,7 +32,7 @@ export default function BoardImageHead({ board, qr }: Props) {
         <div className="board-image-credit">
           <b>Dota 2 Hero Grid Tool</b>
           <span>{siteBaseLabel()}</span>
-          <span className="muted">Scan to open this grid</span>
+          <span className="muted">{t('ui.scanToOpen')}</span>
         </div>
       </div>
     </div>

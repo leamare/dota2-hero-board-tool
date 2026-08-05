@@ -92,7 +92,7 @@ export default function Sidebar() {
     if (!autosave || !currentLayoutId) return;
     const timer = setTimeout(() => {
       overwrite(currentLayoutId, board);
-      toast('Autosaved', 'info');
+      toast(t('toast.autosaved'), 'info');
     }, 1500);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -101,12 +101,12 @@ export default function Sidebar() {
   const saveCurrent = () => {
     if (current) {
       overwrite(current.id, board);
-      toast(`Saved "${current.name}"`);
+      toast(t('toast.saved').replace('{name}', current.name));
     } else {
       // no tracked layout yet — save immediately under the grid's name
       const name = board.name.trim() || 'Untitled grid';
       setCurrentLayoutId(save(name, board));
-      toast(`Saved "${name}"`);
+      toast(t('toast.saved').replace('{name}', name));
     }
   };
 
@@ -114,7 +114,7 @@ export default function Sidebar() {
     // the saved copy becomes the grid you're working on, so rename it as well
     patchBoard({ name });
     setCurrentLayoutId(save(name, { ...board, name }));
-    toast(`Saved "${name}"`);
+    toast(t('toast.saved').replace('{name}', name));
   };
 
 
