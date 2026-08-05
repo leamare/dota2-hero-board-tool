@@ -2,8 +2,8 @@ import { Fragment, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 
 /**
- * A very small markdown subset for translated prose: `**bold**`, `` `code` ``
- * and `[label](target)`.
+ * A very small markdown subset for translated prose: `**bold**`, `` `code` ``,
+ * `[label](target)`, and ` -- ` for an em dash.
  *
  * Docs text carries emphasis and links, and translators shouldn't have to be
  * handed JSX to keep them. Anything unrecognised is left as plain text, so a
@@ -34,7 +34,9 @@ export function rich(text: string): ReactNode[] {
     if (part.startsWith('`') && part.endsWith('`')) return <code key={i}>{part.slice(1, -1)}</code>;
     const link = /^\[([^\]]+)\]\(([^)]+)\)$/.exec(part);
     if (link) return renderLink(link[1], link[2], i);
-    return <Fragment key={i}>{part}</Fragment>;
+    // ` -- ` is the em dash, so translators don't have to type one. Only the
+    // spaced form, which leaves the `------` game-grid marker alone.
+    return <Fragment key={i}>{part.replace(/ -- /g, ' — ')}</Fragment>;
     });
 }
 

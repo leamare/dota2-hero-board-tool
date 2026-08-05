@@ -74,7 +74,17 @@ export default function AboutPage() {
           <h2>{a('whatIs.h')}</h2>
           {p('whatIs.p1')}
           {p('whatIs.p2')}
+          {p('whatIs.p2_1')}
           {p('whatIs.p3')}
+          <p>
+            <Rich text={a('credits.idea')} />
+            <br />
+            <Rich text={a('credits.dev')} />
+            <br />
+            <Rich text={a('credits.version')} /> {APP_VERSION}
+          </p>
+          {p('credits.inspired')}
+          {p('credits.github')}
         </section>
 
         <section className="docs-section">
@@ -92,7 +102,6 @@ export default function AboutPage() {
           <h2>{a('autogrid.h')}</h2>
           {p('autogrid.intro')}
           {list([
-            'autogrid.tiers',
             'autogrid.roleGrids',
             'autogrid.total',
             'autogrid.overall',
@@ -102,7 +111,6 @@ export default function AboutPage() {
           <h3>{a('autogrid.personalH')}</h3>
           {p('autogrid.personalIntro')}
           {list(['autogrid.best', 'autogrid.practice', 'autogrid.bans', 'autogrid.roles'])}
-          {p('autogrid.notYet', 'muted')}
         </section>
 
         <section className="docs-section">
@@ -127,7 +135,6 @@ export default function AboutPage() {
             ['formats.f1', 'formats.f2', 'formats.f3', 'formats.f4', 'formats.f5', 'formats.f6'],
             'docs-format',
           )}
-          {p('formats.codeNote', 'muted')}
 
           <h3>{a('formats.allH')}</h3>
           {p('formats.allP')}
@@ -139,26 +146,11 @@ export default function AboutPage() {
 
           <h3>{a('formats.gameH')}</h3>
           {p('formats.gameP')}
-
-          <h3>{a('formats.oldH')}</h3>
-          {p('formats.oldP')}
         </section>
 
         <section className="docs-section">
           <h2>{a('sharing.h')}</h2>
           {list(['sharing.link', 'sharing.image', 'sharing.print', 'sharing.files'])}
-        </section>
-
-        <section className="docs-section">
-          <h2>{a('credits.h')}</h2>
-          <p>
-            <Rich text={a('credits.idea')} />
-            <br />
-            <Rich text={a('credits.dev')} />
-            <br />
-            <Rich text={a('credits.version')} /> {APP_VERSION}
-          </p>
-          {p('credits.inspired')}
         </section>
       </div>
     </div>

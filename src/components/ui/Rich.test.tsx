@@ -27,6 +27,17 @@ describe('rich text', () => {
     expect(internal.props.to).toBe('/layouts');
   });
 
+  it('turns a spaced double dash into an em dash', () => {
+    const [only] = parts('a -- b');
+    expect(only.props.children).toBe('a — b');
+  });
+
+  it('leaves the game grid break marker alone', () => {
+    // `------` is a literal category name in the docs, not punctuation
+    const [only] = parts('blocks named ------ here');
+    expect(only.props.children).toBe('blocks named ------ here');
+  });
+
   it('leaves unmatched markup alone rather than dropping it', () => {
     const out = parts('a [broken( link ** here');
     expect(out).toHaveLength(1);
