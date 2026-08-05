@@ -32,10 +32,10 @@
     "@types/qrcode": "^1.5.6",
     "@types/react": "^18.3.11",
     "@types/react-dom": "^18.3.0",
-    "@vitejs/plugin-react": "^4.3.2",
+    "@vitejs/plugin-react": "^6.0.5",
     "typescript": "^5.6.2",
-    "vite": "^5.4.8",
-    "vitest": "^2.1.2"
+    "vite": "^8.2.0",
+    "vitest": "^4.1.10"
   },
   "allowScripts": {
     "esbuild@0.21.5": true
