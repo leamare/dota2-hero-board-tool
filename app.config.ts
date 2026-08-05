@@ -28,6 +28,9 @@ export const appConfig = {
   /** The app's own landing route. */
   sectionHome: '/view',
 
+  /** Where the app is served from, e.g. `/hero-grid/` on a subpath. */
+  basePath: '/',
+
   /** How long hero/item metadata is cached in the browser, in hours. */
   metadataCacheHours: 6,
 } as const;

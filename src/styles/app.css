@@ -131,7 +131,7 @@ button {
      reference's cover-sized image — makes the logo read bigger */
   width: 66%;
   height: 108%;
-  background: url('/salogo.png') center / contain no-repeat;
+  background: url('../assets/salogo.png') center / contain no-repeat;
 }
 .app-header .gotomain:hover {
   background-color: var(--big-button-color-hover);

@@ -9,20 +9,23 @@ import { MetadataProvider } from './state/MetadataProvider';
 import { ToastProvider } from './state/ToastProvider';
 import { I18nProvider } from './state/I18nProvider';
 
-const router = createBrowserRouter([
-  {
-    element: <Layout />,
-    children: [
-      { index: true, element: <Navigate to="/view" replace /> },
-      { path: 'view', element: <ViewPage /> },
-      { path: 'edit', element: <EditPage /> },
-      { path: 'import', element: <ImportPage /> },
-      { path: 'layouts', element: <LayoutsPage /> },
-      { path: 'about', element: <AboutPage /> },
-      { path: '*', element: <Navigate to="/view" replace /> },
-    ],
-  },
-]);
+const router = createBrowserRouter(
+  [
+    {
+      element: <Layout />,
+      children: [
+        { index: true, element: <Navigate to="/view" replace /> },
+        { path: 'view', element: <ViewPage /> },
+        { path: 'edit', element: <EditPage /> },
+        { path: 'import', element: <ImportPage /> },
+        { path: 'layouts', element: <LayoutsPage /> },
+        { path: 'about', element: <AboutPage /> },
+        { path: '*', element: <Navigate to="/view" replace /> },
+      ],
+    },
+  ],
+  { basename: import.meta.env.BASE_URL.replace(/\/$/, '') || '/' },
+);
 
 export default function App() {
   return (
