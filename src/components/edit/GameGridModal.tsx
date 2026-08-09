@@ -21,15 +21,13 @@ interface Props {
   onClose: () => void;
   /** which half of the exchange to show */
   mode: 'import' | 'export';
-  /** export only the grid being edited instead of every saved grid */
-  currentOnly?: boolean;
 }
 
 /**
  * Import from / export to Dota 2's own `hero_grid_config.json`, with a
  * reminder of where the game keeps it.
  */
-export default function GameGridModal({ open, onClose, mode, currentOnly }: Props) {
+export default function GameGridModal({ open, onClose, mode }: Props) {
   const meta = useMetadata();
   const toast = useToast();
   const t = useT();
@@ -38,22 +36,23 @@ export default function GameGridModal({ open, onClose, mode, currentOnly }: Prop
   const { layouts, importLayouts } = useLayoutsStore();
   const fileRef = useRef<HTMLInputElement>(null);
   const [replaceSameName, setReplaceSameName] = useState(false);
+  const [compact, setCompact] = useState(false);
 
-  const doExport = () => {
+  const doExport = (scope: 'current' | 'all') => {
     const live = { id: 'current', name: board.name || 'Grid', board };
     // the board in hand is newer than its saved copy — a canvas you just
     // arranged must export as it stands, not as it was last saved
-    const source = currentOnly
-      ? [live]
-      : layouts.length
-        ? layouts.map((l) => (l.id === currentLayoutId ? { ...l, board } : l))
-        : [live];
+    const source =
+      scope === 'current' || !layouts.length
+        ? [live]
+        : layouts.map((l) => (l.id === currentLayoutId ? { ...l, board } : l));
     const file = toGameGrid(source, {
       heroTag: (id) => meta?.heroById.get(id)?.tag ?? String(id),
       itemTag: (id) => meta?.itemById.get(id)?.tag ?? String(id),
+      compact,
     });
     downloadJson(GAME_CONFIG_FILENAME.replace(/\.json$/, ''), file);
-    toast(`Exported ${file.configs.length} grid${file.configs.length === 1 ? '' : 's'}`);
+    toast(t('game.exported').replace('{n}', String(file.configs.length)));
   };
 
   const doImport = async (text: string) => {
@@ -97,7 +96,10 @@ export default function GameGridModal({ open, onClose, mode, currentOnly }: Prop
       <input
         ref={fileRef}
         type="file"
-        accept="application/json,.json"
+        // no `accept`: it filters the native picker by extension/MIME, and on
+        // some OSes that hides a valid file whose name the OS doesn't
+        // recognise as JSON — drag-and-drop isn't filtered, so it always
+        // works. Content is validated after reading either way.
         hidden
         onChange={(e) => {
           const f = e.target.files?.[0];
@@ -118,9 +120,23 @@ export default function GameGridModal({ open, onClose, mode, currentOnly }: Prop
       ) : (
         <>
           <p className="muted">{t('game.exportNote')}</p>
-          <button className="btn primary" onClick={doExport}>
-            {t('game.download').replace('{file}', GAME_CONFIG_FILENAME)}
-          </button>
+          <label className="checkbox">
+            <input
+              type="checkbox"
+              checked={compact}
+              onChange={(e) => setCompact(e.target.checked)}
+            />
+            {t('game.compact')}
+          </label>
+          <p className="field-hint">{t('game.compactHint')}</p>
+          <div className="sidebar-actions">
+            <button className="btn primary" onClick={() => doExport('current')}>
+              {t('game.downloadCurrent').replace('{file}', GAME_CONFIG_FILENAME)}
+            </button>
+            <button className="btn" onClick={() => doExport('all')}>
+              {t('game.downloadAll').replace('{file}', GAME_CONFIG_FILENAME)}
+            </button>
+          </div>
         </>
       )}
     </Modal>

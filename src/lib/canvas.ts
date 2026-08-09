@@ -19,6 +19,14 @@ export interface ToCanvasOptions {
   respectChains?: boolean;
   /** drop the chain links once seeded, so leaving canvas won't re-chain (default on) */
   eraseChains?: boolean;
+  /**
+   * Cap every card's portrait height at a small fixed size instead of the
+   * grid's own (default off). The in-game hero grid panel is short, so a
+   * classic grid exported at its on-screen portrait size — set for a monitor,
+   * not the client's little panel — often shows only a couple of rows without
+   * scrolling; this trades portrait size for more visible rows.
+   */
+  compactHeight?: boolean;
 }
 
 /** What to derive from the canvas when going back to a classic grid. */
@@ -70,8 +78,10 @@ export function seedRects(board: Board, opts: ToCanvasOptions = {}): Map<string,
 
   // height of one row = the tallest card placed in it
   const rowHeights = new Map<number, number>();
+  const compactRem = SIZES.find((s) => s.label === 'Small')?.rem ?? 2.4;
   const cardHeight = (cat: Category, widthPct: number): number => {
-    const { aspect, heightRem } = resolveDisplay(cat, board);
+    const { aspect, heightRem: fullRem } = resolveDisplay(cat, board);
+    const heightRem = opts.compactHeight ? Math.min(fullRem, compactRem) : fullRem;
     // rough but stable: portraits are heightRem tall, and rem ≈ 1% of a 1200px
     // canvas, so express the card in the same percent-of-width units
     const remPct = 100 / 75;

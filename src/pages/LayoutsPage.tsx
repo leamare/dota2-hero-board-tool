@@ -136,7 +136,9 @@ export default function LayoutsPage() {
         <input
           ref={fileRef}
           type="file"
-          accept="application/json,text/plain,.json,.txt"
+          // no `accept`: it filters the native picker by extension/MIME, and
+          // hides a valid file if the OS doesn't recognise its name as JSON —
+          // dropping the same file bypasses that filter and always works
           hidden
           onChange={(e) => {
             const f = e.target.files?.[0];

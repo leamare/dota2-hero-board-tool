@@ -507,7 +507,6 @@ export default function Sidebar() {
       <GameGridModal
         open={gameMode !== null}
         mode={gameMode ?? 'import'}
-        currentOnly
         onClose={() => setGameMode(null)}
       />
       <ConfirmDialog

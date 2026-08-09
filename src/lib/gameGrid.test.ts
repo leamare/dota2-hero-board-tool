@@ -131,6 +131,38 @@ describe('game hero_grid_config', () => {
     out.configs[0].categories.forEach((c) => expect(c.width).toBeGreaterThan(0));
   });
 
+  it('shrinks classic grids vertically with the compact option, leaves canvas grids alone', () => {
+    const board = {
+      ...emptyBoard('Tall'),
+      columns: 1,
+      size: 5, // Absolute Unit — deliberately huge, so compact has room to shrink it
+      categories: ['a', 'b'].map((id) => ({
+        id,
+        text: id,
+        color: '',
+        wideness: 0,
+        elements: [{ kind: 'hero' as const, refId: 1 }],
+      })),
+    };
+    const normal = toGameGrid([{ id: 'l', name: 'Tall', board }]).configs[0].categories;
+    const compact = toGameGrid([{ id: 'l', name: 'Tall', board }], { compact: true }).configs[0]
+      .categories;
+    expect(compact[0].height).toBeLessThan(normal[0].height);
+
+    // a canvas grid carries an explicit layout already — compact must not touch it
+    const canvasBoard = {
+      ...board,
+      canvas: true,
+      categories: board.categories.map((c) => ({ ...c, rect: { x: 0, y: 0, w: 50, h: 50 } })),
+    };
+    const asIs = toGameGrid([{ id: 'l', name: 'Canvas', board: canvasBoard }]).configs[0]
+      .categories;
+    const stillAsIs = toGameGrid([{ id: 'l', name: 'Canvas', board: canvasBoard }], {
+      compact: true,
+    }).configs[0].categories;
+    expect(stillAsIs).toEqual(asIs);
+  });
+
   it('makes duplicate grid names unique, since the game keys grids by name', () => {
     const grid = (name: string) => ({
       id: name + Math.random(),

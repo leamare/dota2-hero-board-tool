@@ -139,6 +139,12 @@ function readLabel(name: string): Pick<Category, 'text' | 'icon'> {
 export interface ToGameOptions {
   heroTag?: (id: number) => string;
   itemTag?: (id: number) => string;
+  /**
+   * Cap portrait height on classic (non-canvas) grids so more rows fit in the
+   * game's small hero-grid panel without scrolling. Canvas grids already carry
+   * an explicit layout and are exported as designed either way.
+   */
+  compact?: boolean;
 }
 
 /** Name the game gives the continuation of a category split by a row break. */
@@ -188,7 +194,7 @@ export function toGameGrid(layouts: SavedLayout[], opts: ToGameOptions = {}): Ga
   const configs = layouts.map((l) => {
     const board = l.board;
     // the game grid is a canvas, so a classic grid needs positions first
-    const seeded = board.canvas ? null : seedRects(board);
+    const seeded = board.canvas ? null : seedRects(board, { compactHeight: opts.compact });
     const categories: GameCategory[] = [];
 
     for (const cat of board.categories) {

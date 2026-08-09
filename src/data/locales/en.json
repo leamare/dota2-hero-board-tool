@@ -309,7 +309,11 @@
     "replaceSame": "Replace grids with the same name",
     "replaceHint": "Otherwise an imported grid whose name already exists is kept alongside it, stamped with the import time.",
     "exportNote": "In-game grids only store hero positions, so items, alternate portraits and colours are dropped. A category icon travels as {S:spectre}, and a row break splits the category into blocks named ------ — both are restored if you import the file back here.",
-    "download": "Download {file}"
+    "exported": "Exported {n} grid(s)",
+    "downloadCurrent": "Export current grid ({file})",
+    "downloadAll": "Export all grids ({file})",
+    "compact": "Compact (fewer rows)",
+    "compactHint": "Shrinks portraits on classic grids so more categories fit in the game's hero-grid panel without scrolling. Freeform (canvas) grids export as designed either way."
   },
   "toast": {
     "autosaved": "Autosaved",

@@ -248,7 +248,12 @@ export const useBoardStore = create<BoardStore>()(
       name: 'hgt.board',
       version: 6,
       migrate: (persisted, from) => {
-        const state = persisted as { board?: Record<string, unknown> };
+        // every branch below only rewrites `board` — the rest of the persisted
+        // state (currentLayoutId) has to survive untouched, or a migration
+        // silently unlinks the open board from its saved grid: the next Save
+        // then creates a new entry instead of updating the old one, leaving a
+        // stale name sitting in the grids list
+        const state = persisted as { board?: Record<string, unknown>; currentLayoutId?: string | null };
         if (!state?.board) return persisted as unknown as { board: Board };
         const b = state.board as Record<string, unknown> & { categories?: Record<string, unknown>[] };
 
@@ -323,7 +328,7 @@ export const useBoardStore = create<BoardStore>()(
           }
         }
 
-        return { board: b as unknown as Board };
+        return { ...state, board: b as unknown as Board };
       },
     },
   ),

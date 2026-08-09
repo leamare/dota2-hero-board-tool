@@ -253,7 +253,11 @@
     "replaceSame": "Substituir grades com o mesmo nome",
     "replaceHint": "Caso contrário, uma grade importada com nome já existente fica ao lado dela, marcada com a hora da importação.",
     "exportNote": "Grades do jogo guardam só as posições dos heróis, então itens, retratos alternativos e cores se perdem. O ícone de categoria viaja como {S:spectre}, e uma quebra de linha divide a categoria em blocos chamados ------ — ambos são restaurados ao importar o arquivo de volta.",
-    "download": "Baixar {file}"
+    "exported": "{n} grade(s) exportada(s)",
+    "downloadCurrent": "Exportar grade atual ({file})",
+    "downloadAll": "Exportar todas as grades ({file})",
+    "compact": "Compacto (menos altura)",
+    "compactHint": "Reduz os retratos nas grades clássicas para caber mais categorias no painel do jogo sem rolar. Grades livres (canvas) são exportadas como estão de qualquer forma."
   },
   "toast": {
     "autosaved": "Salvo automaticamente",

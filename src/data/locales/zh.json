@@ -253,7 +253,11 @@
     "replaceSame": "替换同名网格",
     "replaceHint": "否则同名的导入网格会与原来的并存，并带上导入时间戳。",
     "exportNote": "游戏内网格只保存英雄位置，因此物品、替换头像和颜色会丢失。类别图标以 {S:spectre} 形式传递，换行会把类别拆成名为 ------ 的块 —— 再导入回来时两者都会还原。",
-    "download": "下载 {file}"
+    "exported": "已导出 {n} 个网格",
+    "downloadCurrent": "导出当前网格（{file}）",
+    "downloadAll": "导出所有网格（{file}）",
+    "compact": "紧凑（减少高度）",
+    "compactHint": "缩小经典网格中的头像，让游戏内英雄网格面板能显示更多类别而无需滚动。自由画布网格无论如何都会按原样导出。"
   },
   "toast": {
     "autosaved": "已自动保存",

@@ -44,14 +44,21 @@ export const useLayoutsStore = create<LayoutsStore>()(
         return id;
       },
 
+      // the list shows `name`, not `board.name` — keep them in sync on every
+      // write or a rename done through the board's name field (sidebar, save)
+      // never reaches the grids list
       overwrite: (id, board) =>
         set((s) => ({
-          layouts: s.layouts.map((l) => (l.id === id ? { ...l, board: clone(board) } : l)),
+          layouts: s.layouts.map((l) =>
+            l.id === id ? { ...l, name: board.name || l.name, board: clone(board) } : l,
+          ),
         })),
 
       rename: (id, name) =>
         set((s) => ({
-          layouts: s.layouts.map((l) => (l.id === id ? { ...l, name } : l)),
+          layouts: s.layouts.map((l) =>
+            l.id === id ? { ...l, name, board: { ...l.board, name } } : l,
+          ),
         })),
 
       remove: (id) => set((s) => ({ layouts: s.layouts.filter((l) => l.id !== id) })),
